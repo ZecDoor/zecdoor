@@ -1,0 +1,19 @@
+node_modules/
+.next/
+.open-next/
+.wrangler/
+dist/
+target/
+pkg/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+# never commit keys or seeds
+*.age
+*keypair*.json
+*-wallet.json
+secrets/
+.secrets/
+screenshots/tmp/

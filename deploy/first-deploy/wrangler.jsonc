@@ -1,0 +1,11 @@
+{
+  // Minimum safe first deploy: static files only, served by Cloudflare Workers static assets.
+  // Replaced by the full app later; the domain must stay the same (Phantom new-domain review).
+  "name": "zecdoor-first-deploy",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404-page"
+  }
+  // "routes": [{ "pattern": "[DOMAIN]", "custom_domain": true }]
+}

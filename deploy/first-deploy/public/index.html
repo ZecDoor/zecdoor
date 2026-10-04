@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ZecDoor — move ZEC from Solana into your own shielded Zcash wallet</title>
+<meta name="description" content="ZecDoor is open-source, non-custodial software that moves the ZEC you hold on Solana into your own shielded Zcash wallet. Under construction.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main>
+  <header>
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M4 12.5 14 4l10 8.5V24H4V12.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" class="accent"/><path d="M9 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <span class="brand">ZecDoor</span>
+  </header>
+
+  <h1>Move the ZEC you hold on Solana into your own shielded Zcash wallet.</h1>
+  <p class="lead">ZecDoor is open-source, non-custodial software. It never holds your funds and never sees your keys. It is being built now and is not ready to use.</p>
+
+  <section class="card" aria-labelledby="connect-title">
+    <h2 id="connect-title">Connect test</h2>
+    <p>This page can only <strong>connect</strong> to Phantom and show your address. It cannot ask you to sign anything — there is no signing code on this site yet.</p>
+    <button type="button" id="connect">Connect Phantom</button>
+    <p id="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <ul class="facts">
+    <li>Non-custodial: transfers go from your wallet, through NEAR Intents 1Click, to an address you control.</li>
+    <li>No token. No sign-message step.</li>
+    <li>Source code: <a href="https://github.com/ZecDoor/zecdoor">github.com/ZecDoor/zecdoor</a></li>
+  </ul>
+
+  <footer>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="/.well-known/security.txt">Security</a>
+    <a href="https://github.com/ZecDoor/zecdoor/issues">Contact</a>
+  </footer>
+</main>
+<script src="/connect.js" defer></script>
+</body>
+</html>
