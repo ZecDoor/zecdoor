@@ -1,0 +1,4 @@
+# The Rust used for the deployed WebAssembly, so a rebuild can match it (README, "Verify the build").
+[toolchain]
+channel = "1.99.0"
+targets = ["wasm32-unknown-unknown"]

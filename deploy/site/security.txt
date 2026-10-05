@@ -1,0 +1,7 @@
+# ZecDoor security contact. Please do not post exploit details in public: open an issue asking
+# for a private channel (no details), and we will reply there. See the policy below.
+Contact: https://github.com/ZecDoor/zecdoor/issues
+Expires: 2027-10-05T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://[DOMAIN]/.well-known/security.txt
+Policy: https://github.com/ZecDoor/zecdoor/blob/main/SECURITY.md

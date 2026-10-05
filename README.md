@@ -54,6 +54,31 @@ Build the deployable site (needs the production domain for the anti-phishing not
 VITE_DOMAIN=<domain> pnpm build:site     # → dist/site, served by apps/server (wrangler deploy)
 ```
 
+## Verify the build
+
+The app at `/app` is the part that builds and checks the transaction you sign. To check that what is live is this code:
+
+1. See which commit the live site was built from: `https://zecdoor.0xo.in/build.json` (`commit`, and `dirty: false`).
+2. Build the app from that commit and compare it with the live files:
+
+   ```sh
+   git clone https://github.com/ZecDoor/zecdoor && cd zecdoor
+   git checkout <commit from build.json>
+   pnpm install --frozen-lockfile
+   pnpm build:wasm
+   VITE_DOMAIN=zecdoor.0xo.in VITE_SOURCE_URL=https://github.com/ZecDoor/zecdoor pnpm --filter @zecdoor/app exec vite build
+   node scripts/verify-live.mjs https://zecdoor.0xo.in
+   ```
+
+   The script downloads every file the live app loads and compares its SHA-256 with your build. The JavaScript, CSS and
+   HTML depend only on the lockfile and Node; the WebAssembly file also depends on your Rust and clang versions, so it
+   can differ when those differ. The versions used are pinned: Rust in [`rust-toolchain.toml`](rust-toolchain.toml), clang
+   (wasi-sdk 34 on macOS) in [`scripts/build-wasm.sh`](scripts/build-wasm.sh), Node in `build.json`, pnpm in
+   `package.json`. On Linux the script uses the system clang, so expect the `.wasm` file alone may differ there.
+3. Check what the code allows you to sign: `pnpm test` runs the allowlist suite in
+   [`allowlist.test.ts`](packages/solana/test/allowlist.test.ts), which also blocks every build.
+4. In the browser, the review screen shows NEAR Intents' signed quote, and Phantom shows the transaction before you sign.
+
 ## Security model
 
 - Transactions are built in the browser and may contain only the instructions listed in
@@ -63,7 +88,7 @@ VITE_DOMAIN=<domain> pnpm build:site     # → dist/site, served by apps/server 
 - The app's Content Security Policy ([`deploy/site/_headers`](deploy/site/_headers)) lists every service it can reach.
 - The server stores per-day totals only; see [`apps/server/src/counter.ts`](apps/server/src/counter.ts) and its tests.
 
-Report vulnerabilities privately: see `/.well-known/security.txt` on the live site.
+Report vulnerabilities privately: see [SECURITY.md](SECURITY.md) (also `/.well-known/security.txt` on the live site).
 
 ## Licence
 
