@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { clock, parseUnits, sol, units, usd, usdc, zec } from '../../lib/format';
 import { dryQuote, MoveError, type DryQuote } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
+import { feeOk } from '../../lib/server';
 import { AsideHead, BackBar, Rows, Shell, StateCard } from '../parts';
 import { go } from '../router';
 import { useApp } from '../state';
@@ -62,7 +63,7 @@ export function Buy() {
   const rate = q && out ? Number(q.amountInFormatted) / (Number(out) / 1e8) : null;
   const usdIn = q ? Number(q.amountInUsd) : null;
   const fixedShare = q?.withdrawFee && out ? (Number(q.withdrawFee) / (Number(out) + Number(q.withdrawFee))) * 100 : null;
-  const blocked = geo?.allowed === false || !!health?.paused;
+  const blocked = geo?.allowed === false || !!health?.paused || !feeOk(health, kind);
 
   const next = () => {
     if (!amount || !q || tooMuch || blocked) return;

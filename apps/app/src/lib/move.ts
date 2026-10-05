@@ -26,7 +26,7 @@ import { QUOTE_KEY } from '../config';
 import type { PhantomSolana } from './phantom';
 import { isUserRejection } from './phantom';
 import { withRpc } from './rpc';
-import { geo, health, isSanctioned, reportMove } from './server';
+import { feeOk, geo, health, isSanctioned, reportMove } from './server';
 import { getWallet, markAddressUsed, putMove, putWallet, deleteMove, type BrowserWallet, type MoveRecord } from './store';
 import { latestHeight, ready, scanForArrival } from './zcash';
 import { applyStatus } from './status';
@@ -174,6 +174,7 @@ export async function executeMove(r: MoveRequest): Promise<MoveRecord> {
   if (g && !g.allowed) throw new MoveError('region', 'ZecDoor is not offered where you are.');
   if (g && !g.topup && r.kind === 'topup') throw new MoveError('topup_region', 'Top-up is not offered where you are.');
   if (h?.paused) throw new MoveError('paused', h.message ?? 'NEAR Intents reports an incident. Nothing was sent.');
+  if (!feeOk(h, r.kind)) throw new MoveError('paused', 'This kind of move is paused while we check NEAR Intents’ fee terms. Nothing was sent.');
   if (sanctioned) throw new MoveError('sanctioned', 'This wallet cannot use ZecDoor.');
 
   stage('quoting');
@@ -261,7 +262,7 @@ export async function refreshStatus(m: MoveRecord): Promise<MoveRecord> {
   const s = await oneClick.status(m.depositAddress);
   const next = applyStatus(m, s);
   await putMove(next);
-  if (next.status === 'SUCCESS' && !next.counted) {
+  if ((next.status === 'SUCCESS' || next.status === 'REFUNDED') && !next.counted) {
     if (await reportMove(next.depositAddress, next.kind, !!next.firstWallet)) {
       next.counted = true;
       await putMove(next);

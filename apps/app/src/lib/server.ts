@@ -9,8 +9,14 @@ export interface Health {
   /** NEAR Intents reports an open incident touching 1Click, Solana or Zcash. */
   paused: boolean;
   message?: string;
+  /** Last fee self-test per move kind; false means that kind is not offered until reviewed. */
+  fees?: Partial<Record<'exit' | 'buyUsdc' | 'buySol', boolean>>;
   checkedAt: string;
 }
+
+/** A move kind is offered unless the server's fee self-test failed for it. */
+export const feeOk = (h: Health | null, kind: 'exit' | 'topup' | 'buyUsdc' | 'buySol') =>
+  h?.fees?.[kind === 'topup' ? 'exit' : kind] !== false;
 
 export interface Geo {
   allowed: boolean;
@@ -25,7 +31,6 @@ export interface Counter {
   firstWallets: number;
   smallBalances: number;
   refunded: number;
-  inProgress: number;
   medianSeconds: number | null;
   days: Array<{ day: string; exits: number; buys: number }>;
   updatedAt: string;

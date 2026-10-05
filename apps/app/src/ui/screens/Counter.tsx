@@ -69,10 +69,6 @@ export function Counter() {
           <dd>{n(c?.refunded)}</dd>
         </div>
         <div>
-          <dt>In progress now</dt>
-          <dd>{n(c?.inProgress)}</dd>
-        </div>
-        <div>
           <dt>Median time to arrive</dt>
           <dd>{live && c!.medianSeconds ? duration(c!.medianSeconds * 1000) : '—'}</dd>
         </div>

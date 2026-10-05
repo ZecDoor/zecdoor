@@ -240,6 +240,17 @@ test('the bridge is paused: no moves offered', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Move it to shielded/ })).toBeDisabled();
 });
 
+test('a failed fee self-test pauses that kind of move', async ({ page }) => {
+  await mock(page, { health: { ok: true, paused: false, fees: { exit: true, buyUsdc: false, buySol: true } } as never });
+  await page.goto('./#/buy');
+  await page.getByLabel('You pay').fill('25');
+  await expect(page.getByText('NEAR Intents fee')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Choose where it lands' })).toBeDisabled();
+  await page.getByRole('button', { name: 'SOL', exact: true }).click();
+  await page.getByLabel('You pay').fill('0.2');
+  await expect(page.getByRole('button', { name: 'Choose where it lands' })).toBeEnabled();
+});
+
 test('not available in the region', async ({ page }) => {
   await mock(page, { geo: { allowed: false, topup: false, country: 'IR' } });
   await page.goto('./');

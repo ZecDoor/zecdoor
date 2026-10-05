@@ -5,6 +5,7 @@ import { Connection, PublicKey, VersionedTransaction } from '@solana/web3.js';
 import type { AllowlistContext } from './allowlist.js';
 import { ata } from './build.js';
 import { USDC_MINT, ZEC_MINT } from './constants.js';
+import { tokenAccountAmount } from './move.js';
 
 export interface SimulationReport {
   ok: boolean;
@@ -16,7 +17,6 @@ export interface SimulationReport {
   bytes: number;
 }
 
-const tokenAmount = (data: Buffer | null | undefined) => (data && data.length >= 72 ? data.readBigUInt64LE(64) : 0n);
 
 /** The account whose balance shows the deposit: the deposit's token account, or itself for SOL. */
 export function depositWatch(ctx: Pick<AllowlistContext, 'kind' | 'depositAddress'>): { address: PublicKey; token: boolean } {
@@ -34,9 +34,9 @@ export async function simulateMove(connection: Connection, tx: VersionedTransact
     accounts: { encoding: 'base64', addresses: [watch.address.toBase58()] },
   });
   const after = sim.value.accounts?.[0];
-  const afterData = after?.data[0] ? Buffer.from(after.data[0], 'base64') : null;
+  const afterData = after?.data[0] ? Uint8Array.from(atob(after.data[0]), (c) => c.charCodeAt(0)) : null;
   const depositReceives = watch.token
-    ? tokenAmount(afterData) - tokenAmount(before?.data)
+    ? tokenAccountAmount(afterData) - tokenAccountAmount(before?.data)
     : BigInt(after?.lamports ?? 0) - BigInt(before?.lamports ?? 0);
   return {
     ok: sim.value.err === null,

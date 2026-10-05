@@ -14,7 +14,9 @@
     "test:rust": "cargo test --manifest-path crates/zecdoor-wasm/Cargo.toml",
     "test:live": "NETWORK_TESTS=1 pnpm -r test",
     "test:regtest": "node scripts/regtest-e2e.mjs",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "build:site": "./scripts/build-site.sh",
+    "dev:server": "pnpm --filter @zecdoor/server dev"
   },
   "devDependencies": {
     "typescript": "5.9.3",

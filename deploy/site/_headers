@@ -1,0 +1,18 @@
+# Security headers for the whole site (Workers Static Assets _headers format).
+# The app's connect-src is the complete list of services the browser talks to: a reviewer can
+# see from this one line that nothing else (no analytics, no exfiltration endpoint) is reachable.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'
+
+/app/*
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://1click.chaindefuser.com https://lite-api.jup.ag https://rpc.solanatracker.io https://public.rpc.solanavibestation.com https://zjs.zec.rocks; frame-ancestors 'none'; base-uri 'self'; form-action 'none'
+  Cache-Control: no-cache
+
+/app/assets/*
+  Cache-Control: public, max-age=31536000, immutable

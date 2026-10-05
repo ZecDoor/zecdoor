@@ -1,0 +1,21 @@
+{
+  "name": "@zecdoor/server",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@zecdoor/solana": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261005.1",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11",
+    "wrangler": "4.147.0"
+  }
+}

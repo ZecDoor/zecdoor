@@ -8,6 +8,7 @@ import { AsideBox, AsideHead, Chevron, Logo, Qr, Shell, StateCard } from '../par
 import { go } from '../router';
 import { useApp } from '../state';
 import { statusLabel } from './Move';
+import { feeOk } from '../../lib/server';
 
 export function Home() {
   const app = useApp();
@@ -16,7 +17,7 @@ export function Home() {
   const [busy, setBusy] = useState(false);
 
   const blocked = geo?.allowed === false;
-  const paused = !!health?.paused;
+  const paused = !!health?.paused || !feeOk(health, 'exit');
   const bal = balances?.zec ?? null;
   const loading = bal === null || minimum === null;
   const small = !loading && bal! > 0n && bal! < minimum!;
@@ -76,7 +77,7 @@ export function Home() {
 
       {paused ? (
         <StateCard tone="err" title="The bridge is paused" tag="Before signing">
-          {health?.message ?? 'NEAR Intents has paused transfers.'} Nothing was sent, and we won’t send anything until it resumes. This page
+          {health?.message ?? (health?.paused ? 'NEAR Intents has paused transfers.' : 'Moves are paused while we check NEAR Intents’ fee terms.')} Nothing was sent, and we won’t send anything until it resumes. This page
           updates on its own.
         </StateCard>
       ) : null}

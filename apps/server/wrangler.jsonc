@@ -1,0 +1,24 @@
+// ZecDoor server + static site, one Worker on one domain (decision D9: Cloudflare free tier).
+// Placeholders in [BRACKETS] are filled once the domain and the Cloudflare account exist.
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "zecdoor",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "../../dist/site",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"],
+    "not_found_handling": "404-page"
+  },
+  "kv_namespaces": [{ "binding": "STATE", "id": "[KV_NAMESPACE_ID]" }],
+  "triggers": { "crons": ["*/30 * * * *", "17 3 * * *"] },
+  "vars": {
+    // Our own test wallet's Orchard receiver and Solana wallet, used only in dry quotes.
+    "FEE_TEST_RECIPIENT": "u1c5zssk2r6nasyar5amt5pw3szaes8h5wmer3qsaqkc2j6kjcae2lu95ycle3r8vvcdvpyfm7pdnx7624ckp7h5uwfa72l8y54cf4gu8m",
+    "FEE_TEST_REFUND": "3QFJWVEk6tpf52gtk3saAP1nkuci6GRMNHx72etsi67T"
+  }
+  // HASH_SALT is a secret: `wrangler secret put HASH_SALT`.
+  // "routes": [{ "pattern": "[DOMAIN]", "custom_domain": true }]
+}

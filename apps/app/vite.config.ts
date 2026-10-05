@@ -14,7 +14,8 @@ export default defineConfig(({ mode }) => {
     base: '/app/',
     plugins: [react()],
     worker: { format: 'es' },
-    build: { target: 'es2022', sourcemap: true },
+    // No data: URIs: every asset is a file, so the CSP needs no data: for fonts or scripts.
+    build: { target: 'es2022', sourcemap: true, assetsInlineLimit: 0 },
     server: { port: 5173, strictPort: true },
     preview: { port: 4173, strictPort: true },
   };
