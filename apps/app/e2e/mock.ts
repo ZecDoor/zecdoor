@@ -193,6 +193,8 @@ export async function mock(page: Page, s: Scenario = {}): Promise<Mocks> {
         return reply(ctx((body.params[0] as string[]).map(account)));
       case 'getAccountInfo':
         return reply(ctx(account(body.params[0] as string)));
+      case 'getMinimumBalanceForRentExemption':
+        return reply((body.params[0] as number) === 165 ? 1_488_440 : 650_240);
       case 'getBalance':
         return reply(ctx(Number(sol)));
       case 'getLatestBlockhash':

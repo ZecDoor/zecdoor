@@ -13,6 +13,10 @@ export interface Balances {
 }
 
 export async function readBalances(owner: PublicKey): Promise<Balances> {
+  rentRead ??= refreshRent().catch(() => {
+    rentRead = null;
+  });
+  await rentRead;
   return withRpc(async (c) => {
     const [infos, sol] = await Promise.all([
       c.getMultipleAccountsInfo([ata(ZEC_MINT, owner), ata(USDC_MINT, owner)], 'confirmed'),
@@ -28,10 +32,20 @@ export async function readBalances(owner: PublicKey): Promise<Balances> {
   });
 }
 
-/** Rent for one SPL token account (165 bytes): 2,039,280 lamports on mainnet. */
-export const TOKEN_ACCOUNT_RENT = 2_039_280n;
-/** A wallet must keep at least this much SOL after a transfer (rent-exempt minimum). */
-export const WALLET_RESERVE = 890_880n;
+/**
+ * Rent-exempt minimums, read live (they changed: 1,488,440 lamports for a 165-byte token
+ * account and 650,240 for a wallet on 5 Oct 2026, down from 2,039,280 and 890,880).
+ * These defaults are only used until the first live read.
+ */
+export const rent = { tokenAccount: 1_488_440n, wallet: 650_240n };
+
+async function refreshRent(): Promise<void> {
+  const [t, w] = await withRpc((c) => Promise.all([c.getMinimumBalanceForRentExemption(165), c.getMinimumBalanceForRentExemption(0)]));
+  rent.tokenAccount = BigInt(t);
+  rent.wallet = BigInt(w);
+}
+let rentRead: Promise<void> | null = null;
+
 /** Base fee (5,000) plus our priority fee at the compute limits in @zecdoor/solana, rounded up. */
 export const TX_FEE = 15_000n;
 
@@ -44,10 +58,10 @@ export function solNeeded(kind: 'exit' | 'topup' | 'buyUsdc' | 'buySol', o: { sw
   switch (kind) {
     case 'exit':
     case 'buyUsdc':
-      return TX_FEE + TOKEN_ACCOUNT_RENT;
+      return TX_FEE + rent.tokenAccount;
     case 'topup':
-      return TX_FEE + TOKEN_ACCOUNT_RENT * (o.hasZecAccount === false ? 3n : 2n) + (o.swapLamports ?? 0n);
+      return TX_FEE + rent.tokenAccount * (o.hasZecAccount === false ? 3n : 2n) + (o.swapLamports ?? 0n);
     case 'buySol':
-      return TX_FEE + WALLET_RESERVE;
+      return TX_FEE + rent.wallet;
   }
 }
