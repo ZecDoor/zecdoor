@@ -26,7 +26,7 @@ for (const s of shots)
           const small = [...document.querySelectorAll('a, button, input, [role="button"], label.check')]
             .filter((e) => {
               const r = e.getBoundingClientRect();
-              return r.width > 0 && r.height > 0 && (r.height < 44 || r.width < 44) && getComputedStyle(e).visibility !== 'hidden';
+              return r.width > 0 && r.height > 0 && (r.height < 44 || r.width < 44) && getComputedStyle(e).visibility === 'visible';
             })
             .map((e) => `${e.tagName.toLowerCase()} "${(e.textContent || e.getAttribute('aria-label') || '').trim().slice(0, 30)}" ${Math.round(e.getBoundingClientRect().width)}x${Math.round(e.getBoundingClientRect().height)}`);
           return { overflow, small };
