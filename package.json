@@ -19,6 +19,10 @@
     "dev:server": "pnpm --filter @zecdoor/server dev"
   },
   "devDependencies": {
+    "@solana/web3.js": "1.99.0",
+    "@zecdoor/solana": "workspace:^",
+    "@zecdoor/zcash": "workspace:^",
+    "tsx": "4.23.15",
     "typescript": "5.9.3",
     "vitest": "4.1.11"
   }
