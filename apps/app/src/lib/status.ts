@@ -16,8 +16,9 @@ export function applyStatus(m: MoveRecord, s: StatusResponse, now = Date.now()):
   const zTx = d?.destinationChainTxHashes?.find((h) => isZcashTxid(h.hash))?.hash;
   if (zTx) next.zcashTxid = zTx.toLowerCase();
   if (s.status === 'REFUNDED' || s.status === 'INCOMPLETE_DEPOSIT') {
-    // Where 1Click lists the refund transaction is not documented (UNVERIFIED until we see
-    // a real refund): take any Solana signature that is not the user's own deposit.
+    // Seen on mainnet (refund probe, 5 Oct 2026, docs/testing): 1Click lists the refund as a second entry in
+    // originChainTxHashes, after the user's deposit, and leaves destinationChainTxHashes empty. Take any Solana
+    // signature that is not the user's own deposit.
     const hashes = [...(d?.originChainTxHashes ?? []), ...(d?.destinationChainTxHashes ?? [])];
     const refundTx = hashes.find((h) => !isZcashTxid(h.hash) && h.hash !== m.solanaSignature)?.hash;
     next.refund = {

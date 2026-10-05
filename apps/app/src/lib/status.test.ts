@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import status7FJu from '../../../../packages/solana/test/fixtures/quote_7FJu.json';
+import refundedMainnet from './fixtures/status-refunded-mainnet.json';
+import successB1 from './fixtures/status-success-b1.json';
 import { applyStatus, refundReason } from './status';
 import type { MoveRecord } from './store';
 import type { QuoteResponse, StatusResponse } from '@zecdoor/solana';
@@ -78,5 +80,26 @@ describe('refundReason', () => {
     expect(refundReason('AMOUNT_MORE_THAN_BALANCE')).toBe('More than the quoted amount arrived');
     expect(refundReason('NO_LIQUIDITY')).toBe('Not enough liquidity on the route');
     expect(refundReason(undefined)).toBe('The bridge could not complete the move');
+  });
+});
+
+describe('real mainnet statuses (docs/testing)', () => {
+  it('B1 SUCCESS: takes the Zcash txid as reported (explorer byte order)', () => {
+    const m = { ...base, solanaSignature: '2ZfeRtsivSk7UCrsTenJ5dL1GoArXyK2aCRH1RE8uFUR6XMEgjvVBLtc1JWnigb44FBTbauSvqc3xtBUmJJ9ZQLa' };
+    const r = applyStatus(m, successB1 as unknown as StatusResponse, 1);
+    expect(r.status).toBe('SUCCESS');
+    expect(r.zcashTxid).toBe('2fac74310c294c306f56bb9d60891af9d0f8f2ff9c4244f77e1939cf7df206d6');
+  });
+  it('refund probe: the refund is the origin hash after the deposit, with reason, amount and fee', () => {
+    const m = { ...base, solanaSignature: '5BPG29y5mu52DigA2uGCLtXHG17a26njTx3vYhp52sFGHRWwKzKHpfG9y4drqWR6paVGGV5vxc8FJjjdmMSXTuhM' };
+    const r = applyStatus(m, refundedMainnet as unknown as StatusResponse, 1);
+    expect(r.status).toBe('REFUNDED');
+    expect(r.refund).toEqual({
+      reason: 'PARTIAL_DEPOSIT',
+      amount: '29240',
+      fee: '763',
+      txid: '3kdVEQS27gJTnHXzFvRrNWJaWdAH2aCZg9qr3CdKFLSxXM5yT8Mt1uQoh4wXhiCN6ux5djwjrJLjbRFadt8mSXcP',
+    });
+    expect(refundReason('PARTIAL_DEPOSIT')).toBe('The deposit was smaller than the quote');
   });
 });
