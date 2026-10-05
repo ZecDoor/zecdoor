@@ -10,7 +10,7 @@ how.
 
 - **Your Solana transfer.** The amount, the time, and your Solana wallet, like every Solana transaction.
 - **The pool entry.** NEAR Intents pays from a transparent Zcash address into the shielded pool. The amount and time of that
-  transaction are visible on Zcash.
+  transaction are visible on Zcash ([sources](/sources#zcash)); who received it is not.
 - **The link between your Solana wallet and the Zcash address paid.** NEAR Intents' public explorer shows, for each swap,
   the deposit, the amounts and the recipient address ([sources](/sources#explorer)). Anyone who looks can see that your
   Solana wallet paid that Zcash address.
@@ -27,12 +27,15 @@ how.
 ## Habits that help
 
 - **Wait** before moving the ZEC again. Moving it straight back out links the two moves by time.
-- **Don't send the exact amount out.** Round amounts blend in.
+- **Don't send out exactly the amount that arrived.** An identical amount entering and leaving can be matched; a
+  different, rounder amount is harder to match.
 - **Pay shielded addresses** where you can.
 - **Use a new address** for each move if you paste your own.
 
 ## What ZecDoor itself learns
 
 See the [Privacy Policy](/legal/privacy). In short: our server stores no address, transaction ID, IP address or device ID.
+To count a finished move, it reads that move's status from NEAR Intents, which includes its addresses, and keeps only
+daily totals ([counter](/counter)).
 The browser talks directly to NEAR Intents, a Solana RPC provider, Jupiter (top-up only) and a lightwalletd server; each of
 those sees your IP address and what you ask it about.

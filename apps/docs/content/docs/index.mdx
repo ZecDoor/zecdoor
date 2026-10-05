@@ -4,8 +4,16 @@ description: A page you open in Phantom that moves the ZEC you hold on Solana in
 ---
 
 ZecDoor is open-source, non-custodial software. You open it in Phantom, choose where your ZEC should land, check the
-review, and sign one Solana transaction. NEAR Intents' 1Click service then pays native ZEC into the shielded pool, to an
-address only you control.
+review, and sign one Solana transaction. NEAR Intents (a cross-chain swap service; 1Click is its programming interface)
+then pays real ZEC on the Zcash network into the shielded pool, Zcash's encrypted part, to an address only you control.
+
+<Callout title="Opening soon">
+Moves and buys are not open yet. Today you can connect Phantom, see your balance and live quotes, and make and back up a
+wallet. Signing opens once our own mainnet test moves have passed ([testing](/testing)).
+</Callout>
+
+**To start:** on your phone, open [zecdoor.0xo.in](https://zecdoor.0xo.in) and tap "Open in Phantom", or open
+`zecdoor.0xo.in/app` in the browser inside Phantom. On a computer, the Phantom extension works the same.
 
 ## Start here
 
@@ -14,26 +22,32 @@ address only you control.
   <Card title="Small balances: top up and shield" href="/top-up" />
   <Card title="A first Zcash wallet" href="/wallet" />
   <Card title="What stays public" href="/what-is-public" />
+  <Card title="Fees" href="/fees" />
+  <Card title="Risks: read before your first move" href="/risks" />
 </Cards>
 
 ## Why it exists
 
-ZEC on Solana is a bridged SPL token (mint `A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS`). Like every SPL token, its
+ZEC on Solana is a bridged token (SPL is Solana's token standard; its "mint", the token's ID, is
+`A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS`). Like every SPL token, its
 balances and transfers are public. On 5 October 2026, 134,074 Solana token accounts held it, and 87,307 of them (65.1%)
-held less than the 0.00133669 ZEC the bridge will move ([sources](/sources#holders)). ZecDoor exists to get that ZEC into
+held less than 0.00133669 ZEC, the smallest move ZecDoor can send through the bridge. Together those small balances hold
+21.30 ZEC ([sources](/sources#holders)). ZecDoor exists to get that ZEC into
 the shielded pool, including the small balances.
 
-## What ZecDoor does that others don't
+## What ZecDoor adds
 
 - **Top-up for small balances.** A Jupiter swap fills the gap to the bridge minimum inside the same transaction.
-- **A first wallet, backed up properly.** 24 words made in your browser, a three-word check, and the birthday height
-  Zodl and Zkool need.
+- **A first wallet, backed up properly.** 24 words made in your browser, a three-word check, and the Wallet Birthday
+  Height (the block the wallet was made at, so a restore knows where to start) that Zodl and Zkool, two Zcash wallet
+  apps, need.
 - **Proof you can check.** NEAR Intents' signed quote, both transaction IDs, and the shielded note found by your own
-  browser with your viewing key.
+  browser with your viewing key (a key that can see, but not spend, your ZEC).
 - **Opens inside Phantom** from a link on your phone.
 - **MIT-licensed code** and a **public counter** that stores no addresses.
 
-CipherSwap and Zodl's built-in swap already move Solana ZEC to shielded Zcash in one step. [How they compare](/comparison).
+Sparkz, CipherSwap and Zodl's built-in swap already move Solana ZEC to shielded Zcash in one step, and Sparkz also
+makes a first wallet in the page. [How they compare](/comparison).
 
 ## What ZecDoor never does
 

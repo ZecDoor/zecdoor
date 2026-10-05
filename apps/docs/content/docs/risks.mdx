@@ -3,17 +3,23 @@ title: Risks
 description: What can go wrong, said plainly. Read this before your first move.
 ---
 
+## ZecDoor is new
+
+Moves and buys are not open yet, and no user moves have been made. They open after our own mainnet test moves pass
+([testing](/testing)). ZecDoor has not had an external security audit; its checks are covered by public tests
+([security](/security)).
+
 ## Bridged ZEC depends on the bridge
 
-ZEC on Solana is a token issued by NEAR's bridge, backed by ZEC the bridge holds on Zcash. Its value depends on that bridge
-working and staying solvent. The bridge's Solana program can be upgraded by its operators. On 1 October 2026 NEAR Intents
+ZEC on Solana is a token issued by NEAR's Omni Bridge, backed by ZEC the bridge holds on Zcash. Its value depends on that
+bridge working and staying solvent. The bridge's Solana program can be upgraded by a single key ([sources](/sources#bridge)). On 1 October 2026 NEAR Intents
 was exploited for about $3.8 million; the funds were returned ([sources](/sources#incidents)).
 
 ## Moves can be held, delayed or refused
 
 While a transfer is in progress, the assets may be held, locked or controlled by NEAR Intents' infrastructure. NEAR Intents
 screens transfers and may delay, block, freeze or reject them (1Click terms §7.7). One user reported $589,000 held for more
-than 50 days ([sources](/sources#incidents)). ZecDoor cannot speed up, release or see into such a hold.
+than 50 days, on a move from Zcash to USDT through NEAR Intents ([sources](/sources#incidents)). ZecDoor cannot speed up, release or see into such a hold.
 
 ## Moves are irreversible
 
@@ -33,7 +39,7 @@ The move's Solana side, the pool entry, and the link between your Solana wallet 
 ## Software and networks
 
 ZecDoor, Phantom, NEAR Intents, Jupiter, Solana and Zcash can each have bugs, outages or upgrades. The Zcash network is
-scheduled to upgrade (NU7) in November 2026; wallets and servers may need updates around it. NEAR Intents may pause
+targeted to upgrade (NU7, mainnet target 5 November 2026, [sources](/sources#zcash)); wallets and servers may need updates around it. NEAR Intents may pause
 transfers; ZecDoor then stops offering moves.
 
 ## No guarantees

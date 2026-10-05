@@ -1,19 +1,21 @@
 ---
-title: Compared with CipherSwap and Zodl
+title: Compared with Sparkz, CipherSwap and Zodl
 description: Other ways to move Solana ZEC into shielded Zcash, described as fairly as we can.
 ---
 
-Moving Solana ZEC to shielded Zcash in one step is not new. Two tools already do it, and if one of them suits you, use it.
+Moving Solana ZEC to shielded Zcash in one step is not new. Three tools already do it, and if one of them suits you, use
+it. All four, ZecDoor included, use NEAR Intents and pay its 0.00032 ZEC bridge fee on top of the fee below.
 
-| | ZecDoor | CipherSwap | Zodl (built-in swap) |
-|---|---|---|---|
-| Where | Web page, opens inside Phantom | Web app | Zodl wallet app (iOS 3.12+, Android 3.15+) |
-| Solana deposit | One Phantom signature | One Phantom signature | Manual deposit from another wallet |
-| Fee on Solana ZEC moves | 0.25% | 0.5% | 0.67% observed on mainnet |
-| Balances below the bridge minimum | Top-up in the same transaction | No | No |
-| First Zcash wallet | Made in the page, with a checked backup | No | Zodl is the wallet |
-| Destination check | Decodes the unified address; requires an Orchard receiver | Checks the prefix and length | n/a (own wallet) |
-| Proof of arrival | Signed quote, both txids, note found by your browser | No shielded-note check | The wallet's own balance |
-| Source | MIT licence | Public code, no licence file | Public code (github.com/zodl-inc); licence not checked by us |
+| | ZecDoor | Sparkz | CipherSwap | Zodl (built-in swap) |
+|---|---|---|---|---|
+| Where | Web page, opens inside Phantom | Web page, opens inside Phantom | Web app | Zodl wallet app (iOS 3.11+; Android) |
+| Solana deposit | One Phantom signature | One Phantom signature | One signature (Phantom or Solflare), or a manual transfer | Manual transfer from another wallet |
+| Fee on Solana ZEC moves | 0.25% | About 0.4% (not published; inferred from a quote) | 0.5% (half kept by NEAR Intents) | 0.67% |
+| Balances below the bridge minimum | Top-up in the same transaction | No | No | No |
+| First Zcash wallet | Made in the page, with a checked backup | Made in the page, with a checked backup | No | Zodl is the wallet |
+| Destination check | Decodes the unified address; requires an Orchard receiver | Decodes the unified address; requires an Orchard receiver and refuses one with a transparent receiver | Checks the prefix and length; also accepts transparent and Sapling addresses | n/a (own wallet) |
+| Proof of arrival | Signed quote, both transaction IDs, note found by your browser | Move status from NEAR Intents | Move status from NEAR Intents | The wallet's own balance |
+| Source code | Public, MIT licence | No public source found | Public, no licence file | Public, MIT licence |
 
-Sources for each row are on the [sources page](/sources#rivals). If you already use Zodl, its swap may be all you need.
+Read on 5 October 2026; sources for each cell are on the [sources page](/sources#rivals). If you already use Zodl, its
+swap may be all you need.

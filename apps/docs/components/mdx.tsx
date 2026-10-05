@@ -7,7 +7,10 @@ import { SOURCE_PENDING, SOURCE_URL } from '@/lib/shared';
 function SecurityContact() {
   return SOURCE_URL ? (
     <p>
-      See <a href="/.well-known/security.txt">/.well-known/security.txt</a>. Please report privately first.
+      Please report privately first: open an issue at{' '}
+      <a href={`${SOURCE_URL}/issues`}>{SOURCE_URL.replace('https://', '')}/issues</a> asking for a private channel, without
+      any details, and we will reply there. Policy: <a href={`${SOURCE_URL}/blob/main/SECURITY.md`}>SECURITY.md</a>; contact
+      also in <a href="/.well-known/security.txt">security.txt</a>.
     </p>
   ) : (
     <p>The security contact is published together with the code. {SOURCE_PENDING}.</p>

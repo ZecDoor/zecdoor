@@ -3,9 +3,15 @@ title: Buy shielded ZEC
 description: Pay with USDC or SOL from Phantom; receive ZEC in a shielded address.
 ---
 
+<Callout title="Opening soon">
+Buys open together with moves, once our own mainnet test moves have passed ([testing](/testing)). Today the buy screen
+shows live quotes only.
+</Callout>
+
 If you have no ZEC on Solana, you can pay with USDC or SOL from the same Phantom wallet. The transaction sends exactly the
-quoted USDC (or SOL, as a plain transfer) to a NEAR Intents deposit address; NEAR Intents swaps it and pays native ZEC to
-your shielded address.
+quoted USDC (or SOL, as a plain transfer) to a NEAR Intents deposit address; NEAR Intents swaps it and pays real ZEC on
+Zcash to your shielded address. Choose the destination the same way as for a move: a wallet made here, or a shielded
+address you paste ([wallet](/wallet)).
 
 - You see **the least ZEC you will receive** before you sign. If the price moves more than 1% before the swap completes,
   NEAR Intents refunds your wallet instead.
@@ -14,6 +20,7 @@ your shielded address.
 - **Small orders.** The bridge's fixed network fee (0.00032 ZEC) is a large share of a small order. The page shows the
   share before you sign when the order is under $10.
 - **Minimum order.** Read from 1Click before every quote: about 1.79 USDC or 0.0148 SOL in October 2026 ([sources](/sources#oneclick)).
-- **SOL reserve.** When paying with SOL, the page keeps enough SOL in your wallet for fees and Solana's minimum balance.
+- **SOL reserve.** When paying with SOL, the page keeps enough SOL in your wallet for fees and Solana's minimum account
+  balance (about 0.00065 SOL, [sources](/sources#fees)).
 
 Fees are on the [fees](/fees) page.

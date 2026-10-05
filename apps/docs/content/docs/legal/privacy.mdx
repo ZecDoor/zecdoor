@@ -27,7 +27,6 @@ little data our server handles.
 
 Our host, Cloudflare, processes requests to serve them and may keep operational logs under its own policy
 ([cloudflare.com/privacypolicy](https://www.cloudflare.com/privacypolicy/)). We do not turn on additional request logging.
-[If logging is enabled for security, retention: N days.]
 
 **No cookies. No analytics. No tracking scripts.** The landing page stores your light/dark choice in your browser.
 
@@ -40,6 +39,7 @@ To make a move, your browser talks directly to these services. Each sees your IP
 - **A Solana RPC provider** (rpc.solanatracker.io or public.rpc.solanavibestation.com): your Solana address and balances.
 - **Jupiter** (top-up only): the swap you request and your Solana address. Jupiter logs IP and country.
 - **A lightwalletd server** (zjs.zec.rocks): which Zcash block ranges your browser downloads. Not your keys.
+- **Blockchair** (only if you open the Zcash transaction link on the proof screen): the transaction you look up.
 - **Phantom:** under Phantom's own policy.
 
 ## Your device

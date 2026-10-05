@@ -5,16 +5,21 @@ description: Every cost of a move, who receives it, and where the numbers come f
 
 Every amount below is shown on the review screen before you sign.
 
-| Cost | Exit or top-up (Solana ZEC) | Buy with USDC or SOL | Who receives it |
+| Cost | Move or top-up (Solana ZEC) | Buy with USDC or SOL | Who receives it |
 |---|---|---|---|
-| ZecDoor fee | 0.25% of the amount | 0.5% of the amount, of which NEAR Intents keeps half | ZecDoor's account on NEAR, collected by NEAR Intents' contract |
+| ZecDoor fee | 0.25% of the amount | 0.5% of the amount | Moves: all to ZecDoor's NEAR account. Buys: 0.25% to ZecDoor's NEAR account, 0.25% kept by NEAR Intents |
 | Bridge network fee | 0.00032 ZEC per move | 0.00032 ZEC per move | NEAR Intents, for the Zcash withdrawal |
 | Swap price and route | — (top-up: Jupiter's route price) | NEAR Intents' quote price | Liquidity providers |
 | Solana network fee | about 0.00001 SOL | about 0.00001 SOL | Solana validators |
-| Token account for the deposit address | about 0.0015 SOL | about 0.0015 SOL (USDC only) | Rent held by that account |
+| Token account for the deposit address | about 0.0015 SOL | about 0.0015 SOL (USDC only) | Paid once per move to open a token account for the deposit address. Solana requires this deposit ("rent"); it stays with that account and does not come back to you |
 
 Figures are from 1Click quotes, Solana's fee rules and Solana's rent on 5 October 2026
 ([sources](/sources#fees), [Solana fees](/sources#limits)).
+
+**Example, approximate** (the review screen shows exact amounts): a minimum-size move of 0.00133669 ZEC pays about
+0.0000033 ZEC to ZecDoor (0.25%) and 0.00032 ZEC to the bridge, so about 0.00101 ZEC arrives, plus about 0.0015 SOL for
+the token account and 0.00001 SOL in Solana fees. On a minimum-size move the bridge's fixed fee is about a quarter of the
+amount.
 
 ## How the ZecDoor fee is charged
 

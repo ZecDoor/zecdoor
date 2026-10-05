@@ -10,6 +10,14 @@ Your Phantom wallet ──► one-time NEAR Intents deposit address (Solana)
                          └─► NEAR Intents pays native ZEC ──► your shielded address (Ironwood pool)
 ```
 
+<Callout title="Opening soon">
+Moves and buys open once our own mainnet test moves have passed ([testing](/testing)). Until then the app shows each step
+below up to the review, with a live quote, but cannot ask Phantom to sign.
+</Callout>
+
+**Ironwood** is Zcash's current shielded pool: it went live in July 2026 and replaced Orchard, which now only accepts
+withdrawals. Addresses still carry an "Orchard receiver" to receive into it ([sources](/sources#zcash)).
+
 ZecDoor never holds the funds at any point. If a move cannot complete, NEAR Intents refunds the Solana wallet that sent
 it, because every quote ZecDoor asks for names that wallet as the refund address.
 
@@ -19,25 +27,26 @@ it, because every quote ZecDoor asks for names that wallet as the refund address
 <Step>
 ### You pick the amount and the destination
 
-A wallet made in this browser (each move pays a new address of it), or an address you paste from Zodl, Zkool or another
-shielded wallet. Pasted addresses are decoded in the browser: they must be unified addresses with an Orchard receiver,
-because that is what NEAR Intents can pay ([sources](/sources#oneclick)). Sapling-only (`zs1…`), transparent (`t1…`),
-TEX and testnet addresses are refused before any quote is asked for.
+Choose where the ZEC lands: a new wallet the page makes for you (each move pays a fresh address of it), or a shielded
+address you paste from Zodl, Zkool or another Zcash wallet. Pasted addresses are checked in the browser: they must be
+unified addresses (starting `u1`) that include an Orchard receiver, because that is what NEAR Intents can pay
+([sources](/sources#oneclick)). Older shielded (`zs1…`), public "transparent" (`t1…`, `tex1…`) and test-network
+addresses are refused before any quote is asked for.
 </Step>
 <Step>
 ### The page checks the bridge and your region
 
 It asks our server whether NEAR Intents reports an incident and whether ZecDoor is offered where you are
-([availability](/availability)). It also downloads the OFAC list of sanctioned Solana addresses and checks your wallet
+([availability](/availability)). It also downloads the US Treasury (OFAC) list of sanctioned Solana addresses and checks your wallet
 against it in the browser, so your address is not sent to us.
 </Step>
 <Step>
 ### NEAR Intents signs a quote
 
-The browser asks the 1Click API directly for a quote: exactly your amount in, your Zcash address as recipient, your
+The browser asks NEAR Intents' 1Click API (its programming interface for swaps) directly for a quote: exactly your amount in, your Zcash address as recipient, your
 Solana wallet as refund address, a 30-minute deadline. 1Click answers with a one-time deposit address and an ed25519
 signature. The page verifies that signature and every field it covers, and checks the fields it does not cover (the fee
-rows and the request deadline) against what it asked for. See [the proof](/proof#the-quote-signature).
+rows and the request deadline) against what it asked for. See [the proof](/proof#1-the-quote-signature).
 </Step>
 <Step>
 ### The page builds one transaction and checks it
@@ -50,21 +59,28 @@ If any check fails, Phantom is never asked.
 <Step>
 ### You sign once in Phantom
 
-One `signAndSendTransaction` call. There is no message signature and no token approval.
+Phantom shows one transaction and you approve it once. There is no message to sign and no token approval left behind.
 </Step>
 <Step>
 ### The page follows the move
 
-It reads the status from NEAR Intents every few seconds: deposit seen, converting, sent on Zcash. In 45 mainnet moves we
-timed, this took about 2½ to 9 minutes, typically about 3 ([sources](/sources#timing)). You can close the page; the move
-continues and the page picks up where it left off on this device.
+It reads the status from NEAR Intents every few seconds: deposit seen, converting, sent on Zcash. Across 45 mainnet
+moves made by other apps through NEAR Intents, which we timed from its status API, this took about 2½ to 9 minutes,
+typically about 3 ([sources](/sources#timing)). You can close the page; the move continues, and the page picks up where it
+left off when you reopen it on the same device (for a wallet made here, that is also where it can find the note).
 </Step>
 <Step>
 ### Your browser finds the note
 
-For a wallet made here, the page downloads compact blocks from a public lightwalletd server and trial-decrypts them with
-your viewing key, in a Web Worker. When it finds the note at your address with at least the quoted amount, it shows the
-[proof](/proof).
+For a wallet made here, the page downloads recent Zcash blocks from a public server (lightwalletd, at zec.rocks) and tries
+your viewing key on each payment in them, all inside your browser. When it finds the payment ("note") at your address
+with at least the quoted amount, it shows the [proof](/proof).
+</Step>
+<Step>
+### After arrival
+
+To spend, restore your 24 words and the Wallet Birthday Height in Zodl or Zkool ([wallet](/wallet#spending)). Wait a while
+before moving the ZEC again, and don't send out exactly the amount that arrived ([habits](/what-is-public#habits-that-help)).
 </Step>
 </Steps>
 
@@ -74,6 +90,6 @@ your viewing key, in a Web Worker. When it finds the note at your address with a
 |---|---|---|
 | Quote, checks, transaction building, simulation | Your browser | NEAR Intents 1Click, Solana RPC, Jupiter (top-up only) |
 | Seed, viewing key, addresses, arrival scan | Your browser (WebAssembly) | A lightwalletd gRPC-web server (zec.rocks) |
-| Health, region, sanctions list, counter | Our server (a Cloudflare Worker) | NEAR Intents' status page and status API |
+| Health, region, serving the sanctions list (checked in your browser), counter | Our server (a Cloudflare Worker) | NEAR Intents' status page and status API |
 
 The complete list of services the app can reach is in its Content Security Policy, quoted in [Security](/security#content-security-policy).

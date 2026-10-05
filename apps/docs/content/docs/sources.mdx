@@ -21,7 +21,7 @@ in the repository.
 - API, quote and status formats: [1Click API docs](https://docs.near-intents.org/integration/distribution-channels/1click-api/about-1click-api.md),
   [OpenAPI spec](https://1click.chaindefuser.com/docs/v0/openapi.yaml).
 - **Minimum:** 1Click answers "Amount is too low for bridge, try at least 133334" with no app fee and "…133669" with
-  ZecDoor's 25 bps fee; the lowest amounts it accepted were 133,011 and 133,345 zat. Hands-on, 5 Oct 2026 (live tests in
+  ZecDoor's 25 bps fee (basis points: 100 bps = 1%); the lowest amounts it accepted were 133,011 and 133,345 zat. Hands-on, 5 Oct 2026 (live tests in
   `packages/solana`).
 - **Bridge network fee:** `withdrawFee` 32,000 zat (0.00032 ZEC) in every quote we requested, Oct 2026.
 - **Buy minimums:** about 1.79 USDC and 0.0148 SOL. Hands-on, Oct 2026.
@@ -78,17 +78,33 @@ These wallets belong to other people; they were used only as read-only simulatio
   [explorer docs](https://docs.near-intents.org/integration/distribution-channels/1click-api/explorer/introduction.md).
   Confirmed hands-on, Oct 2026.
 
+## Bridge [#bridge]
+
+- **The token is NEAR's Omni Bridge ZEC.** Its mint authority is a program-derived address of the Omni Bridge Solana
+  program `dahPEoZGXfyV58JqqH85okdHmpN8U2q8owgPUXSCPxe`, listed as Omni Bridge Solana mainnet in the
+  [omni-bridge README](https://github.com/Near-One/omni-bridge). The bridge holds real ZEC on Zcash to back it and its
+  Solana leg runs on Wormhole messages and NEAR Chain Signatures ([ZecHub guide](https://zechub.wiki/using-zcash/solana-zec-to-shielded)).
+- **The program is upgradeable by a single key.** Owner `BPFLoaderUpgradeab1e11111111111111111111111`, program data
+  `46ne7xLaLgUwqBTGyezWcgyrvzpXfTPZZkkKR56d5Rhe`, upgrade authority `5kx8AapW8tPkiFbuHiuEBcmN3ddwpBWZfCrZgxXgWeb6`. Read
+  from Solana with `getAccountInfo`, hands-on, 5 Oct 2026. Whether that key is a multisig is not known to us.
+
 ## Incidents [#incidents]
 
 - 1 Oct 2026 exploit, funds returned: [Zcash forum](https://forum.zcashcommunity.com/t/near-intents-was-hacked-yesterday/57978).
 - $589k held for more than 50 days: [Zcash forum](https://forum.zcashcommunity.com/t/my-experience-exiting-shielded-zec-from-zodl-to-near-intents-589k-usdt-still-held-50-days-despite-a-written-compliance-clearance/57497).
 - NEAR Intents status page: [status.near-intents.org](https://status.near-intents.org).
 
-## Zcash
+## Zcash [#zcash]
 
 - **Example Wallet Birthday Height 3,506,377** (landing page): our own test wallet's birthday, from `zcash-devtool`.
 
 - **Ironwood pool:** [Zcash forum, migration from Orchard to Ironwood](https://forum.zcashcommunity.com/t/migration-from-orchard-to-ironwood-in-zcash-wallets/56790).
+  ZecHub's guide gives the upgrade date (28 July 2026) and notes the Orchard pool no longer accepts new funds
+  ([ZecHub](https://zechub.wiki/using-zcash/solana-zec-to-shielded)).
+- **NEAR Intents pays from transparent Zcash addresses into the shielded pool:** ZecHub's tested withdrawal on 27 Sep 2026,
+  Zcash transaction [28d6da27…481034](https://mainnet.zcashexplorer.app/transactions/28d6da27d74dc91e45175a7aff6023bc85578603dd77f1b49782a28f8f481034)
+  (transparent inputs and change, value entering the Ironwood pool), described in the same
+  [guide](https://zechub.wiki/using-zcash/solana-zec-to-shielded).
 - **NU7:** [ZIP 259](https://github.com/zcash/zips/blob/main/zips/zip-0259.md) (draft); testnet activation 4 Oct 2026,
   mainnet target 5 Nov 2026.
 - **Unified addresses:** [ZIP 316](https://zips.z.cash/zip-0316); our decoder is tested against its vectors.
@@ -113,8 +129,26 @@ These wallets belong to other people; they were used only as read-only simulatio
 
 ## Rivals [#rivals]
 
+All read on 5 Oct 2026.
+
+- **Sparkz:** [sparkz.xyz](https://www.sparkz.xyz) ("Shield your Solana ZEC"). Its FAQ: NEAR Intents provides "a one-time
+  deposit address on Solana. You send your ZEC there in a single Phantom transaction", and a minimum of "about 0.0013 ZEC".
+  Its page script makes a 24-word phrase in the browser with a "Check your backup" step and a birthday height, requires
+  an Orchard receiver and refuses unified addresses with a transparent receiver; arrival is followed by NEAR Intents
+  status only. **Fee not published:** a quote for 0.1 ZEC gave 0.09928 ZEC out, against 0.09968 for a NEAR Intents
+  quote with no app fee, a difference of about 0.4% (our inference). No public source repository found; operator not
+  named on the site.
 - **CipherSwap:** [cipherswap.app](https://cipherswap.app), source [github.com/Kenbak/cipherswap](https://github.com/Kenbak/cipherswap):
-  one-signature Phantom deposit, 50 bps fee, address check by prefix and length, no licence file. Read Oct 2026.
-- **Zodl:** Solana ZEC as a swap source since iOS 3.12 and Android 3.15 ([Zodl blog](https://zodl.com/new-currency-conversion-options-and-more/)).
-  **67 bps observed** on a real Zodl Solana ZEC move: NEAR Intents status for deposit address
-  `CETPvNMBKLeyJj3mVnZVxmK7Z1KKr6GPnF8pm6zEWbJS` shows referral `zodl` and an app fee of 67 bps (hands-on, 4 Oct 2026).
+  NEAR Intents 1Click; one Solana transaction signed in Phantom or Solflare (`hooks/useWallet.ts`), or a manual deposit;
+  `AFFILIATE_FEE_BPS = 50` (`app/api/swap/quote/route.ts`, unchanged since the first commit), of which its own
+  how-it-works page says 0.25% goes to a second account set by 1Click; destination check by prefix and length that also
+  accepts `t1`/`t3` and `zs` addresses; status polling only; no licence file (GitHub API `license: null`). Latest commit
+  1 Oct 2026 (redesign, no fee change).
+- **Zodl:** Solana ZEC as a swap source since iOS 3.11.0 (zodl-ios
+  [CHANGELOG](https://github.com/zodl-inc/zodl-ios/blob/main/CHANGELOG.md), 3 Sep 2026: "Swap and Pay now offer … ZEC on
+  Solana"); on Android the swap lists 1Click's token list, so no version is tied to it. **67 bps** in Zodl's source
+  (`zashiFeeBps = 67` on iOS, `AFFILIATE_FEE_BPS = 67` on Android) and observed on a real Zodl Solana ZEC move: NEAR Intents
+  status for deposit address `CETPvNMBKLeyJj3mVnZVxmK7Z1KKr6GPnF8pm6zEWbJS` shows referral `zodl` and an app fee of 67 bps
+  (hands-on, 4 Oct 2026). Licence: MIT for zodl-ios and zodl-android (GitHub API).
+- **ZecHub's guide** ([zechub.wiki](https://zechub.wiki/using-zcash/solana-zec-to-shielded)) describes the two-site route
+  through solswap.org and near.com, with a Sign Message step on near.com; unchanged since 29 Sep 2026.

@@ -7,33 +7,41 @@ If you have no Zcash wallet yet, ZecDoor can make one in the page.
 
 ## What happens
 
-1. The page asks a lightwalletd server for the current block height and generates 24 words (BIP-39) in WebAssembly.
+1. The page asks a public Zcash server (lightwalletd) for the current block height and makes 24 recovery words (the
+   standard BIP-39 format) inside your browser.
 2. You reveal the words when nobody is watching and write them on paper. **There is no copy button, on purpose**:
    clipboards and screenshots can be read by other apps.
-3. You also write down the **Wallet Birthday Height** (a block number). Zodl asks for it on restore; in Zkool, type it
-   in — left blank, Zkool starts from today and misses earlier ZEC.
+3. You also write down the **Wallet Birthday Height**: the block the wallet was made at. Enter it whenever you restore the
+   wallet, in Zodl or Zkool, so it starts looking for your ZEC from that block.
 4. The page asks you to pick three of the words from your paper. You cannot continue until all three are right.
-5. The page derives an **Orchard-only viewing key** and keeps only that, in this browser's IndexedDB. The 24 words leave
+5. The page derives a **viewing key** (Orchard-type, which also sees the Ironwood pool) and keeps only that, in this
+   browser's storage (IndexedDB). The 24 words leave
    memory as soon as the check passes. They are never written to storage and never sent anywhere.
 
 ## Fresh addresses
 
-Each move into this wallet pays a new address of it (the next diversifier index). All of them belong to the same wallet:
-your 24 words open every one of them. Because NEAR Intents' explorer shows which Zcash address a Solana wallet paid, new
-addresses keep those payments from collecting on one address ([what is public](/what-is-public)).
+Each move into this wallet pays a new address of it (the next one in the wallet's sequence). All of them belong to the
+same wallet: your 24 words open every one of them. Someone who knows one of your Zcash addresses cannot use it to find your
+other payments. All of them are still linked, on NEAR Intents' explorer, to the Solana wallet that paid them
+([what is public](/what-is-public)).
 
 ## Spending
 
-ZecDoor never spends. To spend, restore your 24 words and the birthday height in a full wallet:
+ZecDoor never spends. To spend, open the wallet in a full Zcash wallet app:
 
-- **Zodl** — [zodl.com](https://zodl.com)
-- **Zkool** — [hhanh00.github.io/zkool2](https://hhanh00.github.io/zkool2/), source at [github.com/hhanh00/zkool2](https://github.com/hhanh00/zkool2)
+1. Install **Zodl** ([zodl.com](https://zodl.com)) or **Zkool** ([hhanh00.github.io/zkool2](https://hhanh00.github.io/zkool2/),
+   source at [github.com/hhanh00/zkool2](https://github.com/hhanh00/zkool2)), from those links, in a version that supports
+   Ironwood.
+2. Choose to restore a wallet, enter your 24 words, and enter the Wallet Birthday Height the page showed you.
+3. Let it sync. Your ZEC appears in the shielded balance.
 
 ## Forgetting the wallet on this device
 
 The "Forget this wallet" button removes the viewing key from this browser. Your ZEC stays in the shielded pool; your 24
-words still open it. Do it only once your words are safe.
+words still open it. Do it only once your words are safe. If you forget it before a move arrives, the page can no longer
+show the proof; check the arrival in Zodl or Zkool instead.
 
 ## What the viewing key can and cannot do
 
-It can see payments to the wallet (that is how the page proves arrival). It cannot spend. It stays on your device.
+It can see every payment into and out of this wallet, past and future (that is how the page proves arrival), and so could
+anyone who gets this browser's storage. It cannot spend. It stays on your device, and "Forget this wallet" removes it.

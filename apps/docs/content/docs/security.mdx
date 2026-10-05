@@ -12,8 +12,11 @@ description: The parts of ZecDoor you can check instead of trusting.
 
 ## The instruction allowlist
 
+In plain words: the transaction may only send the quoted amount of your token from your account to the quoted deposit
+address, plus, for a top-up, one swap into your own ZEC account. Anything else, and Phantom is never asked.
+
 Before Phantom is asked to sign, every transaction is decoded instruction by instruction (including address lookup
-tables). It is refused unless every instruction is on this list:
+tables). It is refused unless every instruction is on this list (1 SOL = 1,000,000,000 lamports):
 
 | Program | Allowed | Conditions |
 |---|---|---|
@@ -46,7 +49,7 @@ own scripts and the WebAssembly Zcash code, nothing else.
 ## No message signatures
 
 ZecDoor never asks you to sign a message. A site that does, claiming to be ZecDoor, is not ZecDoor. We only live at our
-one domain, shown on the connect screen.
+one domain, **zecdoor.0xo.in**, also shown on the connect screen. Any other domain is not ZecDoor.
 
 ## Reporting a problem
 
