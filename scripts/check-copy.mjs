@@ -34,6 +34,9 @@ const CODE_TOKENS = [
   /(?<=className=\{?[`'"][^`'"]*)\bhidden\b/g, // a bare `hidden` class inside a className string
   /(?<=cn\([^)]*['"][^'"]*)\bhidden\b/g, // …or inside cn("…")
   /\bhidden(?=[=:]\s*\{?)/g, // the hidden attribute/prop
+  /!hidden\b/g, // Tailwind important modifier
+  // a string literal that is a Tailwind class list (it contains other utility classes)
+  /(?<=["'`][^"'`]*\b(?:absolute|relative|fixed|flex|grid|block|inline-flex|rounded(?:-[\w[\]-]+)?|inset-[\w-]+|-inset-px|opacity-\d+|pointer-events-none|border)\b[^"'`]*)\bhidden\b/g,
   /visibility:\s*hidden/gi,
 ];
 
