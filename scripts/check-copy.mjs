@@ -47,7 +47,8 @@ const SKIP = /(^|\/)(pnpm-lock\.yaml|package-lock\.json|Cargo\.lock)$|(^|\/)(nod
 function files(dir, tracked) {
   if (!fs.existsSync(dir)) return [];
   const list = tracked
-    ? execFileSync('git', ['ls-files'], { cwd: dir, encoding: 'utf8' }).split('\n')
+    ? // tracked files plus new files not yet committed (but not ignored ones): both reach the build
+      execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], { cwd: dir, encoding: 'utf8' }).split('\n')
     : [];
   return list.filter(Boolean).filter((f) => !SKIP.test(f)).map((f) => path.join(dir, f));
 }
