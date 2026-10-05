@@ -35,5 +35,14 @@ cp "$ROOT/deploy/site/_redirects" "$OUT/_redirects"
 cp -R "$ROOT/apps/app/dist" "$OUT/app"
 cp -R "$ROOT/apps/docs/out" "$OUT/docs"
 find "$OUT" -name '*.map' -delete   # the source is public anyway; keep the deploy small
+if [[ "${PREVIEW:-}" == "1" ]]; then
+  # Preview builds must not be indexed by search engines.
+  python3 - "$OUT/_headers" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+s = s.replace("/*\n", "/*\n  X-Robots-Tag: noindex, nofollow\n", 1)
+open(p, "w").write(s)
+PY
+fi
 sed -i.bak "s/\[DOMAIN\]/$VITE_DOMAIN/g" "$OUT/.well-known/security.txt" && rm -f "$OUT/.well-known/security.txt.bak"
 echo "Site in $OUT ($(du -sh "$OUT" | cut -f1), $(find "$OUT" -type f | wc -l | tr -d ' ') files)"

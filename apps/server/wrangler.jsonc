@@ -1,5 +1,7 @@
 // ZecDoor server + static site, one Worker on one domain (decision D9: Cloudflare free tier).
-// Placeholders in [BRACKETS] are filled once the domain and the Cloudflare account exist.
+// Production (top level) takes zecdoor.0xo.in from the first-deploy Worker once the landing is
+// approved; until then the route stays commented. `--env preview` deploys a separate Worker on
+// workers.dev for review, with its own storage and no scheduled jobs.
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "zecdoor",
@@ -12,13 +14,27 @@
     "run_worker_first": ["/api/*"],
     "not_found_handling": "404-page"
   },
-  "kv_namespaces": [{ "binding": "STATE", "id": "[KV_NAMESPACE_ID]" }],
+  "kv_namespaces": [{ "binding": "STATE", "id": "95211d40dddc445fa9aa31f0fa031e46" }],
   "triggers": { "crons": ["*/30 * * * *", "17 3 * * *"] },
+  "workers_dev": false,
   "vars": {
     // Our own test wallet's Orchard receiver and Solana wallet, used only in dry quotes.
     "FEE_TEST_RECIPIENT": "u1c5zssk2r6nasyar5amt5pw3szaes8h5wmer3qsaqkc2j6kjcae2lu95ycle3r8vvcdvpyfm7pdnx7624ckp7h5uwfa72l8y54cf4gu8m",
     "FEE_TEST_REFUND": "3QFJWVEk6tpf52gtk3saAP1nkuci6GRMNHx72etsi67T"
+  },
+  // HASH_SALT is a secret: `wrangler secret put HASH_SALT` (and `--env preview`).
+  // "routes": [{ "pattern": "zecdoor.0xo.in", "custom_domain": true }],
+  "env": {
+    "preview": {
+      "name": "zecdoor-preview",
+      "workers_dev": true,
+      "routes": [],
+      "triggers": { "crons": [] },
+      "kv_namespaces": [{ "binding": "STATE", "id": "29c9ca02a56d4ea48e1e6726c5095762" }],
+      "vars": {
+        "FEE_TEST_RECIPIENT": "u1c5zssk2r6nasyar5amt5pw3szaes8h5wmer3qsaqkc2j6kjcae2lu95ycle3r8vvcdvpyfm7pdnx7624ckp7h5uwfa72l8y54cf4gu8m",
+        "FEE_TEST_REFUND": "3QFJWVEk6tpf52gtk3saAP1nkuci6GRMNHx72etsi67T"
+      }
+    }
   }
-  // HASH_SALT is a secret: `wrangler secret put HASH_SALT`.
-  // "routes": [{ "pattern": "[DOMAIN]", "custom_domain": true }]
 }
