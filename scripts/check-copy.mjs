@@ -144,6 +144,15 @@ const textFiles = [...files(ROOT, true), ...files(LANDING, true)].filter((f) => 
 const imageFiles = [...files(ROOT, true), ...files(LANDING, true)].filter((f) => IMAGE_EXT.test(f));
 
 const hits = textFiles.flatMap(scanText);
+
+// The preview lives on a workers.dev address that carries the Cloudflare account's private
+// subdomain. Only the public domain may appear in the repositories.
+const PREVIEW_HOST = /\b[a-z0-9-]+\.[a-z0-9-]+\.workers\.dev\b/gi;
+for (const f of textFiles) {
+  fs.readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
+    for (const m of line.matchAll(PREVIEW_HOST)) hits.push(`${f}:${i + 1}: private preview address "${m[0]}"`);
+  });
+}
 if (!TEXT_ONLY) hits.push(...(await scanImages(imageFiles)));
 
 if (hits.length) {
