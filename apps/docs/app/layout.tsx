@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   title: { template: '%s · ZecDoor Docs', default: 'ZecDoor Docs' },
   description: 'How ZecDoor moves Solana ZEC into a shielded Zcash wallet, what it checks, what stays public, and every source.',
   referrer: 'no-referrer',
+  // The site's icon, served at the root next to the landing page.
+  icons: { icon: '/favicon.svg' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
