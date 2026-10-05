@@ -1,0 +1,57 @@
+---
+title: Privacy Policy
+description: What ZecDoor learns, what it keeps, and what the services it uses see. Last updated [DATE OF PUBLICATION].
+---
+
+<Callout type="warn" title="Draft — not yet in force">
+Placeholders in [BRACKETS] are filled in before launch.
+</Callout>
+
+**Controller:** [OPERATOR LEGAL NAME], [CONTACT EMAIL]. For EU and UK users, we act as an independent controller for the
+little data our server handles.
+
+## What we never receive
+
+- Your recovery words, private keys or viewing keys. They stay in your browser; a wallet made in ZecDoor keeps only its
+  viewing key, in your browser's storage.
+- Your transactions to sign. They are built in your browser and signed in Phantom.
+- Your Solana wallet address for screening. The sanctions list is downloaded and checked in your browser.
+
+## What our server handles, and keeps
+
+| Request | What it contains | What we keep |
+|---|---|---|
+| Health and region checks | Your IP address and the country our host derives from it | Nothing |
+| Sanctions list download | Your IP address | Nothing |
+| Counting a finished move | The move's NEAR Intents deposit address, its kind, and whether it was a first wallet's first move. Our server then reads that move from NEAR Intents, which includes your Solana address, your Zcash address and the amounts. | Per-day totals only, plus a salted one-way hash of the deposit address for 24 hours to avoid double counting. No address, transaction ID, IP address or device ID is stored. |
+
+Our host, Cloudflare, processes requests to serve them and may keep operational logs under its own policy
+([cloudflare.com/privacypolicy](https://www.cloudflare.com/privacypolicy/)). We do not turn on additional request logging.
+[If logging is enabled for security, retention: N days.]
+
+**No cookies. No analytics. No tracking scripts.** The landing page stores your light/dark choice in your browser.
+
+## What your browser shares directly with others
+
+To make a move, your browser talks directly to these services. Each sees your IP address and what you ask it about:
+
+- **NEAR Intents (1Click):** your Solana address (as refund address), your Zcash address, amounts. Its terms say it collects
+  IP and wallet addresses. **Its public explorer shows the recipient address and amounts of public swaps.**
+- **A Solana RPC provider** (rpc.solanatracker.io or public.rpc.solanavibestation.com): your Solana address and balances.
+- **Jupiter** (top-up only): the swap you request and your Solana address. Jupiter logs IP and country.
+- **A lightwalletd server** (zjs.zec.rocks): which Zcash block ranges your browser downloads. Not your keys.
+- **Phantom:** under Phantom's own policy.
+
+## Your device
+
+This browser keeps, until you clear it: the viewing key and next address number of a wallet made here, a list of hashed
+addresses you used before (to warn about reuse), and your move history. "Forget this wallet" removes the viewing key.
+
+## Your rights
+
+You can ask what we hold about you; since we keep no personal data beyond the above, there will usually be nothing to
+return. EU and UK users may also complain to their data protection authority.
+
+## Changes
+
+The date at the top shows the last change.

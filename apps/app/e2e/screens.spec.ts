@@ -107,6 +107,8 @@ const shots: Shot[] = [
   },
   {
     name: 'proof',
+    clock: true,
+    scenario: { statuses: [status.pending(), status.processing(), ...Array(40).fill(status.processing()), status.success()] },
     go: async (p) => {
       await p.goto('./');
       await p.getByRole('button', { name: /Move it to shielded/ }).click();
@@ -121,6 +123,9 @@ const shots: Shot[] = [
       }
       await p.getByRole('button', { name: 'Continue to review' }).click();
       await p.getByRole('button', { name: 'Sign in Phantom' }).click();
+      await expect(p.getByText(/^Moving /)).toBeVisible();
+      // A realistic arrival time for the picture (3 min 40 s, as in the design), not the mock's instant one.
+      for (let i = 0; i < 44; i++) await p.clock.runFor(5_000);
       await expect(p.getByText('Note found by your browser')).toBeVisible({ timeout: 25_000 });
     },
   },

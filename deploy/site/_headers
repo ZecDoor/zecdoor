@@ -1,4 +1,6 @@
 # Security headers for the whole site (Workers Static Assets _headers format).
+# The landing and docs are static Next.js pages, which bootstrap with inline scripts; they hold
+# no wallet and talk to nothing but this origin. The wallet app under /app/ gets the strict policy.
 # The app's connect-src is the complete list of services the browser talks to: a reviewer can
 # see from this one line that nothing else (no analytics, no exfiltration endpoint) is reachable.
 /*
@@ -7,7 +9,7 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'
 
 /app/*
   ! Content-Security-Policy

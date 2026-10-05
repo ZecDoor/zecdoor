@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-05T04:14:00.527Z",
+  "rpc": "https://public.rpc.solanavibestation.com",
+  "tokenAccounts": 320977,
+  "nonEmpty": 134074,
+  "belowMinimumWithFee": 87307,
+  "belowMinimumNoFee": 87275,
+  "shareBelow": "65.1%",
+  "zecBelow": 21.29595383,
+  "zecTotal": 99639.87307642
+}

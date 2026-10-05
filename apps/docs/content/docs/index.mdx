@@ -1,0 +1,43 @@
+---
+title: What ZecDoor is
+description: A page you open in Phantom that moves the ZEC you hold on Solana into a shielded Zcash wallet you control, with one signature.
+---
+
+ZecDoor is open-source, non-custodial software. You open it in Phantom, choose where your ZEC should land, check the
+review, and sign one Solana transaction. NEAR Intents' 1Click service then pays native ZEC into the shielded pool, to an
+address only you control.
+
+<Cards>
+  <Card title="How a move works" href="/how-it-works" />
+  <Card title="Small balances: top up and shield" href="/top-up" />
+  <Card title="A first Zcash wallet" href="/wallet" />
+  <Card title="What stays public" href="/what-is-public" />
+</Cards>
+
+## Why it exists
+
+ZEC on Solana is a bridged SPL token (mint `A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS`). Like every SPL token, its
+balances and transfers are public. On 5 October 2026, 134,074 Solana token accounts held it, and 87,307 of them (65.1%)
+held less than the 0.00133669 ZEC the bridge will move ([sources](/sources#holders)). ZecDoor exists to get that ZEC into
+the shielded pool, including the small balances.
+
+## What ZecDoor does that others don't
+
+- **Top-up for small balances.** A Jupiter swap fills the gap to the bridge minimum inside the same transaction.
+- **A first wallet, backed up properly.** 24 words made in your browser, a three-word check, and the birthday height
+  Zodl and Zkool need.
+- **Proof you can check.** NEAR Intents' signed quote, both transaction IDs, and the shielded note found by your own
+  browser with your viewing key.
+- **Opens inside Phantom** from a link on your phone.
+- **MIT-licensed code** and a **public counter** that stores no addresses.
+
+CipherSwap and Zodl's built-in swap already move Solana ZEC to shielded Zcash in one step. [How they compare](/comparison).
+
+## What ZecDoor never does
+
+- Hold your funds. Every move goes from your wallet to a NEAR Intents deposit address to your Zcash address.
+- See your keys or your 24 words. They never leave the page.
+- Ask you to sign a message, or approve a token allowance.
+- Store your Solana or Zcash address on our server.
+- Run analytics or tracking scripts.
+- Sell a token. There is none.

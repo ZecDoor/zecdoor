@@ -1,0 +1,53 @@
+---
+title: Security
+description: The parts of ZecDoor you can check instead of trusting.
+---
+
+## Funds and keys never touch our server
+
+- Transactions are built and checked in your browser and signed in Phantom.
+- The 24 words of a wallet made here exist only in memory during the backup screens.
+- The viewing key stays in your browser's storage.
+- Our server has no endpoint that accepts keys, seeds or transactions, and stores no address ([counter](/counter)).
+
+## The instruction allowlist
+
+Before Phantom is asked to sign, every transaction is decoded instruction by instruction (including address lookup
+tables). It is refused unless every instruction is on this list:
+
+| Program | Allowed | Conditions |
+|---|---|---|
+| Compute Budget | set compute unit limit, set compute unit price | nothing else (no heap frame requests) |
+| Associated Token Account | create, create idempotent | paid by you; either the deposit address's account for the quoted token, or (top-up only) your own ZEC, USDC or wrapped-SOL account |
+| SPL Token (classic) | `transferChecked` | exactly one; from your own account, of the quoted token, to the deposit address's account, authority you, amount exactly the quote's `amountIn` |
+| | `syncNative` | top-up only, your own wrapped-SOL account |
+| | `closeAccount` | your own account, rent back to you |
+| System | `transfer` | SOL buy: exactly the quoted lamports to the deposit address. Top-up: wrapping your own SOL, capped at the swap's maximum input |
+| Jupiter v6 | exact-output routes only | top-up only, exactly one; authority you; input your own SOL or USDC account; output your own ZEC account; no platform fee account; never touches the deposit address |
+
+Also required: a v0 transaction, exactly one signer, and you as the fee payer. Anything else — token approvals, authority
+changes, unchecked transfers, Token-2022, any other program, a second deposit — is refused.
+
+This check runs in the app on every move, and its test suite (valid moves pass; dozens of attack variants are refused)
+**blocks every build**: `pnpm build` and the first CI job stop if any test fails.
+
+## Content Security Policy
+
+The app's CSP is the complete list of places it can talk to:
+
+```
+connect-src 'self' https://1click.chaindefuser.com https://lite-api.jup.ag
+  https://rpc.solanatracker.io https://public.rpc.solanavibestation.com https://zjs.zec.rocks
+```
+
+No analytics, no third-party scripts, fonts served from our own domain. `script-src 'self' 'wasm-unsafe-eval'` allows our
+own scripts and the WebAssembly Zcash code, nothing else.
+
+## No message signatures
+
+ZecDoor never asks you to sign a message. A site that does, claiming to be ZecDoor, is not ZecDoor. We only live at our
+one domain, shown on the connect screen.
+
+## Reporting a problem
+
+See `/.well-known/security.txt`. Please report privately first.

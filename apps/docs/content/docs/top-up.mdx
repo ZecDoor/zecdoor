@@ -1,0 +1,52 @@
+---
+title: Top up and shield
+description: How a balance below the bridge minimum moves anyway, in the same single transaction.
+---
+
+NEAR Intents only takes Solana ZEC deposits above a minimum. With ZecDoor's 0.25% fee, 1Click suggests at least
+**0.00133669 ZEC** (it reads "try at least 133669"; the lowest amount it actually accepted on 5 October 2026 was 133,345 zat —
+ZecDoor uses the suggested figure and re-reads it before every move). Two in three Solana ZEC accounts hold less than that
+([sources](/sources#holders)).
+
+## What the one transaction does
+
+1. **Swap.** Jupiter (Metis) swaps just enough SOL or USDC into ZEC, as an *exact-output* swap: the output is exactly the
+   missing amount, and the most you can pay is fixed by the quote's 1% slippage bound.
+2. **Send.** All of your ZEC — what you had plus what the swap bought — goes to the NEAR Intents deposit address for your
+   shielded address.
+
+If any part fails, the whole transaction fails and nothing moves. Phantom shows both parts; that is expected.
+
+## A real example
+
+A read-only simulation against mainnet on 5 October 2026, for a wallet holding 37,814 zat (0.00037814 ZEC):
+
+| | |
+|---|---|
+| Missing to the minimum | 95,855 zat |
+| Jupiter route | SOL → ZEC, exact output |
+| SOL spent | 0.010558068 SOL |
+| Sent to the deposit address | 133,669 zat |
+| Transaction size | 1,030 bytes (limit 1,232; ZecDoor stays under 1,100) |
+| Compute used | 147,488 units |
+
+Simulations use `sigVerify: false` and send nothing. They are part of the test suite ([testing](/testing)).
+
+## What the allowlist allows in a top-up
+
+On top of the normal deposit, and nothing else:
+
+- one Jupiter `exact_out_route` or `shared_accounts_exact_out_route` (v1 or v2) whose **destination is your own ZEC
+  account**, whose authority is you, whose input is your own SOL or USDC account, and which carries **no platform fee
+  account**. The account layout is checked against Jupiter's on-chain IDL.
+- wrapping your own SOL into your own wrapped-SOL account, capped at the swap's maximum input, and closing it again in the
+  same transaction.
+- creating your own ZEC account if you do not have one yet (you pay its rent; it stays yours).
+
+The complete rules are in [Security](/security#the-instruction-allowlist).
+
+## Where it is not offered
+
+Jupiter's terms restrict the United States, China, Singapore, Côte d'Ivoire and Iraq. ZecDoor hides the top-up there.
+Moves of balances already above the minimum still work. Whether Jupiter's interface restriction binds API integrators is
+UNVERIFIED; ZecDoor applies it anyway ([availability](/availability)).

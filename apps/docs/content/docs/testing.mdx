@@ -1,0 +1,24 @@
+---
+title: Testing
+description: What is tested, how, and every mainnet transaction used.
+---
+
+## Automated
+
+| Area | What the tests check |
+|---|---|
+| Instruction allowlist | Every valid move passes; attack variants are refused (wrong amount, wrong destination, approvals, authority changes, extra transfers, Token-2022, unknown programs, second signers, redirected or fee-carrying Jupiter routes, over-wrapping, missing lookup tables). Blocks every build. |
+| Quote checks | Our signature check equals NEAR Intents' SDK on real mainnet quotes; any change to a signed field fails; unsigned fields are checked separately; expired, misaddressed and over-charging quotes are refused. |
+| Live (read-only) | Fresh dry quotes verify; the fee split matches what we disclose; every kind of move is simulated against mainnet from real wallets that hold the right balances, and the deposit address receives exactly the quoted amount. Nothing is signed or sent. |
+| Zcash | Unified address decoding against ZIP 316 test vectors; key derivation; a regtest network where a payment to a derived address is found by our scanner and the wallet restored in zcash-devtool sees it. |
+| App | Every screen and state in a browser on phone and desktop sizes, with network-level mocks: wallet creation and backup check, exit, top-up, buys, refunds, cancellations, pauses, regions, expiry, slow moves, accessibility. Each transaction the app hands to the wallet is re-checked against the allowlist from outside the page. |
+| Server | Region rules, incident detection on NEAR Intents' real status data, counter verification and storage, sanctions list parsing. |
+
+Run them: `pnpm test`, `pnpm test:live`, `pnpm --filter @zecdoor/app e2e`.
+
+## Mainnet transactions
+
+Every mainnet transaction we make while testing is listed here with its Solana signature, Zcash txid and NEAR Intents
+status.
+
+_No ZecDoor mainnet moves yet. This list fills in with the first real runs._

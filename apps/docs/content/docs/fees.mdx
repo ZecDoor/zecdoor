@@ -1,0 +1,41 @@
+---
+title: Fees
+description: Every cost of a move, who receives it, and where the numbers come from.
+---
+
+Every amount below is shown on the review screen before you sign.
+
+| Cost | Exit or top-up (Solana ZEC) | Buy with USDC or SOL | Who receives it |
+|---|---|---|---|
+| ZecDoor fee | 0.25% of the amount | 0.5% of the amount, of which NEAR Intents keeps half | ZecDoor's account on NEAR, collected by NEAR Intents' contract |
+| Bridge network fee | 0.00032 ZEC per move | 0.00032 ZEC per move | NEAR Intents, for the Zcash withdrawal |
+| Swap price and route | — (top-up: Jupiter's route price) | NEAR Intents' quote price | Liquidity providers |
+| Solana network fee | about 0.00001 SOL | about 0.00001 SOL | Solana validators |
+| Token account for the deposit address | about 0.0015 SOL | about 0.0015 SOL (USDC only) | Rent held by that account |
+
+Figures are from 1Click quotes and Solana's rent on 5 October 2026 ([sources](/sources)).
+
+## How the ZecDoor fee is charged
+
+Through 1Click's `appFees` field only. **No transfer to ZecDoor ever appears in your transaction** — the allowlist would
+refuse it. NEAR Intents takes the fee out of the swap and credits ZecDoor's NEAR account
+(`0b419bed99105b07bdcdd9b9f7a6b549fd9d1aab5ac062adbd3725cd6be24a56`).
+
+On Solana ZEC → ZEC, NEAR Intents passes on all of the fee we request. On USDC and SOL, it keeps half: we request 0.5% and
+receive 0.25% (observed in live quotes, which differ from NEAR's documentation; [sources](/sources#fees)). Our server
+re-checks this split every 30 minutes and the app stops offering a kind of move if it changes.
+
+**Privacy cost of the fee:** because every ZecDoor move pays the same fee account, NEAR Intents' explorer can group ZecDoor
+moves together. See [what is public](/what-is-public).
+
+## Quote improvement
+
+NEAR Intents' terms (§6.7) require us to tell you this: if the market moves **against** you within the quote's slippage
+tolerance, you bear it; if it moves **in your favour**, NEAR Intents may keep part of the improvement (its "Capture Share",
+about half). You always receive at least the minimum shown in the signed quote.
+
+## Refunds
+
+If a move cannot complete, NEAR Intents refunds the Solana wallet that sent it. A refund may carry a fee, shown as the
+quote's refund fee. NEAR Intents does not consider recovering losses under USD 300 caused by user error (terms §12.4), such
+as sending to a wrong address — which is one reason ZecDoor builds the transaction itself and checks the address first.

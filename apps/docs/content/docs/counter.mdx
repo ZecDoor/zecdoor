@@ -1,0 +1,35 @@
+---
+title: The public counter
+description: How ZecDoor counts moves without keeping anything that points at a person.
+---
+
+## What is counted
+
+Moves completed, ZEC shielded, first wallets made, small balances rescued (top-ups), refunds, and the median time to
+arrive. Totals are per day and route.
+
+## How
+
+1. When a move this page built finishes, the page sends our server the move's **deposit address**, the kind of move, and
+   whether it was the first move into a wallet made here.
+2. The server reads that move's result **from NEAR Intents itself**. It counts the move only if NEAR Intents reports it
+   finished (succeeded or refunded) within the last 24 hours, and if its signed quote carries ZecDoor's fee recipient — so
+   other apps' moves, unfinished moves and invented reports are not counted.
+3. It adds to the day's totals, then forgets the request.
+
+## What is stored
+
+| Stored | Not stored |
+|---|---|
+| Per-day totals per route | Solana addresses |
+| A histogram of arrival times in minutes | Zcash addresses |
+| A salted one-way hash of the deposit address, **deleted after 24 hours**, so the same move is not counted twice | Transaction IDs |
+| | IP addresses or device IDs |
+
+NEAR Intents' terms (§4.1(e)) do not allow keeping their API data for more than 24 hours; aggregate totals are what remain.
+The "kind" and "first wallet" values are reported by the page; the move itself is verified with NEAR Intents.
+
+The counter shows dashes until there are real moves. It never shows invented numbers.
+
+The counting code is in [`apps/server/src/counter.ts`](https://github.com/ZecDoor/zecdoor/tree/main/apps/server/src/counter.ts),
+with tests that check nothing identifying is stored.

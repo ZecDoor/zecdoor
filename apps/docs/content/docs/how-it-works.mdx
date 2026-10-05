@@ -1,0 +1,79 @@
+---
+title: How a move works
+description: From one Phantom signature to a shielded note your browser can see.
+---
+
+## The route
+
+```
+Your Phantom wallet ──► one-time NEAR Intents deposit address (Solana)
+                         └─► NEAR Intents pays native ZEC ──► your shielded address (Ironwood pool)
+```
+
+ZecDoor never holds the funds at any point. If a move cannot complete, NEAR Intents refunds the Solana wallet that sent
+it, because every quote ZecDoor asks for names that wallet as the refund address.
+
+## Step by step
+
+<Steps>
+<Step>
+### You pick the amount and the destination
+
+A wallet made in this browser (each move pays a new address of it), or an address you paste from Zodl, Zkool or another
+shielded wallet. Pasted addresses are decoded in the browser: they must be unified addresses with an Orchard receiver,
+because that is what NEAR Intents can pay ([sources](/sources#oneclick)). Sapling-only (`zs1…`), transparent (`t1…`),
+TEX and testnet addresses are refused before any quote is asked for.
+</Step>
+<Step>
+### The page checks the bridge and your region
+
+It asks our server whether NEAR Intents reports an incident and whether ZecDoor is offered where you are
+([availability](/availability)). It also downloads the OFAC list of sanctioned Solana addresses and checks your wallet
+against it in the browser, so your address is not sent to us.
+</Step>
+<Step>
+### NEAR Intents signs a quote
+
+The browser asks the 1Click API directly for a quote: exactly your amount in, your Zcash address as recipient, your
+Solana wallet as refund address, a 30-minute deadline. 1Click answers with a one-time deposit address and an ed25519
+signature. The page verifies that signature and every field it covers, and checks the fields it does not cover (the fee
+rows and the request deadline) against what it asked for. See [the proof](/proof#the-quote-signature).
+</Step>
+<Step>
+### The page builds one transaction and checks it
+
+The transaction may only contain what the [instruction allowlist](/security#the-instruction-allowlist) permits: send the
+quoted amount from your own account to the quoted deposit address (and, for a top-up, one Jupiter swap into your own ZEC
+account). Then it is simulated against current Solana state; the deposit address must receive exactly the quoted amount.
+If any check fails, Phantom is never asked.
+</Step>
+<Step>
+### You sign once in Phantom
+
+One `signAndSendTransaction` call. There is no message signature and no token approval.
+</Step>
+<Step>
+### The page follows the move
+
+It reads the status from NEAR Intents every few seconds: deposit seen, converting, sent on Zcash. In 45 mainnet moves we
+timed, this took about 2½ to 9 minutes, typically about 3 ([sources](/sources#timing)). You can close the page; the move
+continues and the page picks up where it left off on this device.
+</Step>
+<Step>
+### Your browser finds the note
+
+For a wallet made here, the page downloads compact blocks from a public lightwalletd server and trial-decrypts them with
+your viewing key, in a Web Worker. When it finds the note at your address with at least the quoted amount, it shows the
+[proof](/proof).
+</Step>
+</Steps>
+
+## What runs where
+
+| Part | Runs in | Talks to |
+|---|---|---|
+| Quote, checks, transaction building, simulation | Your browser | NEAR Intents 1Click, Solana RPC, Jupiter (top-up only) |
+| Seed, viewing key, addresses, arrival scan | Your browser (WebAssembly) | A lightwalletd gRPC-web server (zec.rocks) |
+| Health, region, sanctions list, counter | Our server (a Cloudflare Worker) | NEAR Intents' status page and status API |
+
+The complete list of services the app can reach is in its Content Security Policy, quoted in [Security](/security#content-security-policy).

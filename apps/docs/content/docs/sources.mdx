@@ -1,0 +1,93 @@
+---
+title: Sources
+description: Where every number and claim on this site comes from. Anything we could not verify is marked UNVERIFIED.
+---
+
+"Hands-on" means we measured it ourselves against the live service on the date given; the script or test that does it is
+in the repository.
+
+## Solana ZEC holders [#holders]
+
+- **134,074 non-empty token accounts; 87,307 (65.1%) below 0.00133669 ZEC, holding 21.30 ZEC; 99,639.87 ZEC in total.**
+  Hands-on, 5 Oct 2026 04:14 UTC: every SPL token account of mint `A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS`, read with
+  `getProgramAccounts`. Reproduce: [`scripts/stats/solana-zec-holders.mjs`](https://github.com/ZecDoor/zecdoor/blob/main/scripts/stats/solana-zec-holders.mjs);
+  the output we used is [`docs/stats-2026-10-05.json`](https://github.com/ZecDoor/zecdoor/blob/main/docs/stats-2026-10-05.json).
+  Token accounts are not people: one person can hold several, and many hold none.
+- Token supply cross-checked with Solana `getTokenSupply` (99,639.73 ZEC) and
+  [Jupiter's token API](https://lite-api.jup.ag/tokens/v2/search?query=A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS) (127,364 holders), same day.
+
+## NEAR Intents 1Click [#oneclick]
+
+- API, quote and status formats: [1Click API docs](https://docs.near-intents.org/integration/distribution-channels/1click-api/about-1click-api.md),
+  [OpenAPI spec](https://1click.chaindefuser.com/docs/v0/openapi.yaml).
+- **Minimum:** 1Click answers "Amount is too low for bridge, try at least 133334" with no app fee and "…133669" with
+  ZecDoor's 25 bps fee; the lowest amounts it accepted were 133,011 and 133,345 zat. Hands-on, 5 Oct 2026 (live tests in
+  `packages/solana`).
+- **Bridge network fee:** `withdrawFee` 32,000 zat (0.00032 ZEC) in every quote we requested, Oct 2026.
+- **Buy minimums:** about 1.79 USDC and 0.0148 SOL. Hands-on, Oct 2026.
+- **Orchard-receiver addresses accepted; Sapling-only and `zs1` refused** ("recipient is not valid"). Hands-on, Oct 2026.
+- **Quote signature key and construction:** NEAR Intents' SDK `@defuse-protocol/one-click-sdk-typescript` 0.1.26
+  (`quoteHash`, `verifyQuoteSignature`). Our implementation is tested against it on real quotes.
+- **Status values and refunds:** [status docs](https://docs.near-intents.org/api-reference/oneclick/check-swap-execution-status.md).
+- **Terms:** [1Click Terms of Service](https://docs.near-intents.org/security-compliance/terms-of-service.md)
+  (§4.1(e) data retention, §4.2 end-user terms, §6.7 quote improvement, §7.7 holds, §9.1 prohibited jurisdictions,
+  §12.4 recovery floor).
+
+## Timing [#timing]
+
+- **About 2½ to 9 minutes from quote to SUCCESS, typically about 3**, across 45 mainnet Solana ZEC → Zcash moves by other
+  apps, read from 1Click's status API in October 2026 (hands-on).
+
+## Fees [#fees]
+
+- **Fee split.** Live quotes on 5 Oct 2026: on Solana ZEC → ZEC, our requested fee comes back as one row (ours, all of it);
+  on USDC and SOL, a 50 bps request comes back as 25 bps for us and 25 bps for NEAR Intents. NEAR's
+  [fee documentation](https://docs.near-intents.org/resources/fees.md) describes something different for apps without a
+  key; we follow what the service actually does and re-check it every 30 minutes.
+- **Solana rent:** `getMinimumBalanceForRentExemption(165)` = 1,488,440 lamports; for a wallet (0 bytes), 650,240.
+  Hands-on, 5 Oct 2026.
+
+## The NEAR Intents explorer [#explorer]
+
+- The explorer publishes deposit, amounts and recipient for public swaps:
+  [explorer docs](https://docs.near-intents.org/integration/distribution-channels/1click-api/explorer/introduction.md).
+  Confirmed hands-on, Oct 2026.
+
+## Incidents [#incidents]
+
+- 1 Oct 2026 exploit, funds returned: [Zcash forum](https://forum.zcashcommunity.com/t/near-intents-was-hacked-yesterday/57978).
+- $589k held for more than 50 days: [Zcash forum](https://forum.zcashcommunity.com/t/my-experience-exiting-shielded-zec-from-zodl-to-near-intents-589k-usdt-still-held-50-days-despite-a-written-compliance-clearance/57497).
+- NEAR Intents status page: [status.near-intents.org](https://status.near-intents.org).
+
+## Zcash
+
+- **Ironwood pool:** [Zcash forum, migration from Orchard to Ironwood](https://forum.zcashcommunity.com/t/migration-from-orchard-to-ironwood-in-zcash-wallets/56790).
+- **NU7:** [ZIP 259](https://github.com/zcash/zips/blob/main/zips/zip-0259.md) (draft); testnet activation 4 Oct 2026,
+  mainnet target 5 Nov 2026.
+- **Unified addresses:** [ZIP 316](https://zips.z.cash/zip-0316); our decoder is tested against its vectors.
+- **lightwalletd protocol:** [zcash/lightwallet-protocol](https://github.com/zcash/lightwallet-protocol).
+
+## Phantom
+
+- Browse deeplink: [Phantom docs](https://docs.phantom.com/phantom-deeplinks/other-methods/browse).
+- New-domain warnings: [Phantom docs](https://docs.phantom.com/developer-powertools/domain-and-transaction-warnings).
+
+## Jupiter
+
+- Swap API: [developers.jup.ag](https://developers.jup.ag). Terms: [terms of use](https://developers.jup.ag/docs/legal/terms-of-use.md),
+  [API licence](https://developers.jup.ag/docs/legal/sdk-api-license-agreement.md).
+- Whether Jupiter's interface restriction on US, CN, SG, CI and IQ users binds API integrators: UNVERIFIED.
+- Account layout of exact-output routes: Jupiter v6's on-chain IDL, read 5 Oct 2026.
+
+## Sanctions list
+
+- OFAC SDN digital-currency addresses for Solana, via [0xB10C/ofac-sanctioned-digital-currency-addresses](https://github.com/0xB10C/ofac-sanctioned-digital-currency-addresses)
+  (MIT), which extracts them daily from OFAC's SDN list.
+
+## Rivals [#rivals]
+
+- **CipherSwap:** [cipherswap.app](https://cipherswap.app), source [github.com/Kenbak/cipherswap](https://github.com/Kenbak/cipherswap):
+  one-signature Phantom deposit, 50 bps fee, address check by prefix and length, no licence file. Read Oct 2026.
+- **Zodl:** Solana ZEC as a swap source since iOS 3.12 and Android 3.15 ([Zodl blog](https://zodl.com/new-currency-conversion-options-and-more/)).
+  **67 bps observed** on a real Zodl Solana ZEC move: NEAR Intents status for deposit address
+  `CETPvNMBKLeyJj3mVnZVxmK7Z1KKr6GPnF8pm6zEWbJS` shows referral `zodl` and an app fee of 67 bps (hands-on, 4 Oct 2026).

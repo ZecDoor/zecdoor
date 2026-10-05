@@ -1,0 +1,52 @@
+---
+title: Proof of arrival
+description: Four checks you can repeat yourself, without trusting ZecDoor.
+---
+
+When a move finishes, the page shows four lines. Each can be checked independently.
+
+## 1. The quote signature
+
+NEAR Intents' 1Click signs every quote with an ed25519 key. ZecDoor checks it with the public key
+`ed25519:reYaWhvwu8Jzo3WUM3zhn6VrhuMEF4eADL17qtRVifc`, the same one NEAR Intents' own TypeScript SDK uses
+(`@defuse-protocol/one-click-sdk-typescript` 0.1.26).
+
+**What is signed:** `base58(sha256(J))`, where `J` is the deterministic JSON (keys sorted, empty fields dropped) of the
+request fields `dry, swapType, slippageTolerance, originAsset, depositType, destinationAsset, amount, refundTo,
+refundType, recipient, recipientType, deadline, quoteWaitingTimeMs, referral, virtualChainRecipient,
+virtualChainRefundRecipient, customRecipientMsg`, the quote fields `amountIn, amountInFormatted, amountInUsd,
+minAmountIn, amountOut, amountOutFormatted, amountOutUsd, minAmountOut` (plus `depositAddress, depositMemo, deadline,
+timeWhenInactive, timeEstimate, refundFee, withdrawFee` for a real quote), and the `timestamp`.
+
+So the signature covers your Zcash address, your refund address, the amounts and the deposit address. Two things it does
+**not** cover, which ZecDoor therefore checks separately against what it asked for:
+
+- **`appFees`** — the fee rows. The page refuses a quote that charges more than it showed you.
+- **The request `deadline`** on a real quote — the quote's own `deadline` replaces it in the signed object.
+
+Our code is cross-tested against NEAR Intents' SDK on real mainnet quotes. One finding from that: `/v0/status` does not
+echo `quoteWaitingTimeMs`, which is signed, so a quote read back from the status endpoint verifies only once that field is
+restored. ZecDoor keeps the quote it received from `/v0/quote`.
+
+## 2. The Solana transaction
+
+The signature Phantom returned. Open it on any Solana explorer: it sends the quoted amount from your wallet to the quoted
+deposit address.
+
+## 3. The Zcash transaction
+
+The txid NEAR Intents reports when the move succeeds, linked to a block explorer. It shows a transaction into the shielded
+pool; the amount and recipient inside are encrypted.
+
+## 4. The note, found by your browser
+
+For a wallet made in ZecDoor: your browser downloads compact blocks from the quote's block height onward and
+trial-decrypts each Orchard and Ironwood action with your viewing key. The proof line appears when it finds a note at the
+address this move paid, worth at least the quote's minimum. Nothing about your wallet is sent to our server; the
+lightwalletd server sees only which block ranges were requested.
+
+For an address you pasted, the page cannot look inside your wallet. Open the wallet: it shows the payment once it syncs.
+
+## Copying the proof
+
+"Copy proof" copies the quote hash, the quote signature, and the two transaction IDs — nothing else.
