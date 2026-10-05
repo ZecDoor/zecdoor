@@ -17,3 +17,4 @@ pkg/
 secrets/
 .secrets/
 screenshots/tmp/
+crates/*/target/
