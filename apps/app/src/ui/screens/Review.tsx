@@ -105,12 +105,7 @@ export function Review() {
         </>
       }
     >
-      <BackBar title="Review" back={() => history.back()} />
-      {dry && !expired ? (
-        <span className="mono muted" style={{ fontSize: 13, marginTop: -12, textAlign: 'right' }}>
-          Quote valid {clock(left)}
-        </span>
-      ) : null}
+      <BackBar title="Review" back={() => history.back()} step={dry && !expired ? `Quote valid ${clock(left)}` : undefined} />
 
       <div className="card" style={{ padding: 0, gap: 0, overflow: 'hidden' }}>
         <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 4 }}>

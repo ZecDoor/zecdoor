@@ -227,7 +227,7 @@ input {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 0 14px;
-  min-height: 40px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -389,7 +389,7 @@ input {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 0 14px;
-  min-height: 40px;
+  min-height: 44px;
   cursor: pointer;
 }
 .textlink {
@@ -767,6 +767,14 @@ ol.steps .text span {
   font-family: var(--mono);
   font-size: 13px;
   overflow-wrap: anywhere;
+}
+/* Standalone links in lists get a 44px-tall hit area without changing the layout. */
+.checks a.id,
+dl.rows dd a,
+.note > a {
+  display: inline-block;
+  padding: 13px 0;
+  margin: -13px 0;
 }
 
 .history {

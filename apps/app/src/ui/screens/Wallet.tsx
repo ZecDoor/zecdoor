@@ -1,6 +1,7 @@
 // Wallet creation with a forced backup check. The 24 words exist only in memory while these
 // two screens are open; only the viewing key is saved. No copy button, on purpose.
 
+import { wordlist } from '@scure/bip39/wordlists/english.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { height } from '../../lib/format';
 import { putWallet } from '../../lib/store';
@@ -107,19 +108,29 @@ export function WalletCreate() {
   );
 }
 
-/** Three positions, each with the right word and two other words from the same phrase. */
+/**
+ * Three positions, each with the right word and two decoys from the BIP-39 English list that
+ * are not in this phrase (so the check never shows more of the phrase than it asks for).
+ */
 function makeQuiz(words: string[]): Array<{ n: number; right: string; opts: string[] }> {
   const rnd = (k: number) => crypto.getRandomValues(new Uint32Array(1))[0]! % k;
   const picks = new Set<number>();
   while (picks.size < 3) picks.add(rnd(words.length));
+  const inPhrase = new Set(words);
   return [...picks]
     .sort((a, b) => a - b)
     .map((i) => {
       const right = words[i]!;
-      const others = words.filter((w) => w !== right);
       const decoys = new Set<string>();
-      while (decoys.size < 2 && others.length) decoys.add(others[rnd(others.length)]!);
-      const opts = [right, ...decoys].sort(() => rnd(3) - 1);
+      while (decoys.size < 2) {
+        const w = wordlist[rnd(wordlist.length)]!;
+        if (!inPhrase.has(w)) decoys.add(w);
+      }
+      const opts = [right, ...decoys];
+      for (let k = opts.length - 1; k > 0; k--) {
+        const j = rnd(k + 1);
+        [opts[k], opts[j]] = [opts[j]!, opts[k]!];
+      }
       return { n: i + 1, right, opts };
     });
 }
