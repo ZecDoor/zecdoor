@@ -12,6 +12,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LANDING_DIR="${LANDING_DIR:-$ROOT/../zecdoor-landing}"
 
 pnpm --dir "$ROOT" check:allowlist
+LANDING_DIR="$LANDING_DIR" pnpm --dir "$ROOT" check:copy   # text and images (OCR), landing included
 pnpm --dir "$ROOT/apps/app" exec tsc --noEmit
 pnpm --dir "$ROOT/apps/app" exec vite build
 pnpm --dir "$ROOT/apps/docs" build

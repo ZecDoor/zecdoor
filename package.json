@@ -9,19 +9,25 @@
   "scripts": {
     "build:wasm": "./scripts/build-wasm.sh",
     "check:allowlist": "pnpm --filter @zecdoor/solana test:allowlist",
-    "build": "pnpm check:allowlist && pnpm -r --if-present build",
+    "build": "pnpm check:allowlist && pnpm check:copy:text && pnpm -r --if-present build",
     "test": "pnpm -r test",
     "test:rust": "cargo test --manifest-path crates/zecdoor-wasm/Cargo.toml",
     "test:live": "NETWORK_TESTS=1 pnpm -r test",
     "test:regtest": "node scripts/regtest-e2e.mjs",
     "typecheck": "pnpm -r typecheck",
     "build:site": "./scripts/build-site.sh",
-    "dev:server": "pnpm --filter @zecdoor/server dev"
+    "dev:server": "pnpm --filter @zecdoor/server dev",
+    "check:copy": "node scripts/check-copy.mjs",
+    "check:copy:text": "node scripts/check-copy.mjs --text-only",
+    "check:public": "node scripts/check-public-repo.mjs"
   },
   "devDependencies": {
     "@solana/web3.js": "1.99.0",
+    "@tesseract.js-data/eng": "1.0.0",
     "@zecdoor/solana": "workspace:^",
     "@zecdoor/zcash": "workspace:^",
+    "sharp": "0.35.5",
+    "tesseract.js": "7.0.0",
     "tsx": "4.23.15",
     "typescript": "5.9.3",
     "vitest": "4.1.11"

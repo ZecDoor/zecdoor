@@ -23,6 +23,19 @@ jobs:
       - run: pnpm install --frozen-lockfile --filter @zecdoor/solana...
       - run: pnpm check:allowlist
 
+  # Build-blocking: the banned-word check (scripts/check-copy.mjs) over text and screenshots.
+  copy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter zecdoor
+      - run: pnpm check:copy
+
   typescript:
     needs: allowlist
     runs-on: ubuntu-24.04

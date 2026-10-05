@@ -26,3 +26,4 @@ apps/docs/.next/
 apps/docs/out/
 apps/docs/.source/
 next-env.d.ts
+.cache/
