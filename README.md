@@ -73,7 +73,7 @@ The app at `/app` is the part that builds and checks the transaction you sign. T
    The script downloads every file the live app loads and compares its SHA-256 with your build. The JavaScript, CSS and
    HTML depend only on the lockfile and Node; the WebAssembly file also depends on your Rust and clang versions, so it
    can differ when those differ. The versions used are pinned: Rust in [`rust-toolchain.toml`](rust-toolchain.toml), clang
-   (wasi-sdk 34 on macOS) in [`scripts/build-wasm.sh`](scripts/build-wasm.sh), Node in `build.json`, pnpm in
+   (wasi-sdk 34 on macOS) and wasm-pack (0.13.1) in [`scripts/build-wasm.sh`](scripts/build-wasm.sh), Node in `build.json`, pnpm in
    `package.json`. On Linux the script uses the system clang, so expect the `.wasm` file alone may differ there.
 3. Check what the code allows you to sign: `pnpm test` runs the allowlist suite in
    [`allowlist.test.ts`](packages/solana/test/allowlist.test.ts), which also blocks every build.
