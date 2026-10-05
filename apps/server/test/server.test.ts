@@ -218,6 +218,11 @@ describe('routing', () => {
     const e = { ...env(), ASSETS: { fetch: async () => new Response('site') } };
     expect(await (await handle(new Request('https://x/app/'), e)).text()).toBe('site');
   });
+  it('plain http is sent to https, path and query kept', async () => {
+    const r = await handle(new Request('http://zecdoor.0xo.in/docs/fees?x=1'), env());
+    expect(r.status).toBe(301);
+    expect(r.headers.get('location')).toBe('https://zecdoor.0xo.in/docs/fees?x=1');
+  });
   it('unknown API paths are 404, oversized count bodies 413', async () => {
     expect((await handle(new Request('https://x/api/nope'), env())).status).toBe(404);
     const big = new Request('https://x/api/count', { method: 'POST', body: 'x'.repeat(2000), headers: { 'content-length': '2000' } });

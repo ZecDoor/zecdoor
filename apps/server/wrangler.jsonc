@@ -1,7 +1,7 @@
 // ZecDoor server + static site, one Worker on one domain (decision D9: Cloudflare free tier).
-// Production (top level) takes zecdoor.0xo.in from the first-deploy Worker once the landing is
-// approved; until then the route stays commented. `--env preview` deploys a separate Worker on
-// workers.dev for review, with its own storage and no scheduled jobs.
+// Production (top level) serves zecdoor.0xo.in (taken over from the first-deploy Worker at go-live,
+// 5 Oct 2026). `--env preview` deploys a separate Worker on workers.dev for review, with its own
+// storage and no scheduled jobs.
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "zecdoor",
@@ -11,7 +11,9 @@
   "assets": {
     "directory": "../../dist/site",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"],
+    // The Worker runs first for the API and for page requests (to send plain http to https);
+    // static files (scripts, styles, images, fonts) are served straight from the asset store.
+    "run_worker_first": ["/*", "!/_next/*", "!/docs/_next/*", "!/app/assets/*", "!/demo/*", "!/*.webp", "!/*.svg", "!/*.png", "!/*.woff2", "!/*.js", "!/*.css"],
     "not_found_handling": "404-page"
   },
   "kv_namespaces": [{ "binding": "STATE", "id": "95211d40dddc445fa9aa31f0fa031e46" }],
@@ -23,7 +25,7 @@
     "FEE_TEST_REFUND": "3QFJWVEk6tpf52gtk3saAP1nkuci6GRMNHx72etsi67T"
   },
   // HASH_SALT is a secret: `wrangler secret put HASH_SALT` (and `--env preview`).
-  // "routes": [{ "pattern": "zecdoor.0xo.in", "custom_domain": true }],
+  "routes": [{ "pattern": "zecdoor.0xo.in", "custom_domain": true }],
   "env": {
     "preview": {
       "name": "zecdoor-preview",

@@ -24,6 +24,12 @@ async function runFeeCheck(env: Env, fetchImpl: typeof fetch, now = Date.now()) 
 export async function handle(req: Request, env: Env, fetchImpl: typeof fetch = fetch): Promise<Response> {
   const url = new URL(req.url);
   const path = url.pathname;
+  // Plain http goes to https (the zone-wide "Always Use HTTPS" switch would also change every other
+  // 0xo.in site, so the redirect lives here). HSTS then keeps the browser on https.
+  if (url.protocol === 'http:' && url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
+    url.protocol = 'https:';
+    return Response.redirect(url.toString(), 301);
+  }
   if (!path.startsWith('/api/')) {
     return env.ASSETS ? env.ASSETS.fetch(req) : new Response('Not found', { status: 404 });
   }

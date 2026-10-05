@@ -43,10 +43,12 @@ if [[ -n "$SOURCE_URL" ]]; then
 fi
 cp "$ROOT/deploy/site/_headers" "$OUT/_headers"
 cp "$ROOT/deploy/site/_redirects" "$OUT/_redirects"
+cp "$ROOT/deploy/site/robots.txt" "$OUT/robots.txt"
 cp -R "$ROOT/apps/app/dist" "$OUT/app"
 cp -R "$ROOT/apps/docs/out" "$OUT/docs"
 find "$OUT" -name '*.map' -delete   # the source is public anyway; keep the deploy small
 if [[ "${PREVIEW:-}" == "1" ]]; then
+  printf 'User-agent: *\nDisallow: /\n' > "$OUT/robots.txt"
   # Preview builds must not be indexed by search engines.
   python3 - "$OUT/_headers" <<'PY'
 import sys
