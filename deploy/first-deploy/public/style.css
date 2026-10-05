@@ -25,3 +25,5 @@ footer { display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px; border-top:
 footer a { color: var(--muted); }
 .doc h1 { font-size: 28px; }
 .doc p, .doc li { color: var(--muted); }
+.notice { margin: 0; padding: 12px 16px; border: 1px solid var(--accent); border-radius: 12px; background: var(--surface); font-size: 15px; }
+.notice strong { color: var(--text); }
