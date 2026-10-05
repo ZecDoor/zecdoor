@@ -2,4 +2,4 @@ Contact: https://github.com/ZecDoor/zecdoor/security/advisories/new
 Contact: https://github.com/ZecDoor/zecdoor/issues
 Expires: 2027-10-05T00:00:00.000Z
 Preferred-Languages: en
-Canonical: https://[DOMAIN]/.well-known/security.txt
+Canonical: https://zecdoor.0xo.in/.well-known/security.txt

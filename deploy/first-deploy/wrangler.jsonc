@@ -6,6 +6,6 @@
   "assets": {
     "directory": "./public",
     "not_found_handling": "404-page"
-  }
-  // "routes": [{ "pattern": "[DOMAIN]", "custom_domain": true }]
+  },
+  "routes": [{ "pattern": "zecdoor.0xo.in", "custom_domain": true }]
 }
