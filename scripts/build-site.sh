@@ -14,6 +14,9 @@ LANDING_DIR="${LANDING_DIR:-$ROOT/../zecdoor-landing}"
 pnpm --dir "$ROOT" check:allowlist
 LANDING_DIR="$LANDING_DIR" pnpm --dir "$ROOT" check:copy   # text and images (OCR), landing included
 pnpm --dir "$ROOT/apps/app" exec tsc --noEmit
+# Moves and buys stay closed (no transaction can be signed) unless VITE_MOVES_OPEN=1 is set on
+# purpose, after the mainnet test runs (B1, B7) have passed. See apps/app/src/config.ts.
+if [[ "${VITE_MOVES_OPEN:-}" == "1" ]]; then echo ">>> Moves and buys: OPEN in this build"; else echo ">>> Moves and buys: closed (opening soon)"; fi
 pnpm --dir "$ROOT/apps/app" exec vite build
 pnpm --dir "$ROOT/apps/docs" build
 
@@ -45,4 +48,5 @@ open(p, "w").write(s)
 PY
 fi
 sed -i.bak "s/\[DOMAIN\]/$VITE_DOMAIN/g" "$OUT/.well-known/security.txt" && rm -f "$OUT/.well-known/security.txt.bak"
+echo "Moves and buys: $([[ "${VITE_MOVES_OPEN:-}" == "1" ]] && echo OPEN || echo closed)"
 echo "Site in $OUT ($(du -sh "$OUT" | cut -f1), $(find "$OUT" -type f | wc -l | tr -d ' ') files)"

@@ -41,6 +41,8 @@ export interface Scenario {
   phantom?: boolean;
   /** Make the user reject in Phantom. */
   reject?: boolean;
+  /** Close moves and buys (the production state until the mainnet runs pass). */
+  movesClosed?: boolean;
   simulateErr?: unknown;
 }
 
@@ -276,11 +278,12 @@ export async function mock(page: Page, s: Scenario = {}): Promise<Mocks> {
 
   const sigBytes = Keypair.generate().secretKey; // 64 random bytes → a realistic signature string
   await page.addInitScript(
-    ({ owner, phantom, trusted, reject, quoteKey, tip, arrival, signature }) => {
+    ({ owner, phantom, trusted, reject, quoteKey, tip, arrival, signature, movesClosed }) => {
       const w = window as unknown as Record<string, unknown>;
       w.__signed = [];
       w.__ZECDOOR_E2E__ = {
         quoteKey,
+        movesClosed,
         latestHeight: async () => tip,
         arrival: async (r: { from: number; index: number }) => (arrival ? { height: arrival.height, txid: 'ac36529f67ca10144dcbbe4f5214fa3d41436d54b27568d1d5168801efe4a29a', pool: 'ironwood', value: arrival.value, scope: 'external', index: r.index } : null),
       };
@@ -323,6 +326,7 @@ export async function mock(page: Page, s: Scenario = {}): Promise<Mocks> {
       tip: s.zcashTip ?? 3_510_000,
       arrival: s.arrival === undefined ? { height: 3_510_012, value: 8_663_100 } : s.arrival,
       signature: base58.encode(sigBytes),
+      movesClosed: !!s.movesClosed,
     },
   );
 

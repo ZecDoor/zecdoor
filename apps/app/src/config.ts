@@ -40,6 +40,17 @@ export const QUOTE_FRESH_MS = 10 * 60_000;
 export const STATUS_POLL_MS = 5_000;
 
 /**
+ * The one switch for moves and buys. Closed unless the build sets VITE_MOVES_OPEN=1. While it is
+ * closed, the app can connect, read balances, show quotes and make and back up a wallet, but no
+ * transaction can be signed: executeMove refuses before it asks NEAR Intents for a signable quote
+ * or shows Phantom anything. Production stays closed until the mainnet test runs (B1, B7) pass.
+ * Only the e2e test build may close it for a single test.
+ */
+export const MOVES_OPEN: boolean =
+  import.meta.env.VITE_MOVES_OPEN === '1' &&
+  !(import.meta.env.VITE_E2E === '1' && (window as unknown as { __ZECDOOR_E2E__?: { movesClosed?: boolean } }).__ZECDOOR_E2E__?.movesClosed);
+
+/**
  * The key 1Click signs quotes with. Only the e2e test build (`vite --mode e2e`, never a
  * production build: see vite.config.ts) may replace it, so tests can sign their own quotes.
  */

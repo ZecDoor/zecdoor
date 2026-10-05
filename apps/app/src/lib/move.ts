@@ -22,7 +22,7 @@ import {
 } from '@zecdoor/solana';
 import { newWallet } from '@zecdoor/zcash';
 import type { PublicKey } from '@solana/web3.js';
-import { QUOTE_KEY } from '../config';
+import { MOVES_OPEN, QUOTE_KEY } from '../config';
 import type { PhantomSolana } from './phantom';
 import { isUserRejection } from './phantom';
 import { withRpc } from './rpc';
@@ -55,7 +55,8 @@ export type MoveErrorCode =
   | 'simulation'
   | 'cancelled'
   | 'rpc'
-  | 'quote';
+  | 'quote'
+  | 'closed';
 
 export class MoveError extends Error {
   constructor(
@@ -161,6 +162,9 @@ export interface MoveRequest {
 }
 
 export async function executeMove(r: MoveRequest): Promise<MoveRecord> {
+  // The switch in config.ts: while moves are closed, nothing below runs (no signable quote, no
+  // deposit address, nothing shown in Phantom).
+  if (!MOVES_OPEN) throw new MoveError('closed', 'Moves and buys open once our mainnet test runs have passed. Nothing was sent.');
   const stage = r.onStage ?? (() => {});
   const owner = r.owner.toBase58();
 

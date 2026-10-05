@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ZEC_MINT } from '@zecdoor/solana';
-import { APP_URL } from '../../config';
+import { APP_URL, MOVES_OPEN } from '../../config';
 import { day, short, usd, zec } from '../../lib/format';
 import { phantomBrowseLink } from '../../lib/phantom';
 import { continueWith, landsIn } from '../flow';
@@ -75,6 +75,12 @@ export function Home() {
         </div>
       </div>
 
+      {!MOVES_OPEN ? (
+        <StateCard tone="info" title="Opening soon" tag="Moves and buys">
+          You can connect, see your balance and live quotes, and make and back up a wallet now. Signing opens once our own mainnet test
+          moves have passed.
+        </StateCard>
+      ) : null}
       {paused ? (
         <StateCard tone="err" title="The bridge is paused" tag="Before signing">
           {health?.message ?? (health?.paused ? 'NEAR Intents has paused transfers.' : 'Moves are paused while we check NEAR Intents’ fee terms.')} Nothing was sent, and we won’t send anything until it resumes. This page

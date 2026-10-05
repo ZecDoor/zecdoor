@@ -1,6 +1,6 @@
 import { FEE_RECIPIENT } from '@zecdoor/solana';
 import { useCallback, useEffect, useState } from 'react';
-import { QUOTE_FRESH_MS, TERMS_URL } from '../../config';
+import { MOVES_OPEN, QUOTE_FRESH_MS, TERMS_URL } from '../../config';
 import { clock, short, sol, usdc, zec } from '../../lib/format';
 import { dryQuote, executeMove, MoveError, type DryQuote, type Stage } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
@@ -175,12 +175,26 @@ export function Review() {
         <span>everything you do with it after it lands.</span>
       </div>
 
-      <button type="button" className="btn" disabled={!dry || expired || busy || noSol} onClick={() => void sign()}>
-        {stage ? STAGE_TEXT[stage] : 'Sign in Phantom'}
-      </button>
-      <p className="muted center" style={{ margin: 0, fontSize: 13, lineHeight: 1.5 }}>
-        One transaction. No message signature. By signing you accept the <a href={TERMS_URL}>Terms</a>.
-      </p>
+      {MOVES_OPEN ? (
+        <>
+          <button type="button" className="btn" disabled={!dry || expired || busy || noSol} onClick={() => void sign()}>
+            {stage ? STAGE_TEXT[stage] : 'Sign in Phantom'}
+          </button>
+          <p className="muted center" style={{ margin: 0, fontSize: 13, lineHeight: 1.5 }}>
+            One transaction. No message signature. By signing you accept the <a href={TERMS_URL}>Terms</a>.
+          </p>
+        </>
+      ) : (
+        <>
+          <StateCard tone="info" title="Opening soon" tag="Nothing to sign yet">
+            Moves and buys open once our own mainnet test moves have passed. This quote is live and shows exactly what a move would cost
+            today; nothing can be signed yet.
+          </StateCard>
+          <button type="button" className="btn" disabled>
+            Opening soon
+          </button>
+        </>
+      )}
     </Shell>
   );
 }
@@ -199,6 +213,7 @@ function ErrorCard({ error, onRetry }: { error: MoveError; onRetry: () => void }
     rpc: { title: 'Solana is not answering', tone: 'warn', action: 'Try again' },
     quote: { title: 'No quote', tone: 'warn', action: 'Try again' },
     simulation: { title: 'Not offered for signing', tone: 'err', action: 'Try again' },
+    closed: { title: 'Opening soon', tone: 'info' },
   };
   const m = map[error.code] ?? { title: 'Something went wrong', tone: 'err' as const };
   return (

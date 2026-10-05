@@ -105,6 +105,37 @@ test('exit into a new wallet made here: backup, sign, progress, proof, after', a
   expect(stored.split(/\W+/).filter((w) => /^[a-z]{3,8}$/.test(w)).length).toBeLessThan(24);
 });
 
+test.describe('moves closed (production until the mainnet test runs pass)', () => {
+  test('wallet backup and a live quote work, but nothing can be signed', async ({ page }) => {
+    const m = await mock(page, { movesClosed: true });
+    await page.goto('./');
+    await expect(page.getByText('Opening soon').first()).toBeVisible();
+    await page.getByRole('button', { name: /Move it to shielded/ }).click();
+    await makeWallet(page);
+    await expect(page.getByText('Signed by NEAR Intents · checked')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Opening soon' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Sign in Phantom' })).toHaveCount(0);
+    expect(await m.signed()).toHaveLength(0);
+    // Only dry quotes (no deposit address) were ever requested.
+    expect(m.quotes.every((q) => (q as QuoteResponse).quoteRequest.dry === true)).toBe(true);
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  });
+
+  test('buying shows the quote and the opening-soon state', async ({ page }) => {
+    const m = await mock(page, { zec: 0n, movesClosed: true });
+    await page.goto('./#/buy');
+    await page.getByLabel('You pay').fill('25');
+    await page.getByRole('button', { name: 'Choose where it lands' }).click();
+    await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
+    await page.getByLabel('Zcash address').fill(TEST_UA);
+    await page.getByRole('button', { name: 'Continue' }).click();
+    await expect(page.locator('.amount', { hasText: '25.00 USDC' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Opening soon' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Sign in Phantom' })).toHaveCount(0);
+    expect(await m.signed()).toHaveLength(0);
+  });
+});
+
 test('second move from the same browser wallet uses the next address', async ({ page }) => {
   await mock(page);
   await page.goto('./');
