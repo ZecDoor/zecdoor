@@ -258,7 +258,7 @@ test('not available in the region', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Move it to shielded/ })).toBeDisabled();
 });
 
-test('top-up hidden where Jupiter is not offered (D6)', async ({ page }) => {
+test('top-up not offered where Jupiter is restricted (D6)', async ({ page }) => {
   await mock(page, { zec: 37_814n, geo: { allowed: true, topup: false, country: 'US' } });
   await page.goto('./');
   await expect(page.getByText(/Top-up is not offered where you are/)).toBeVisible();

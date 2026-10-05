@@ -1,4 +1,4 @@
-// ZecDoor's server: a Cloudflare Worker. It answers questions and keeps anonymous totals.
+// ZecDoor's server: a Cloudflare Worker. It answers questions and keeps totals only.
 // It never receives keys, never builds or signs transactions, and stores no addresses.
 
 import { feeSelfTest, OneClickClient } from '@zecdoor/solana';

@@ -194,7 +194,7 @@ function Progress({ m, now, stale, scanAt, hasWallet }: { m: MoveRecord; now: nu
 
       <div className="note">
         You can close this page. When you come back on this device, we pick up where we left off. Our server keeps nothing about this move beyond
-        anonymous running totals and a 24-hour duplicate check.
+        running totals of all moves and a 24-hour duplicate check.
       </div>
     </Shell>
   );

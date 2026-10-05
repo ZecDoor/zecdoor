@@ -54,7 +54,7 @@ describe('geo', () => {
   it.each([
     ['DE', undefined, true, true],
     ['GB', undefined, true, true],
-    ['US', undefined, true, false], // top-up hidden (D6)
+    ['US', undefined, true, false], // no top-up (D6)
     ['SG', undefined, true, false],
     ['IR', undefined, false, false],
     ['RU', undefined, false, false],
