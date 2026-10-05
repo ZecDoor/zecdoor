@@ -1,0 +1,28 @@
+{
+  "name": "@zecdoor/solana",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:allowlist": "vitest run test/allowlist.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@noble/curves": "2.4.0",
+    "@noble/hashes": "2.4.0",
+    "@scure/base": "2.4.0",
+    "@solana/spl-token": "0.4.15",
+    "@solana/web3.js": "1.99.0"
+  },
+  "devDependencies": {
+    "@defuse-protocol/one-click-sdk-typescript": "0.1.26",
+    "@types/node": "22.18.0",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "timestamp": "2026-10-04T20:35:55.311Z",
+  "signature": "ed25519:2LL9whFb5PktuNmexuJQUvTyHmcSCYu3gh2HXy7KvjhTgAHcn7sVD8os9f1sDj6U6ERNeU2Pw8dHYJG5woPh16CT",
+  "quoteRequest": {
+    "dry": false,
+    "swapType": "EXACT_INPUT",
+    "depositMode": "SIMPLE",
+    "slippageTolerance": 100,
+    "originAsset": "1cs_v1:sol:spl:A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS",
+    "depositType": "ORIGIN_CHAIN",
+    "destinationAsset": "nep141:zec.omft.near",
+    "amount": "5136740",
+    "refundTo": "Ca7HZxhhsbyzyweHx1vEbCBNQqrrxvGiicAnXo54j26F",
+    "refundType": "ORIGIN_CHAIN",
+    "recipient": "u1wl3rnddstcz26u0ag3y2kw3d2t6uevd042qswgsdn9cz0ft9r3cuczq0x6ujcep4qqj50qh02e9uvwm8ztm98g40ye6jqqkrk5892kum",
+    "recipientType": "DESTINATION_CHAIN",
+    "deadline": "2026-10-04T21:05:55.255Z",
+    "appFees": [],
+    "virtualChainRecipient": null,
+    "virtualChainRefundRecipient": null,
+    "referral": "snarkstr",
+    "confidentiality": "public",
+    "quoteWaitingTimeMs": 3000
+  },
+  "quote": {
+    "amountIn": "5136740",
+    "amountInFormatted": "0.0513674",
+    "amountInUsd": "68.230803746000",
+    "minAmountIn": "5136740",
+    "amountOut": "5104740",
+    "amountOutFormatted": "0.0510474",
+    "amountOutUsd": "67.805750946000",
+    "minAmountOut": "5053692",
+    "timeWhenInactive": "2026-10-07T21:05:55.255Z",
+    "depositAddress": "7FJuHmU7KXsQn4ihiVARgmDaha9RTrf1VmcQnThzugJe",
+    "deadline": "2026-10-07T21:05:55.255Z",
+    "timeEstimate": 135,
+    "refundFee": "771",
+    "withdrawFee": "32000"
+  }
+}

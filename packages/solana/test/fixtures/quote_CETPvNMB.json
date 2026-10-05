@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-10-04T19:28:55.932Z",
+  "signature": "ed25519:5KQ1s8pfSG9J86VVs5KEYUJSweRbZyRAAuR2F8WKricSQs7LzoEkisGPQ4fJBNUC3WJ19przu9QR3KjkzswhC678",
+  "quoteRequest": {
+    "dry": false,
+    "swapType": "FLEX_INPUT",
+    "depositMode": "SIMPLE",
+    "slippageTolerance": 200,
+    "originAsset": "1cs_v1:sol:spl:A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS",
+    "depositType": "ORIGIN_CHAIN",
+    "destinationAsset": "nep141:zec.omft.near",
+    "amount": "1795000",
+    "refundTo": "BZ9N4nV92j8DKG1FyNVbhd28YBSj2wSzyzdn7buuPvrk",
+    "refundType": "ORIGIN_CHAIN",
+    "recipient": "u15zqfndhflyugft24636duveglj44x7hus4wp3mcm66xwn3asu383uyx5t95p8zxmzutfwrnvkuvdvcwqy3jswra5mnguc3szjqpsutqz4dyes4rp6wzccauhp2sm7cruzdl4kaz9a92e62k4799wepgqnks5wq63893qm2h6k564kc76",
+    "recipientType": "DESTINATION_CHAIN",
+    "deadline": "2026-10-04T21:28:54.000Z",
+    "appFees": [
+      {
+        "limitOrderId": null,
+        "recipient": "d78abd5477432c9d9c5e32c4a1a0056cd7b8be6580d3c49e1f97185b786592db",
+        "fee": 67
+      }
+    ],
+    "virtualChainRecipient": null,
+    "virtualChainRefundRecipient": null,
+    "referral": "zodl",
+    "confidentiality": "public",
+    "quoteWaitingTimeMs": 3000
+  },
+  "quote": {
+    "amountIn": "1795000",
+    "amountInFormatted": "0.01795",
+    "amountInUsd": "23.910656500000",
+    "minAmountIn": "1759100",
+    "amountOut": "1750973",
+    "amountOutFormatted": "0.01750973",
+    "amountOutUsd": "23.324186041100",
+    "minAmountOut": "1715953",
+    "timeWhenInactive": "2026-10-07T21:28:54.000Z",
+    "depositAddress": "CETPvNMBKLeyJj3mVnZVxmK7Z1KKr6GPnF8pm6zEWbJS",
+    "deadline": "2026-10-07T21:28:54.000Z",
+    "timeEstimate": 135,
+    "refundFee": "764",
+    "withdrawFee": "32000"
+  }
+}

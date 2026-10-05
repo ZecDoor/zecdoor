@@ -8,8 +8,11 @@
   },
   "scripts": {
     "build:wasm": "./scripts/build-wasm.sh",
+    "check:allowlist": "pnpm --filter @zecdoor/solana test:allowlist",
+    "build": "pnpm check:allowlist && pnpm -r --if-present build",
     "test": "pnpm -r test",
     "test:rust": "cargo test --manifest-path crates/zecdoor-wasm/Cargo.toml",
+    "test:live": "NETWORK_TESTS=1 pnpm -r test",
     "test:regtest": "node scripts/regtest-e2e.mjs",
     "typecheck": "pnpm -r typecheck"
   },
