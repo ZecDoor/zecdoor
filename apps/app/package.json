@@ -1,0 +1,39 @@
+{
+  "name": "@zecdoor/app",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "pnpm -w check:allowlist && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "e2e": "playwright test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource-variable/manrope": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@solana/web3.js": "1.99.0",
+    "@zecdoor/solana": "workspace:*",
+    "@zecdoor/zcash": "workspace:*",
+    "buffer": "6.0.3",
+    "qrcode-generator": "2.0.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@noble/curves": "2.4.0",
+    "@playwright/test": "1.63.0",
+    "@scure/base": "2.4.0",
+    "@types/node": "22.18.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "typescript": "5.9.3",
+    "vite": "8.3.2",
+    "vitest": "4.1.11"
+  }
+}

@@ -214,10 +214,15 @@ export function verifyQuoteSignature(r: QuoteResponse, signingKey = ONE_CLICK_SI
  * Everything ZecDoor checks before it builds a transaction from a live quote. Throws on
  * the first problem. `appFees` is not signed, so it is checked against our request here.
  */
-export function checkQuote(r: QuoteResponse, sent: QuoteRequest, now = Date.now()): asserts r is QuoteResponse & {
+export function checkQuote(
+  r: QuoteResponse,
+  sent: QuoteRequest,
+  now = Date.now(),
+  signingKey = ONE_CLICK_SIGNING_KEY,
+): asserts r is QuoteResponse & {
   quote: Quote & { depositAddress: string };
 } {
-  if (!verifyQuoteSignature(r)) throw new Error('1Click quote signature is not valid');
+  if (!verifyQuoteSignature(r, signingKey)) throw new Error('1Click quote signature is not valid');
   const q = r.quoteRequest;
   const same: Array<keyof QuoteRequest> = [
     'dry', 'swapType', 'originAsset', 'destinationAsset', 'amount', 'refundTo', 'refundType',

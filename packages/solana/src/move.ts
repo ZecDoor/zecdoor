@@ -14,7 +14,7 @@ import {
   topUpInstructions,
   type MoveContext,
 } from './build.js';
-import { WSOL_MINT, ZEC_MINT } from './constants.js';
+import { USDC_MINT, WSOL_MINT, ZEC_MINT } from './constants.js';
 import { JupiterClient, type JupiterQuote } from './jupiter.js';
 import type { MoveKind, QuoteResponse } from './oneclick.js';
 
@@ -35,6 +35,8 @@ export interface PrepareOptions {
   /** Exit only: close the user's ZEC account when the move empties it. */
   closeEmptied?: boolean;
   jupiter?: JupiterClient;
+  /** Top-up only: what the user pays the difference with. */
+  topUpWith?: 'sol' | 'usdc';
   /** Micro-lamports per compute unit. */
   computeUnitPrice?: number;
 }
@@ -51,9 +53,14 @@ export async function lookupTables(connection: Connection, addresses: string[]):
 
 /** The user's Solana ZEC balance in base units (0 when the account does not exist). */
 export async function zecBalance(connection: Connection, owner: PublicKey): Promise<bigint> {
-  const info = await connection.getTokenAccountBalance(ata(ZEC_MINT, owner)).catch(() => null);
-  return info ? BigInt(info.value.amount) : 0n;
+  // A missing account is 0; a network error must throw, never read as an empty balance.
+  const info = await connection.getAccountInfo(ata(ZEC_MINT, owner), 'confirmed');
+  return tokenAccountAmount(info?.data);
 }
+
+/** The amount field of an SPL token account (offset 64), or 0 for no account. */
+export const tokenAccountAmount = (data: Uint8Array | null | undefined): bigint =>
+  data && data.length >= 72 ? new DataView(data.buffer, data.byteOffset + 64, 8).getBigUint64(0, true) : 0n;
 
 export async function prepareMove(o: PrepareOptions): Promise<PreparedMove> {
   const depositAddress = o.quote.quote.depositAddress;
@@ -85,10 +92,12 @@ export async function prepareMove(o: PrepareOptions): Promise<PreparedMove> {
       const need = ctx.amountIn - have;
       if (need <= 0n) throw new Error('Balance already covers the move; use a plain exit');
       const jup = o.jupiter ?? new JupiterClient();
-      swap = await jup.quoteExactOut({ inputMint: WSOL_MINT, outAmount: need });
+      const inputMint = o.topUpWith === 'usdc' ? USDC_MINT : WSOL_MINT;
+      swap = await jup.quoteExactOut({ inputMint, outAmount: need });
       const ixs = await jup.swapInstructions(swap, o.owner);
       tables = await lookupTables(o.connection, ixs.lookupTables);
-      maxWrapLamports = BigInt(swap.otherAmountThreshold);
+      // Jupiter wraps at most the quote's maximum input; USDC needs no wrapping.
+      maxWrapLamports = inputMint.equals(WSOL_MINT) ? BigInt(swap.otherAmountThreshold) : 0n;
       instructions = topUpInstructions(ctx, ixs);
       break;
     }

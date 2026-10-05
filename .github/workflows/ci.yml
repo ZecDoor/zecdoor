@@ -50,3 +50,22 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: pnpm --version || npm i -g pnpm@9.15.9
       - run: cargo test --manifest-path crates/zecdoor-wasm/Cargo.toml
+
+  app-e2e:
+    needs: allowlist
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - run: sudo apt-get update && sudo apt-get install -y clang llvm
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm build:wasm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @zecdoor/app exec playwright install --with-deps chromium
+      - run: pnpm --filter @zecdoor/app e2e

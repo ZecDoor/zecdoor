@@ -65,7 +65,7 @@ function nodeGrpcSource(): BlockSource {
       requestStream: false, responseStream: true,
       requestSerialize: id, requestDeserialize: id, responseSerialize: id, responseDeserialize: id,
     },
-  });
+  }, 'CompactTxStreamer');
   const c = new Client(`127.0.0.1:${GRPC}`, grpc.credentials.createInsecure()) as unknown as {
     GetLatestBlock: (req: Buffer, cb: (e: Error | null, r: Buffer) => void) => void;
     GetBlockRange: (req: Buffer) => NodeJS.ReadableStream;

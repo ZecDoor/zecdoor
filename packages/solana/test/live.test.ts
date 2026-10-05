@@ -70,4 +70,15 @@ describe.skipIf(!live)('live simulations', () => {
       expect(sim.depositReceives).toBe(amount);
     }, 60_000);
   }
+
+  it('topup paid with USDC: allowlisted and the deposit receives exactly the quoted amount', async () => {
+    const { owner, amount } = SOURCES.topup;
+    const quote = { quote: { depositAddress: Keypair.generate().publicKey.toBase58(), amountIn: amount.toString() } } as unknown as QuoteResponse;
+    const prepared = await prepareMove({ connection, kind: 'topup', owner: new PublicKey(owner), quote, topUpWith: 'usdc' });
+    const sim = await simulateMove(connection, prepared.tx, prepared.allowlist);
+    console.log('topup/usdc', { bytes: sim.bytes, units: sim.unitsConsumed, usdc: prepared.swap?.inAmount });
+    if (!sim.ok) console.log(sim.err, sim.logs.slice(-8));
+    expect(sim.ok).toBe(true);
+    expect(sim.depositReceives).toBe(amount);
+  }, 60_000);
 });

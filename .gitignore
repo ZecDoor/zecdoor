@@ -18,3 +18,7 @@ secrets/
 .secrets/
 screenshots/tmp/
 crates/*/target/
+dist/
+test-results/
+playwright-report/
+.env.local
