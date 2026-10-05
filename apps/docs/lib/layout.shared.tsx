@@ -1,5 +1,5 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { appName, gitConfig } from './shared';
+import { appName, SOURCE_URL } from './shared';
 
 function Logo() {
   return (
@@ -16,7 +16,7 @@ function Logo() {
 export function baseOptions(): BaseLayoutProps {
   return {
     nav: { title: <Logo />, url: '/' },
-    githubUrl: `https://github.com/${gitConfig.user}/${gitConfig.repo}`,
+    ...(SOURCE_URL ? { githubUrl: SOURCE_URL } : {}),
     links: [
       // Other parts of the same site, outside this Next app: plain anchors, so basePath
       // (/docs) is not added and no client-side routing is attempted.

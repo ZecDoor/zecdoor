@@ -10,6 +10,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 : "${VITE_DOMAIN:?Set VITE_DOMAIN to the production domain}"
 LANDING_DIR="${LANDING_DIR:-$ROOT/../zecdoor-landing}"
+# The public repository (e.g. https://github.com/ZecDoor/zecdoor). Leave unset until the GitHub
+# organisation exists: every source and contact link then reads "Code goes public under the MIT
+# licence at launch" instead of pointing at a page that does not exist, and no security.txt is
+# served (its contacts live on GitHub).
+SOURCE_URL="${SOURCE_URL:-}"
+export NEXT_PUBLIC_SOURCE_URL="$SOURCE_URL" VITE_SOURCE_URL="$SOURCE_URL"
 
 pnpm --dir "$ROOT" check:allowlist
 LANDING_DIR="$LANDING_DIR" pnpm --dir "$ROOT" check:copy   # text and images (OCR), landing included
@@ -31,8 +37,10 @@ else
   cp -R "$ROOT/deploy/first-deploy/public/." "$OUT/"
   rm -f "$OUT/terms.html" "$OUT/privacy.html"
 fi
-mkdir -p "$OUT/.well-known"
-cp "$ROOT/deploy/first-deploy/public/.well-known/security.txt" "$OUT/.well-known/security.txt"
+if [[ -n "$SOURCE_URL" ]]; then
+  mkdir -p "$OUT/.well-known"
+  sed "s#https://github.com/ZecDoor/zecdoor#$SOURCE_URL#g" "$ROOT/deploy/first-deploy/public/.well-known/security.txt" > "$OUT/.well-known/security.txt"
+fi
 cp "$ROOT/deploy/site/_headers" "$OUT/_headers"
 cp "$ROOT/deploy/site/_redirects" "$OUT/_redirects"
 cp -R "$ROOT/apps/app/dist" "$OUT/app"
@@ -47,6 +55,9 @@ s = s.replace("/*\n", "/*\n  X-Robots-Tag: noindex, nofollow\n", 1)
 open(p, "w").write(s)
 PY
 fi
-sed -i.bak "s/\[DOMAIN\]/$VITE_DOMAIN/g" "$OUT/.well-known/security.txt" && rm -f "$OUT/.well-known/security.txt.bak"
+if [[ -f "$OUT/.well-known/security.txt" ]]; then
+  sed -i.bak "s/\[DOMAIN\]/$VITE_DOMAIN/g" "$OUT/.well-known/security.txt" && rm -f "$OUT/.well-known/security.txt.bak"
+fi
+echo "Source links: $([[ -n "$SOURCE_URL" ]] && echo "$SOURCE_URL" || echo 'pending (Code goes public under the MIT licence at launch)')"
 echo "Moves and buys: $([[ "${VITE_MOVES_OPEN:-}" == "1" ]] && echo OPEN || echo closed)"
 echo "Site in $OUT ($(du -sh "$OUT" | cut -f1), $(find "$OUT" -type f | wc -l | tr -d ' ') files)"

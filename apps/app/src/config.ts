@@ -25,7 +25,12 @@ export const APP_URL = `${location.origin}${import.meta.env.BASE_URL}`;
 export const DOCS_URL = '/docs/';
 export const TERMS_URL = '/terms';
 export const PRIVACY_URL = '/privacy';
-export const SOURCE_URL = 'https://github.com/ZecDoor/zecdoor';
+/**
+ * The public repository, set at build time (SOURCE_URL in scripts/build-site.sh) once the GitHub
+ * organisation exists. Until then the app links nowhere and shows SOURCE_PENDING.
+ */
+export const SOURCE_URL: string | null = import.meta.env.VITE_SOURCE_URL || null;
+export const SOURCE_PENDING = 'Code goes public under the MIT licence at launch';
 export const NEAR_SUPPORT_URL = 'https://t.me/near_intents';
 
 export const WALLET_APPS = {

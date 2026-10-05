@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 import { getMDXComponents } from '@/components/mdx';
 import type { Metadata } from 'next';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
-import { gitConfig } from '@/lib/shared';
+import { gitConfig, SOURCE_URL } from '@/lib/shared';
+import { repoLinks } from '@/components/repo-link';
 
 export default async function Page(props: { params: Promise<{ slug?: string[] }> }) {
   const params = await props.params;
@@ -17,11 +18,9 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
-        <MDX components={getMDXComponents({ a: createRelativeLink(source, page) })} />
+        <MDX components={getMDXComponents({ a: repoLinks(createRelativeLink(source, page)) })} />
       </DocsBody>
-      <EditOnGitHub
-        href={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/${gitConfig.contentPath}/${page.path}`}
-      />
+      {SOURCE_URL && <EditOnGitHub href={`${SOURCE_URL}/blob/${gitConfig.branch}/${gitConfig.contentPath}/${page.path}`} />}
     </DocsPage>
   );
 }

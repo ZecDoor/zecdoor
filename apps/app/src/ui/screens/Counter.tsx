@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { SOURCE_URL } from '../../config';
+import { SOURCE_PENDING, SOURCE_URL } from '../../config';
 import { duration, units } from '../../lib/format';
 import { counter as fetchCounter, type Counter as Data } from '../../lib/server';
 import { AsideHead, Shell } from '../parts';
@@ -79,12 +79,16 @@ export function Counter() {
         <span>
           When a move this page built finishes, our server reads its result from NEAR Intents and, if it succeeded and carries our fee, adds one to a
           running total and adds its amount. We keep only those totals per day and route — never a Solana or Zcash address, a transaction ID, an IP
-          address or a device ID. To avoid counting a move twice, a one-way hash of its deposit address is kept for 24 hours, then deleted. The
-          counting code is public.
+          address or a device ID. To avoid counting a move twice, a one-way hash of its deposit address is kept for 24 hours, then deleted.
+          {SOURCE_URL ? ' The counting code is public.' : ''}
         </span>
-        <a href={`${SOURCE_URL}/tree/main/apps/server`} target="_blank" rel="noreferrer" style={{ color: 'var(--text)', marginTop: 4 }}>
-          Read the counting code
-        </a>
+        {SOURCE_URL ? (
+          <a href={`${SOURCE_URL}/tree/main/apps/server`} target="_blank" rel="noreferrer" style={{ color: 'var(--text)', marginTop: 4 }}>
+            Read the counting code
+          </a>
+        ) : (
+          <span className="muted" style={{ marginTop: 4 }}>{SOURCE_PENDING}.</span>
+        )}
       </div>
     </Shell>
   );
