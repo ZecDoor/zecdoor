@@ -17,22 +17,5 @@ export function baseOptions(): BaseLayoutProps {
   return {
     nav: { title: <Logo />, url: '/' },
     ...(SOURCE_URL ? { githubUrl: SOURCE_URL } : {}),
-    links: [
-      // Other parts of the same site, outside this Next app: plain anchors, so basePath
-      // (/docs) is not added and no client-side routing is attempted.
-      {
-        type: 'custom',
-        children: (
-          <div className="flex items-center gap-3 py-1">
-            <a href="/app/" className="text-sm font-medium text-fd-primary-foreground bg-fd-primary rounded-md px-3 py-1.5">
-              Open the app
-            </a>
-            <a href="/" className="text-sm text-fd-muted-foreground hover:text-fd-foreground">
-              ZecDoor home
-            </a>
-          </div>
-        ),
-      },
-    ],
   };
 }

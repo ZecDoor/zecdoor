@@ -52,3 +52,32 @@ html > body[data-scroll-locked] {
   margin-right: 0px !important;
   --removed-body-scroll-bar-size: 0px !important;
 }
+
+/* Sidebar: section titles read as titles, and the pages of each section sit indented under them on
+   a thin guide line (the current page's segment is amber), so the two levels never look alike. */
+#nd-sidebar p {
+  margin-top: 1.75rem;
+  margin-bottom: 0.25rem;
+  color: var(--color-fd-foreground);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+#nd-sidebar p:first-child {
+  margin-top: 0;
+}
+#nd-sidebar p ~ a[data-active],
+#nd-sidebar p ~ div > button {
+  margin-inline-start: 0.625rem;
+  padding-inline-start: 0.875rem !important;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  box-shadow: inset 1px 0 0 var(--color-fd-border);
+}
+#nd-sidebar p ~ a[data-active='true'] {
+  box-shadow: inset 2px 0 0 var(--color-fd-primary);
+}
+/* pages inside a folder (Terms and privacy) sit one step further in */
+#nd-sidebar p ~ div > div {
+  margin-inline-start: 1.5rem;
+}
