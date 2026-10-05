@@ -69,9 +69,9 @@ if [[ -f "$OUT/.well-known/security.txt" ]]; then
   sed -i.bak "s/\[DOMAIN\]/$VITE_DOMAIN/g" "$OUT/.well-known/security.txt" && rm -f "$OUT/.well-known/security.txt.bak"
 fi
 # Which commit this site was built from, so anyone can check out the same code and compare.
-printf '{"commit":"%s","dirty":%s,"builtAt":"%s","node":"%s","moves":"%s"}\n' "$(git -C "$ROOT" rev-parse HEAD)" \
+printf '{"commit":"%s","dirty":%s,"builtAt":"%s","node":"%s","moves":"%s","preview":%s}\n' "$(git -C "$ROOT" rev-parse HEAD)" \
   "$([[ -n "$(git -C "$ROOT" status --porcelain)" ]] && echo true || echo false)" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(node --version)" \
-  "$([[ "${VITE_MOVES_OPEN:-}" == "1" ]] && echo open || echo closed)" > "$OUT/build.json"
+  "$([[ "${VITE_MOVES_OPEN:-}" == "1" ]] && echo open || echo closed)" "$([[ "${PREVIEW:-}" == "1" ]] && echo true || echo false)" > "$OUT/build.json"
 echo "Source links: $([[ -n "$SOURCE_URL" ]] && echo "$SOURCE_URL" || echo 'pending (Code goes public under the MIT licence at launch)')"
 echo "Moves and buys: $([[ "${VITE_MOVES_OPEN:-}" == "1" ]] && echo OPEN || echo closed)"
 echo "Site in $OUT ($(du -sh "$OUT" | cut -f1), $(find "$OUT" -type f | wc -l | tr -d ' ') files)"
