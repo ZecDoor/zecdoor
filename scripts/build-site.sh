@@ -14,6 +14,9 @@ LANDING_DIR="${LANDING_DIR:-$ROOT/../zecdoor-landing}"
 # source and contact link reads "Code goes public under the MIT licence at launch" instead.
 SOURCE_URL="${SOURCE_URL-https://github.com/ZecDoor/zecdoor}"
 export NEXT_PUBLIC_SOURCE_URL="$SOURCE_URL" VITE_SOURCE_URL="$SOURCE_URL"
+# The operator's contact (Terms, Privacy, security.txt), listed first in security.txt.
+SECURITY_EMAIL="${SECURITY_EMAIL-jagadeesh26062002@gmail.com}"
+export NEXT_PUBLIC_CONTACT_EMAIL="$SECURITY_EMAIL"
 
 pnpm --dir "$ROOT" check:allowlist
 LANDING_DIR="$LANDING_DIR" pnpm --dir "$ROOT" check:copy   # text and images (OCR), landing included

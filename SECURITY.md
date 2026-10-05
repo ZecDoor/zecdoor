@@ -7,8 +7,9 @@ builds or checks matters. Thank you for looking.
 
 Please do not post exploit details in a public issue.
 
-1. Open an issue titled **"Security: private contact request"**, with no details of the problem.
-2. We reply in that issue with a private channel, and fix in private before anything is published.
+Email **jagadeesh26062002@gmail.com** with the details. If you prefer GitHub, open an issue titled **"Security: private contact
+request"** with no details of the problem, and we reply there with a private channel. Fixes are made in private before
+anything is published.
 
 The live site lists the current contact at `/.well-known/security.txt`.
 

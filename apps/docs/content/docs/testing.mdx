@@ -18,8 +18,36 @@ Run them: `pnpm test`, `pnpm test:live`, `pnpm --filter @zecdoor/app e2e`.
 
 ## Mainnet transactions
 
-Every mainnet transaction we make while testing is listed here with its Solana signature, Zcash txid and NEAR Intents
-status.
+Every mainnet transaction we make while testing is listed here with its Solana signature, Zcash transaction and NEAR
+Intents status. They run through the app's own code, driven in a browser on mainnet with a test wallet
+([`scripts/mainnet/app-run.ts`](https://github.com/ZecDoor/zecdoor/blob/main/scripts/mainnet/app-run.ts)); before
+signing, each transaction is re-checked against the allowlist from outside the page. Moves and buys open to everyone once
+these runs have passed.
 
-_No ZecDoor mainnet moves yet. Moves and buys open to everyone once these test moves have passed; each will be listed
-here._
+### B1: top up and shield, one transaction (5 Oct 2026)
+
+A wallet holding 0.0003 ZEC, below the bridge minimum, moved all of it into a new wallet made in the app, topped up by a
+Jupiter swap from SOL inside the same transaction. **Passed:** NEAR Intents credited the combined transaction, and the
+ZEC arrived in the shielded pool 2 minutes 13 seconds after signing.
+
+| Step | Record |
+|---|---|
+| Starting balance (bought for the test) | 0.0003 ZEC, Solana [`3VPSu8…U5akP`](https://solscan.io/tx/3VPSu8UUq4MbzNvyrAybUiQMbcEGR66jmynSCFgThkHL6dcEUvo4cP9rXQzuYDyWsv4Vc7Zwg8SjtGcftQqU5akP) |
+| The move: swap SOL → 0.00103669 ZEC, then send all 0.00133669 ZEC | Solana [`2ZfeRt…J9ZQLa`](https://solscan.io/tx/2ZfeRtsivSk7UCrsTenJ5dL1GoArXyK2aCRH1RE8uFUR6XMEgjvVBLtc1JWnigb44FBTbauSvqc3xtBUmJJ9ZQLa), 747 bytes, no allowlist violations |
+| NEAR Intents | deposit `6HVDicNC2ureqoJHHyJ6PmRjE82pTAiJhPZVNQTWdTbe`, status **SUCCESS**, `amountOut` 0.00101335 ZEC |
+| Zcash | [`2fac74…f206d6`](https://blockchair.com/zcash/transaction/2fac74310c294c306f56bb9d60891af9d0f8f2ff9c4244f77e1939cf7df206d6), block 3,507,539, into the Ironwood pool |
+| Found by the browser | 0.00108335 ZEC, at or above the quote's minimum (0.00100320) |
+| Restored in Zodl's engine | `zcash-devtool` (librustzcash) restored the 24 words from birthday 3,507,524 and shows 0.00108335 ZEC |
+
+Two findings:
+
+- **Transaction ID byte order.** NEAR Intents' status reports the Zcash transaction ID in the same byte order as our
+  scanner and as block explorers: Blockchair finds `2fac74…06d6` in block 3,507,539 and nothing for the reversed bytes.
+  The app matches arrival by address and amount, so this needs no change.
+- **More arrives than `amountOut` says.** The note held 7,000 zat (0.00007 ZEC) more than the status's `amountOut`: the
+  bridge charged 25,000 zat for the Zcash payout, not the 32,000 its quote shows. The quote's minimum is what we promise.
+
+### Refund probe (5 Oct 2026)
+
+To see where NEAR Intents reports a refund, we sent a deposit smaller than its quote asked for (test tooling, outside the
+app; the app's transaction always sends the exact amount). Result recorded below once NEAR Intents refunds it.

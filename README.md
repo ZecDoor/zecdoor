@@ -88,7 +88,7 @@ The app at `/app` is the part that builds and checks the transaction you sign. T
 - The app's Content Security Policy ([`deploy/site/_headers`](deploy/site/_headers)) lists every service it can reach.
 - The server stores per-day totals only; see [`apps/server/src/counter.ts`](apps/server/src/counter.ts) and its tests.
 
-Report vulnerabilities privately: see [SECURITY.md](SECURITY.md) (also `/.well-known/security.txt` on the live site).
+Report vulnerabilities privately to jagadeesh26062002@gmail.com; see [SECURITY.md](SECURITY.md) (also `/.well-known/security.txt` on the live site).
 
 ## Licence
 
