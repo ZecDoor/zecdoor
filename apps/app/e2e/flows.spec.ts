@@ -185,7 +185,8 @@ test('exit to a pasted address: validation, review, proof without a viewing key'
 test('top-up and shield a balance below the minimum, in one transaction', async ({ page }) => {
   const m = await mock(page, { zec: 37_814n });
   await page.goto('./');
-  await expect(page.getByText(/Below the bridge minimum of 0\.00133669 ZEC/)).toBeVisible();
+  // 37,814 zat is worth less than a move costs: the warning shows, and the top-up is still offered.
+  await expect(page.getByText('Worth less than moving it costs')).toBeVisible();
   await page.getByRole('button', { name: /Top up and shield/ }).click();
   await expect(page.getByText('Your one signature does both')).toBeVisible();
   await expect(page.getByText(/Send all 0\.00133669 ZEC/)).toBeVisible();

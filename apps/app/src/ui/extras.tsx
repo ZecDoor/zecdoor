@@ -151,7 +151,7 @@ const QUESTIONS: Array<[string, string]> = [
     'The Solana transaction and its amount, the amount and time your ZEC enters the shielded pool, and, on NEAR Intents’ explorer, that your Solana wallet paid that Zcash address. What you do with the ZEC after it lands is private.',
   ],
   ['What if a move can’t complete?', 'NEAR Intents refunds the Solana wallet that sent it. In our own test of a short deposit, the refund came at the quote’s deadline, 31 minutes later.'],
-  ['My balance is below the bridge minimum.', 'ZecDoor swaps just enough SOL or USDC into ZEC and moves all of it, in the same single signature.'],
+  ['My balance is below the bridge minimum.', 'ZecDoor swaps just enough SOL or USDC into ZEC and moves all of it, in the same single signature. If your balance is worth less than one move costs in fees, the app says so first: moving it would cost more than it is worth.'],
   ['Which wallets work?', 'Phantom, tested end to end on mainnet. Other Solana wallets are listed but cannot be picked until each passes the same test.'],
   ['How do I spend it later?', 'Restore the wallet in Zodl or Zkool with your 24 words and the birthday height. ZecDoor never spends.'],
 ];

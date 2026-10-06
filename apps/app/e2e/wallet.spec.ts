@@ -102,3 +102,18 @@ test.describe('accessibility, both themes', () => {
     }
   }
 });
+
+test.describe('balances worth less than a move costs', () => {
+  test('dust gets a plain warning; the top-up is still there', async ({ page }) => {
+    await mock(page, { zec: 20_000n });
+    await page.goto('./');
+    await expect(page.getByText('Worth less than moving it costs')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Top up and shield/ }).first()).toBeVisible();
+  });
+  test('a small balance above the line gets the normal top-up offer', async ({ page }) => {
+    await mock(page, { zec: 60_000n });
+    await page.goto('./');
+    await expect(page.getByText(/Below the bridge minimum/)).toBeVisible();
+    await expect(page.getByText('Worth less than moving it costs')).toHaveCount(0);
+  });
+});

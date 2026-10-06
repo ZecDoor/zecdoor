@@ -4,6 +4,7 @@ import { MOVES_OPEN } from '../../config';
 import { day, short, sol, usd, zec } from '../../lib/format';
 import { dryQuote, type DryQuote } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
+import { movingCost } from '../../lib/economics';
 import { continueWith, landsIn } from '../flow';
 import { Chevron, Logo, Panel, Shell, StateCard } from '../parts';
 import { networkFee, NetworkFeeLabel, PanelRows, PublicPanel, RecentPanel, RoutePanel, useWide } from '../rail';
@@ -32,6 +33,10 @@ export function Home() {
   const topupAllowed = geo?.topup !== false;
   const need = small ? minimum! - bal! : 0n;
   const needUsd = prices.zec ? (Number(need) / 1e8) * prices.zec : null;
+  // Worth less than a move costs: say so plainly; the top-up stays available but is not recommended.
+  const cost = minimum ? movingCost(minimum, prices) : null;
+  const dust = small && topupAllowed && !!cost && bal! < cost.zat;
+  const asUsd = (zat: bigint) => (prices.zec ? usd(Math.max((Number(zat) / 1e8) * prices.zec, 0.01)) : zec(zat, 0));
 
   const start = async () => {
     if (!bal || blocked || paused) return;
@@ -167,7 +172,13 @@ export function Home() {
         <span className="caption">Bridged ZEC · NEAR Omni · {short(ZEC_MINT.toBase58(), 4, 4)}</span>
       </div>
 
-      {small ? (
+      {dust ? (
+        <StateCard tone="warn" title="Worth less than moving it costs">
+          Your {zec(bal!, 0)} is worth about {asUsd(bal!)}. One move costs about {asUsd(cost!.zat)} in fixed fees: the bridge’s payout fee (up to{' '}
+          {zec(cost!.payoutFee, 0)}), the deposit account and Solana fee (about {asUsd(cost!.solana)}), our 0.25% and the swap’s 1% limit. You would
+          pay more than you move. You can still top up, but we don’t recommend it.
+        </StateCard>
+      ) : small ? (
         <div className="note warn" style={{ fontSize: 14, borderRadius: 16, padding: '14px 16px' }}>
           <strong>Below the bridge minimum of {zec(minimum!)}</strong>
           <span>

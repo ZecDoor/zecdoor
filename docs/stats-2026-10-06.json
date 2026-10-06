@@ -1,0 +1,67 @@
+{
+  "at": "2026-10-06T08:22:18.726Z",
+  "sources": {
+    "accounts": "getProgramAccounts on https://api.mainnet-beta.solana.com, mint A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS, SPL Token program",
+    "minimumAndPayoutFee": "1Click dry quote: \"Amount is too low for bridge, try at least 133669\"; quoted withdrawFee at the minimum",
+    "prices": "https://1click.chaindefuser.com/v0/tokens",
+    "rent": "getMinimumBalanceForRentExemption(165)"
+  },
+  "prices": {
+    "zecUsd": 1340.52,
+    "solUsd": 120.45
+  },
+  "bridgeMinimumZat": 133669,
+  "worthMovingFromZat": 47178,
+  "worthMovingFromUsd": 0.63,
+  "fixedCostsZat": {
+    "bridgePayoutFeeCeiling": 32000,
+    "depositAccountAndSolanaFee": 13508,
+    "ourFeeOnMinimum": 334,
+    "topUpSlippageBound": 1336
+  },
+  "tokenAccounts": 331277,
+  "empty": 193082,
+  "nonEmpty": 138195,
+  "above": {
+    "accounts": 47236,
+    "zec": 99536.73211252,
+    "walletOwned": {
+      "accounts": 36397,
+      "zec": 88408.86459982
+    },
+    "programOwned": {
+      "accounts": 10839,
+      "zec": 11127.8675127
+    }
+  },
+  "belowButWorthMoving": {
+    "accounts": 17647,
+    "zec": 14.51731296,
+    "walletOwned": {
+      "accounts": 15652,
+      "zec": 12.82686812
+    },
+    "programOwned": {
+      "accounts": 1995,
+      "zec": 1.69044484
+    }
+  },
+  "dust": {
+    "accounts": 73312,
+    "zec": 7.25201503,
+    "walletOwned": {
+      "accounts": 64935,
+      "zec": 6.68505528
+    },
+    "programOwned": {
+      "accounts": 8377,
+      "zec": 0.56695975
+    }
+  },
+  "shares": {
+    "above": "34.2%",
+    "belowButWorthMoving": "12.8%",
+    "dust": "53.0%"
+  },
+  "zecTotal": 99558.50144051
+}
