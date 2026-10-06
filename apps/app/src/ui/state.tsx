@@ -2,6 +2,7 @@ import { ASSET, type MoveKind } from '@zecdoor/solana';
 import { PublicKey } from '@solana/web3.js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { exitMinimum, oneClick, type Destination, type TopUpPlan } from '../lib/move';
+import { getPhantom } from '../lib/phantom';
 import type { WalletSnapshot } from '../lib/wallet';
 import { geo as fetchGeo, health as fetchHealth, type Geo, type Health } from '../lib/server';
 import { readBalances, type Balances } from '../lib/solana';
@@ -56,7 +57,16 @@ interface AppState {
 
 const Ctx = createContext<AppState | null>(null);
 
-const NOT_READY: WalletSnapshot = { ready: false, options: [], connected: null, connecting: false };
+/**
+ * Before the wallet layer has loaded, what the page can tell at once: whether Phantom injected
+ * itself. The first screen is drawn from this, so nothing moves when the layer arrives.
+ */
+const firstGuess = (): WalletSnapshot => ({
+  ready: false,
+  options: getPhantom() ? [{ name: 'Phantom', icon: null, supported: true, legacy: true }] : [],
+  connected: null,
+  connecting: false,
+});
 
 /**
  * The wallet layer is loaded after the first paint, so the page shows without waiting for it.
@@ -72,7 +82,7 @@ export function useApp(): AppState {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [wallet$, setWallet$] = useState<WalletSnapshot>(NOT_READY);
+  const [wallet$, setWallet$] = useState<WalletSnapshot>(firstGuess);
   const [balances, setBalances] = useState<Balances | null>(null);
   const [balanceError, setBalanceError] = useState<string | null>(null);
   const [minimum, setMinimum] = useState<bigint | null>(null);

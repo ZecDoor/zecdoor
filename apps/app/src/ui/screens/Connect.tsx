@@ -85,11 +85,7 @@ export function Connect() {
               </StateCard>
             </div>
           ) : null}
-          {!wallet$.ready ? (
-            <button type="button" className="btn" disabled>
-              Looking for your wallet…
-            </button>
-          ) : supported.length ? (
+          {supported.length ? (
             <button type="button" className="btn" onClick={() => void onConnect()} disabled={wallet$.connecting}>
               {wallet$.connecting ? `Waiting for ${direct?.name ?? 'your wallet'}…` : direct ? `Connect ${direct.name}` : 'Connect wallet'}
             </button>
@@ -102,7 +98,7 @@ export function Connect() {
               Get Phantom
             </a>
           )}
-          {supported.length || !wallet$.ready ? null : (
+          {supported.length ? null : (
             <a className="textlink" href={link}>
               Not in Phantom? Open this page in Phantom
             </a>
