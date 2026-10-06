@@ -43,7 +43,7 @@ export const shots: Shot[] = [
   },
   { name: 'home', go: async (p) => void (await p.goto('./'), await expect(p.getByText('Move 0.0874 ZEC')).toBeVisible()) },
   { name: 'home-below-minimum', scenario: { zec: 37_814n }, go: async (p) => void (await p.goto('./'), await expect(p.getByText(/Below the bridge minimum/)).toBeVisible()) },
-  { name: 'home-no-zec', scenario: { zec: 0n }, go: async (p) => void (await p.goto('./'), await expect(p.getByText('You have no ZEC on Solana.', { exact: false })).toBeVisible()) },
+  { name: 'home-no-zec', scenario: { zec: 0n }, go: async (p) => void (await p.goto('./'), await expect(p.getByText('You have no ZEC on Solana.', { exact: false }).first()).toBeVisible()) },
   { name: 'home-paused', scenario: { health: { ok: false, paused: true, message: 'NEAR Intents reports an incident.' } }, go: async (p) => void (await p.goto('./'), await expect(p.getByText('The bridge is paused')).toBeVisible()) },
   { name: 'destination', go: own },
   {

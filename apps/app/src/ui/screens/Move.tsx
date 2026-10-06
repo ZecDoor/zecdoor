@@ -30,7 +30,7 @@ const sent = (m: MoveRecord) =>
   m.kind === 'buyUsdc' ? usdc(BigInt(m.amountIn)) : m.kind === 'buySol' ? sol(BigInt(m.amountIn)) : zec(BigInt(m.amountIn));
 
 export function MoveScreen({ id }: { id: string }) {
-  const { wallet } = useApp();
+  const { wallet, reloadMoves } = useApp();
   const [m, setM] = useState<MoveRecord | null | undefined>(undefined);
   const [stale, setStale] = useState(false);
   const [scanAt, setScanAt] = useState<number | null>(null);
@@ -62,6 +62,8 @@ export function MoveScreen({ id }: { id: string }) {
         if (live) {
           setM(next);
           setStale(false);
+          // Keep the recent-moves list (home and the rail) in step with this move.
+          if (next.status !== m.status || !!next.arrival !== !!m.arrival) void reloadMoves();
         }
       } catch {
         if (live) setStale(true);
