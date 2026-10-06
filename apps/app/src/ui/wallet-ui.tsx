@@ -53,9 +53,11 @@ export function Menu({ button, label, items }: { button: (p: { onClick: () => vo
       const isOpen = (e as ToggleEvent).newState === 'open';
       setOpen(isOpen);
       if (isOpen) {
+        // Rectangles are in screen pixels; under the desktop zoom, styles are in zoomed pixels.
+        const z = (el as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom ?? 1;
         const r = btn.current!.getBoundingClientRect();
-        el.style.top = `${r.bottom + 8}px`;
-        el.style.right = `${Math.max(8, window.innerWidth - r.right)}px`;
+        el.style.top = `${(r.bottom + 8) / z}px`;
+        el.style.right = `${Math.max(8, window.innerWidth - r.right) / z}px`;
         el.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
       }
     };

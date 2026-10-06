@@ -1,6 +1,7 @@
 import qrcode from 'qrcode-generator';
 import { useId, useState, type ReactNode } from 'react';
 import { DOCS_URL, DOMAIN } from '../config';
+import { Footer } from './extras';
 import { useWide } from './rail';
 import { WalletButton, WalletPicker } from './wallet-ui';
 import { go } from './router';
@@ -68,22 +69,26 @@ type NavKey = 'move' | 'buy' | 'counter';
  * navigation and wallet; the screen's own column stays on the left and `rail` (context panels)
  * fills the rest. Pieces marked `ph` show only on phones, `dk` only from 768 px.
  */
-export function Shell({ children, rail, nav = 'move', wide }: { children: ReactNode; rail?: ReactNode; nav?: NavKey; wide?: boolean }) {
-  // The rail is not rendered at all on phones, so the phone page is exactly what it was.
-  const showRail = useWide() && !!rail;
+export function Shell({ children, rail, left, nav = 'move', wide }: { children: ReactNode; rail?: ReactNode; left?: ReactNode; nav?: NavKey; wide?: boolean }) {
+  // The rail and the extras are not rendered at all on phones, so the phone page is exactly what it was.
+  const desk = useWide();
   return (
-    <>
+    <div className="app">
       <TopBar nav={nav} />
       <main className={`ws${rail ? '' : ' solo'}`}>
-        <div className={`act${wide ? ' gap20' : ''}`}>{children}</div>
-        {showRail ? (
+        <div className={`act${wide ? ' gap20' : ''}`}>
+          {children}
+          {desk && left ? <div className="act-extra">{left}</div> : null}
+        </div>
+        {desk && rail ? (
           <aside className="rail" aria-label="Details">
             {rail}
           </aside>
         ) : null}
       </main>
+      {desk ? <Footer /> : null}
       <WalletPicker />
-    </>
+    </div>
   );
 }
 

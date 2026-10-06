@@ -5,6 +5,7 @@ import { dryQuote, MoveError, planTopUp, type DryQuote, type TopUpPlan } from '.
 import { solNeeded } from '../../lib/solana';
 import { continueWith } from '../flow';
 import { BackBar, Panel, Shell, Spinner, StateCard } from '../parts';
+import { FaqPanel } from '../extras';
 import { Bullets, networkFee, NetworkFeeLabel, RouteMap } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
@@ -100,6 +101,7 @@ export function TopUp() {
               If it can’t complete, NEAR Intents refunds Solana ZEC, including what the swap bought, to the wallet that sent it. Not the {payWith === 'sol' ? 'SOL' : 'USDC'} you spent.
             </p>
           </Panel>
+          <FaqPanel />
         </>
       }
     >

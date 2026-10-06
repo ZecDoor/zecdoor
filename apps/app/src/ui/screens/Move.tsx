@@ -5,6 +5,7 @@ import { clock, day, duration, height, short, sol, usdc, zec } from '../../lib/f
 import { checkArrival, refreshStatus, refundReason } from '../../lib/move';
 import { getMove, type MoveRecord } from '../../lib/store';
 import { CheckCircle, Panel, Pending, Rows, Shell, Spinner, StateCard } from '../parts';
+import { CounterPanel, FaqPanel, FirstRun, MoveSteps } from '../extras';
 import { Bullets, PanelRows, RecentPanel, RoutePanel } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
@@ -176,8 +177,10 @@ function Progress({ m, now, stale, scanAt, hasWallet }: { m: MoveRecord; now: nu
             </Panel>
           )}
           <RecentPanel moves={moves} owner={m.owner} exclude={m.depositAddress} />
+          <FaqPanel />
         </>
       }
+      left={<FirstRun />}
       wide
     >
       <div className="bar">
@@ -298,8 +301,10 @@ function Proof({ m }: { m: MoveRecord }) {
             </p>
           </Panel>
           <RecentPanel moves={moves} owner={m.owner} exclude={m.depositAddress} />
+          <FaqPanel />
         </>
       }
+      left={<CounterPanel />}
       wide
     >
       <div className="bar">
@@ -420,6 +425,12 @@ function Refund({ m }: { m: MoveRecord }) {
           <Panel title="What stays public">
             <p className="sub">Both Solana transactions, and on NEAR Intents’ explorer that this wallet asked to pay a Zcash address. No ZEC reached the shielded pool.</p>
           </Panel>
+          <FaqPanel />
+        </>
+      }
+      left={
+        <>
+          <MoveSteps />
         </>
       }
       wide

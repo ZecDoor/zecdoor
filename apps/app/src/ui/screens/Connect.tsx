@@ -3,6 +3,7 @@ import { APP_URL, DOMAIN, MOVES_OPEN } from '../../config';
 import { isMobile, phantomBrowseLink } from '../../lib/phantom';
 import { Logo, Panel, Qr, Shell, Shield, StateCard, Tick } from '../parts';
 import { Bullets, RoutePanel } from '../rail';
+import { CounterPanel, FaqPanel, FeesPanel, FirstRun, MoveSteps } from '../extras';
 import { useApp } from '../state';
 import { openPicker } from '../wallet-ui';
 
@@ -26,6 +27,12 @@ export function Connect() {
 
   return (
     <Shell
+      left={
+        <>
+          <MoveSteps />
+          <FirstRun />
+        </>
+      }
       rail={
         <>
           <RoutePanel owner={null} />
@@ -42,6 +49,9 @@ export function Connect() {
               ]}
             />
           </Panel>
+          <CounterPanel />
+          <FeesPanel minimum={null} />
+          <FaqPanel />
         </>
       }
     >

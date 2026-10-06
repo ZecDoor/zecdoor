@@ -5,6 +5,7 @@ import { clock, short, sol, usdc, zec } from '../../lib/format';
 import { dryQuote, executeMove, MoveError, type DryQuote, type Stage } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
 import { BackBar, CheckCircle, Panel, Shell, Spinner, StateCard } from '../parts';
+import { FaqPanel, MoveSteps } from '../extras';
 import { Bullets, networkFee, NetworkFeeLabel, PanelRows, PublicPanel } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
@@ -143,8 +144,10 @@ export function Review() {
             />
           </Panel>
           <PublicPanel owner={owner.toBase58()} recipient={dest.address} full />
+          <FaqPanel />
         </>
       }
+      left={<MoveSteps />}
     >
       <BackBar title="Review" back={() => history.back()} step={dry && !expired ? `Quote valid ${clock(left)}` : undefined} />
 

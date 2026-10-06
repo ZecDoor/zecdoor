@@ -7,6 +7,7 @@ import { height } from '../../lib/format';
 import { putWallet } from '../../lib/store';
 import { createWallet, freshAddress } from '../../lib/zcash';
 import { BackBar, Panel, Shell, Spinner, StateCard } from '../parts';
+import { FaqPanel, MoveSteps } from '../extras';
 import { Bullets, PanelRows } from '../rail';
 import { WALLET_APPS } from '../../config';
 import { go } from '../router';
@@ -57,6 +58,7 @@ export function WalletCreate() {
               choose to restore a wallet, and enter the 24 words and the birthday height. ZecDoor never spends.
             </p>
           </Panel>
+          <FaqPanel />
         </>
       }
     >
@@ -198,6 +200,12 @@ export function WalletVerify() {
           <Panel title="If a check fails">
             <p className="sub">Nothing is lost. Go back, show the words again and correct your paper. You can’t continue until all three are right.</p>
           </Panel>
+          <FaqPanel />
+        </>
+      }
+      left={
+        <>
+          <MoveSteps />
         </>
       }
     >

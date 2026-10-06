@@ -3,6 +3,7 @@ import { wasAddressUsed } from '../../lib/store';
 import { ADDRESS_PROBLEMS, inspect } from '../../lib/zcash';
 import { continueWith } from '../flow';
 import { BackBar, Panel, Shell, Tick } from '../parts';
+import { FaqPanel, FeesPanel, MoveSteps } from '../extras';
 import { PanelRows } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
@@ -71,6 +72,13 @@ export function Destination() {
           <Panel title="Addresses you used before" cap="this browser only" full>
             <p className="sub">We keep only a one-way hash of addresses you pasted, to warn you if you paste one again. Nothing about them leaves this browser.</p>
           </Panel>
+          <FeesPanel minimum={app.minimum} />
+          <FaqPanel />
+        </>
+      }
+      left={
+        <>
+          <MoveSteps />
         </>
       }
     >

@@ -8,6 +8,7 @@ import { continueWith, landsIn } from '../flow';
 import { Chevron, Logo, Panel, Shell, StateCard } from '../parts';
 import { networkFee, NetworkFeeLabel, PanelRows, PublicPanel, RecentPanel, RoutePanel, useWide } from '../rail';
 import { go } from '../router';
+import { CounterPanel, FaqPanel, FeesPanel, FirstRun, MoveSteps } from '../extras';
 import { useApp } from '../state';
 import { Menu, useWalletMenuItems } from '../wallet-ui';
 import { statusLabel } from './Move';
@@ -65,6 +66,12 @@ export function Home() {
 
   return (
     <Shell
+      left={
+        <>
+          <MoveSteps />
+          <FirstRun />
+        </>
+      }
       rail={
         <>
           <RoutePanel kind={small ? 'topup' : 'exit'} owner={ownerStr} dest={landsIn(draft, wallet).replace(' · fresh address', '')} />
@@ -99,6 +106,9 @@ export function Home() {
           </Panel>
           <PublicPanel owner={ownerStr} />
           <RecentPanel moves={moves} owner={ownerStr} />
+          <CounterPanel />
+          <FeesPanel minimum={minimum} />
+          <FaqPanel />
         </>
       }
     >

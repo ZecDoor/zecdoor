@@ -3,6 +3,7 @@ import { SOURCE_PENDING, SOURCE_URL } from '../../config';
 import { duration, units } from '../../lib/format';
 import { counter as fetchCounter, type Counter as Data } from '../../lib/server';
 import { Panel, Shell } from '../parts';
+import { FaqPanel, FeesPanel, FirstRun } from '../extras';
 import { Bullets } from '../rail';
 
 /** Public totals from our own records. Placeholders until real moves exist. */
@@ -36,6 +37,9 @@ export function Counter() {
           <Panel title="Never kept">
             <Bullets items={['Solana or Zcash addresses', 'Transaction IDs', 'IP addresses or device IDs', 'Anything after a move’s 24-hour duplicate check']} />
           </Panel>
+          <FirstRun />
+          <FeesPanel minimum={null} />
+          <FaqPanel />
         </>
       }
       wide

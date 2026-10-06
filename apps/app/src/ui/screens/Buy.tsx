@@ -5,6 +5,7 @@ import { dryQuote, MoveError, type DryQuote } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
 import { feeOk } from '../../lib/server';
 import { BackBar, Panel, Rows, Shell, StateCard } from '../parts';
+import { CounterPanel, FaqPanel } from '../extras';
 import { Bullets, networkFee, NetworkFeeLabel, PanelRows, RoutePanel } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
@@ -99,8 +100,10 @@ export function Buy() {
               ]}
             />
           </Panel>
+          <FaqPanel />
         </>
       }
+      left={<CounterPanel />}
     >
       <BackBar title="Buy shielded ZEC" back="/" />
 

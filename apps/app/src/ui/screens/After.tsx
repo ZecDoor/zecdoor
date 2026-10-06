@@ -4,6 +4,7 @@ import { height, short, zec } from '../../lib/format';
 import { quoteHash } from '@zecdoor/solana';
 import { forgetWallet, getMove, type MoveRecord } from '../../lib/store';
 import { BackBar, Panel, Shell } from '../parts';
+import { CounterPanel, FaqPanel } from '../extras';
 import { PanelRows, RecentPanel } from '../rail';
 import { solscan, zcashTx } from './Move';
 import { go } from '../router';
@@ -61,8 +62,10 @@ export function After({ id }: { id: string }) {
             </p>
           </Panel>
           <RecentPanel moves={app.moves} owner={m?.owner ?? null} />
+          <FaqPanel />
         </>
       }
+      left={<CounterPanel />}
     >
       <BackBar title="Your ZEC is home. Now:" back={`/move/${id}`} />
 

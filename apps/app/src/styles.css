@@ -1121,7 +1121,7 @@ dl.rows dd a,
 }
 dialog.sheet {
   width: min(440px, calc(100vw - 32px));
-  max-height: calc(100dvh - 48px);
+  max-height: calc(100dvh / var(--z) - 48px);
   border: 1px solid var(--line);
   border-radius: 22px;
   padding: 20px;
@@ -1546,4 +1546,138 @@ dl.prows.plain dd {
 }
 .fee-max .explained {
   white-space: normal;
+}
+
+/* ---------- desktop: fill the window, scale on wide screens ----------
+   From 1024 px the app is one column of top bar, workspace and footer at least as tall as the window.
+   On wide screens the whole layout is zoomed, so 1920×1080 and 2560×1440 lay out like about
+   1600×900 and 1700×960 instead of leaving small content in a large frame. Under zoom, viewport
+   units are multiplied too, hence the division. */
+:root {
+  --z: 1;
+}
+@media (min-width: 1700px) {
+  :root {
+    --z: 1.2;
+  }
+}
+@media (min-width: 2100px) {
+  :root {
+    --z: 1.35;
+  }
+}
+@media (min-width: 2500px) {
+  :root {
+    --z: 1.5;
+  }
+}
+@media (min-width: 3200px) {
+  :root {
+    --z: 2;
+  }
+}
+@media (min-width: 1024px) {
+  .app {
+    zoom: var(--z);
+    min-height: calc(100dvh / var(--z));
+    display: flex;
+    flex-direction: column;
+  }
+  .app > .ws {
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: 1600px;
+  }
+}
+.act-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+.panel .sub,
+.panel p {
+  max-width: 72ch;
+}
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  padding: 14px 32px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--muted);
+}
+.foot a {
+  color: var(--muted);
+  text-decoration: none;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+}
+.foot a:hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.mini-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.mini-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--sunk);
+}
+.mini-stats .v {
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.mini-stats .k {
+  font-size: 12px;
+  color: var(--muted);
+}
+.faq {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.faq li + li {
+  border-top: 1px solid var(--line);
+}
+.faq button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.faq button svg {
+  flex: none;
+  color: var(--muted);
+}
+.faq .sub {
+  padding: 0 0 12px;
+}
+/* Panels keep their own height: no card is stretched to match its neighbour. */
+.rail {
+  align-items: start;
+}
+dl.prows.plain > div {
+  display: grid;
+  grid-template-columns: minmax(96px, 36%) minmax(0, 1fr);
 }
