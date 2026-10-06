@@ -1,42 +1,52 @@
 import { useState } from 'react';
-import { APP_URL, DOMAIN } from '../../config';
+import { APP_URL, DOMAIN, MOVES_OPEN } from '../../config';
 import { isMobile, phantomBrowseLink } from '../../lib/phantom';
-import { AsideBox, AsideHead, Logo, Qr, Shell, Shield, StateCard, Tick } from '../parts';
+import { Logo, Panel, Qr, Shell, Shield, StateCard, Tick } from '../parts';
+import { Bullets, RoutePanel } from '../rail';
 import { useApp } from '../state';
+import { openPicker } from '../wallet-ui';
 
 export function Connect() {
-  const { provider, connect } = useApp();
+  const { wallet$, connect } = useApp();
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
   const link = phantomBrowseLink(APP_URL);
+  const supported = wallet$.options.filter((o) => o.supported);
+  // One supported wallet and nothing else: connect straight away. Several: let the user pick.
+  const direct = supported.length === 1 && wallet$.options.length === 1 ? supported[0]! : null;
 
   const onConnect = async () => {
     setError(null);
-    setBusy(true);
+    if (!direct) return openPicker();
     try {
-      await connect();
-    } catch {
-      setError('Phantom did not connect. Open Phantom and try again.');
-    } finally {
-      setBusy(false);
+      await connect(direct.name);
+    } catch (e) {
+      setError((e as Error).message || `${direct.name} did not connect. Open it and try again.`);
     }
   };
 
   return (
     <Shell
-      aside={
+      rail={
         <>
-          <AsideHead>On a computer?</AsideHead>
-          <p>Use the Phantom browser extension. Everything works the same, and the view-only check runs in this tab.</p>
-          <AsideBox title="Rather use your phone?">
-            <span>Scan to open this page inside Phantom mobile.</span>
+          <RoutePanel owner={null} />
+          <Panel title="On a phone?">
+            <p className="sub">Scan to open this page inside Phantom’s browser, where it connects directly.</p>
             <Qr text={link} label="QR code that opens ZecDoor in Phantom" />
-          </AsideBox>
+          </Panel>
+          <Panel title="What you will need">
+            <Bullets
+              items={[
+                'ZEC on Solana, or USDC or SOL to buy with',
+                'About 0.0015 SOL for Solana fees and the deposit account',
+                'A Zcash wallet, or make one here with a checked backup',
+              ]}
+            />
+          </Panel>
         </>
       }
     >
-      <div style={{ minHeight: 'calc(100dvh - 40px)', display: 'flex', flexDirection: 'column', gap: 24 }}>
-        <div className="brand" style={{ minHeight: 44 }}>
+      <div className="connect-hero">
+        <div className="brand ph" style={{ minHeight: 44 }}>
           <Logo />
           ZecDoor
         </div>
@@ -68,9 +78,20 @@ export function Connect() {
               {error}
             </StateCard>
           ) : null}
-          {provider ? (
-            <button type="button" className="btn" onClick={onConnect} disabled={busy}>
-              {busy ? 'Waiting for Phantom…' : 'Connect Phantom'}
+          {!MOVES_OPEN ? (
+            <div className="dk">
+              <StateCard tone="info" title="Opening soon" tag="Moves and buys">
+                Moves and buys open once our own mainnet test moves have passed. Connect now to see your balance and a live quote.
+              </StateCard>
+            </div>
+          ) : null}
+          {!wallet$.ready ? (
+            <button type="button" className="btn" disabled>
+              Looking for your wallet…
+            </button>
+          ) : supported.length ? (
+            <button type="button" className="btn" onClick={() => void onConnect()} disabled={wallet$.connecting}>
+              {wallet$.connecting ? `Waiting for ${direct?.name ?? 'your wallet'}…` : direct ? `Connect ${direct.name}` : 'Connect wallet'}
             </button>
           ) : isMobile() ? (
             <a className="btn" href={link}>
@@ -81,7 +102,7 @@ export function Connect() {
               Get Phantom
             </a>
           )}
-          {provider ? null : (
+          {supported.length || !wallet$.ready ? null : (
             <a className="textlink" href={link}>
               Not in Phantom? Open this page in Phantom
             </a>

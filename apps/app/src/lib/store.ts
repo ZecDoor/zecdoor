@@ -56,6 +56,8 @@ export interface MoveRecord {
   completedAt?: number;
   counted?: boolean;
   firstWallet?: boolean;
+  /** The unsigned transaction as handed to the wallet (base64), to compare with what landed. */
+  builtTx?: string;
 }
 
 const DB = 'zecdoor';

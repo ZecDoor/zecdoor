@@ -6,7 +6,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { height } from '../../lib/format';
 import { putWallet } from '../../lib/store';
 import { createWallet, freshAddress } from '../../lib/zcash';
-import { AsideHead, BackBar, Shell, Spinner, StateCard } from '../parts';
+import { BackBar, Panel, Shell, Spinner, StateCard } from '../parts';
+import { Bullets, PanelRows } from '../rail';
+import { WALLET_APPS } from '../../config';
 import { go } from '../router';
 import { useApp } from '../state';
 
@@ -38,10 +40,23 @@ export function WalletCreate() {
 
   return (
     <Shell
-      aside={
+      rail={
         <>
-          <AsideHead>Why paper</AsideHead>
-          <p>Anyone with these words can spend the ZEC; without them nobody can recover it. Clipboards, screenshots and cloud notes can be read by other apps.</p>
+          <Panel title="What happens to the words">
+            <Bullets
+              tone="ok"
+              items={['Made in your browser, never sent anywhere', 'Never written to storage; gone when the check passes', 'Only a viewing key stays in this browser, to see the arrival']}
+            />
+          </Panel>
+          <Panel title="Why paper">
+            <p className="sub">Anyone with these words can spend the ZEC; without them nobody can recover it. Clipboards, screenshots and cloud notes can be read by other apps.</p>
+          </Panel>
+          <Panel title="To spend later" full>
+            <p className="sub">
+              Install <a href={WALLET_APPS.zodl} target="_blank" rel="noreferrer">Zodl</a> or <a href={WALLET_APPS.zkool} target="_blank" rel="noreferrer">Zkool</a>,
+              choose to restore a wallet, and enter the 24 words and the birthday height. ZecDoor never spends.
+            </p>
+          </Panel>
         </>
       }
     >
@@ -165,10 +180,24 @@ export function WalletVerify() {
 
   return (
     <Shell
-      aside={
+      rail={
         <>
-          <AsideHead>What stays here</AsideHead>
-          <p>Only a viewing key stays in this browser, to confirm the arrival. It can see payments to this wallet; it cannot spend them.</p>
+          <Panel title="Your wallet" full>
+            <PanelRows
+              rows={[
+                ['Recovery words', '24, on your paper'],
+                ['Wallet birthday height', seed.current ? height(seed.current.birthday) : '—'],
+                ['Kept in this browser', 'viewing key only'],
+                ['Restore in', 'Zodl or Zkool'],
+              ]}
+            />
+          </Panel>
+          <Panel title="What stays here">
+            <p className="sub">Only a viewing key stays in this browser, to confirm the arrival. It can see payments to this wallet; it cannot spend them.</p>
+          </Panel>
+          <Panel title="If a check fails">
+            <p className="sub">Nothing is lost. Go back, show the words again and correct your paper. You can’t continue until all three are right.</p>
+          </Panel>
         </>
       }
     >

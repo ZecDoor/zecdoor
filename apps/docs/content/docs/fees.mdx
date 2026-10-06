@@ -8,7 +8,7 @@ Every amount below is shown on the review screen before you sign.
 | Cost | Move or top-up (Solana ZEC) | Buy with USDC or SOL | Who receives it |
 |---|---|---|---|
 | ZecDoor fee | 0.25% of the amount | 0.5% of the amount | Moves: all to ZecDoor's NEAR account. Buys: 0.25% to ZecDoor's NEAR account, 0.25% kept by NEAR Intents |
-| Bridge network fee | 0.00032 ZEC per move | 0.00032 ZEC per move | NEAR Intents, for the Zcash withdrawal |
+| Bridge network fee | up to 0.00032 ZEC per move | up to 0.00032 ZEC per move | NEAR Intents, for the Zcash withdrawal. The quote's figure is a ceiling: on our first mainnet move it cost 0.00025 ZEC ([the run](/testing#mainnet-transactions)) |
 | Swap price and route | — (top-up: Jupiter's route price) | NEAR Intents' quote price | Liquidity providers |
 | Solana network fee | about 0.00001 SOL | about 0.00001 SOL | Solana validators |
 | Token account for the deposit address | about 0.0015 SOL | about 0.0015 SOL (USDC only) | Paid once per move to open a token account for the deposit address. Solana requires this deposit ("rent"); it stays with that account and does not come back to you |
@@ -17,9 +17,16 @@ Figures are from 1Click quotes, Solana's fee rules and Solana's rent on 5 Octobe
 ([sources](/sources#fees), [Solana fees](/sources#limits)).
 
 **Example, approximate** (the review screen shows exact amounts): a minimum-size move of 0.00133669 ZEC pays about
-0.0000033 ZEC to ZecDoor (0.25%) and 0.00032 ZEC to the bridge, so about 0.00101 ZEC arrives, plus about 0.0015 SOL for
-the token account and 0.00001 SOL in Solana fees. On a minimum-size move the bridge's fixed fee is about a quarter of the
-amount.
+0.0000033 ZEC to ZecDoor (0.25%) and up to 0.00032 ZEC to the bridge, so at least about 0.00101 ZEC arrives, plus about
+0.0015 SOL for the token account and 0.00001 SOL in Solana fees. On a minimum-size move the bridge's fixed fee is about a
+quarter of the amount.
+
+**The bridge network fee is an upper figure.** 1Click's quote sets `withdrawFee` to 32,000 zat, and the quote's minimum
+amount is worked out with it, so the minimum is what you are promised. The real payout can cost less. On our first
+mainnet move (B1, 5 October 2026) the bridge charged 25,000 zat: the shielded note held 0.00108335 ZEC, 7,000 zat more
+than the status's `amountOut` of 0.00101335 and above the quote's minimum of 0.00100320
+([Zcash transaction `2fac74…f206d6`](https://blockchair.com/zcash/transaction/2fac74310c294c306f56bb9d60891af9d0f8f2ff9c4244f77e1939cf7df206d6),
+[the run](/testing#mainnet-transactions)). One move is not a rule: the app always shows the quote's figure as "up to".
 
 ## How the ZecDoor fee is charged
 

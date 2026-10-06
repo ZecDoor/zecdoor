@@ -39,6 +39,14 @@ export interface Scenario {
   /** Phantom already trusts the site (silent reconnect). */
   trusted?: boolean;
   phantom?: boolean;
+  /** Phantom also registers as a Wallet Standard wallet, as the real extension does (default true). */
+  standard?: boolean;
+  /** Other Wallet Standard wallets in the page (listed, not supported). */
+  otherWallets?: string[];
+  /** Keep the wallet's prompt open (never answer), to show the waiting state. */
+  hold?: boolean;
+  /** Answer the wallet's prompt after this long (for recordings). */
+  signDelayMs?: number;
   /** Make the user reject in Phantom. */
   reject?: boolean;
   /** Close moves and buys (the production state until the mainnet runs pass). */
@@ -278,7 +286,7 @@ export async function mock(page: Page, s: Scenario = {}): Promise<Mocks> {
 
   const sigBytes = Keypair.generate().secretKey; // 64 random bytes → a realistic signature string
   await page.addInitScript(
-    ({ owner, phantom, trusted, reject, quoteKey, tip, arrival, signature, movesClosed }) => {
+    ({ owner, ownerBytes, phantom, standard, otherWallets, trusted, reject, hold, signDelayMs, quoteKey, tip, arrival, signature, signatureBytes, movesClosed }) => {
       const w = window as unknown as Record<string, unknown>;
       w.__signed = [];
       w.__ZECDOOR_E2E__ = {
@@ -287,10 +295,9 @@ export async function mock(page: Page, s: Scenario = {}): Promise<Mocks> {
         latestHeight: async () => tip,
         arrival: async (r: { from: number; index: number }) => (arrival ? { height: arrival.height, txid: 'ac36529f67ca10144dcbbe4f5214fa3d41436d54b27568d1d5168801efe4a29a', pool: 'ironwood', value: arrival.value, scope: 'external', index: r.index } : null),
       };
-      if (!phantom) return;
       const pk = { toString: () => owner, toBase58: () => owner };
       let connected = false;
-      w.phantom = {
+      if (phantom) w.phantom = {
         solana: {
           isPhantom: true,
           get publicKey() {
@@ -310,22 +317,101 @@ export async function mock(page: Page, s: Scenario = {}): Promise<Mocks> {
           async signAndSendTransaction(tx: { serialize(): Uint8Array }) {
             if (reject) throw Object.assign(new Error('User rejected the request.'), { code: 4001 });
             (w.__signed as string[]).push(btoa(String.fromCharCode(...tx.serialize())));
+            w.__signedVia = 'legacy';
             return { signature };
           },
           on() {},
           off() {},
         },
       };
+
+      // Wallet Standard, registered the way real wallets do it.
+      const register = (wallet: unknown) => {
+        const cb = ({ register: r }: { register: (x: unknown) => void }) => r(wallet);
+        window.dispatchEvent(new CustomEvent('wallet-standard:register-wallet', { detail: cb }));
+        window.addEventListener('wallet-standard:app-ready', (e) => cb((e as CustomEvent).detail));
+      };
+      const icon = (fill: string) => 'data:image/svg+xml;base64,' + btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><rect width="32" height="32" rx="7" fill="${fill}"/></svg>`);
+      const makeWallet = (name: string, fill: string, signs: boolean) => {
+        const account = Object.freeze({ address: owner, publicKey: new Uint8Array(ownerBytes), chains: ['solana:mainnet'], features: ['solana:signAndSendTransaction'] });
+        let accounts: Array<{ address: string; publicKey: Uint8Array; chains: string[]; features: string[] }> = [];
+        const listeners = new Set<(p: unknown) => void>();
+        const wallet = {
+          version: '1.0.0',
+          name,
+          icon: icon(fill),
+          chains: ['solana:mainnet'],
+          get accounts() {
+            return accounts.slice();
+          },
+          features: {
+            'standard:connect': {
+              version: '1.0.0',
+              connect: async (input?: { silent?: boolean }) => {
+                if (input?.silent && !trusted) return { accounts: [] };
+                accounts = [account];
+                listeners.forEach((l) => l({ accounts: wallet.accounts }));
+                return { accounts: wallet.accounts };
+              },
+            },
+            'standard:disconnect': {
+              version: '1.0.0',
+              disconnect: async () => {
+                accounts = [];
+                listeners.forEach((l) => l({ accounts: [] }));
+              },
+            },
+            'standard:events': {
+              version: '1.0.0',
+              on: (_e: string, l: (p: unknown) => void) => {
+                listeners.add(l);
+                return () => listeners.delete(l);
+              },
+            },
+            'solana:signAndSendTransaction': {
+              version: '1.0.0',
+              supportedTransactionVersions: ['legacy', 0],
+              signAndSendTransaction: async (...inputs: Array<{ transaction: Uint8Array }>) => {
+                if (!signs || reject) throw Object.assign(new Error('User rejected the request.'), { code: 4001 });
+                if (hold) await new Promise(() => {});
+                if (signDelayMs) await new Promise((r) => setTimeout(r, signDelayMs));
+                return inputs.map((i) => {
+                  (w.__signed as string[]).push(btoa(String.fromCharCode(...i.transaction)));
+                  w.__signedVia = 'standard';
+                  return { signature: new Uint8Array(signatureBytes) };
+                });
+              },
+            },
+          },
+        };
+        if (signs)
+          w.__switchAccount = (address: string, bytes: number[]) => {
+            accounts = [Object.freeze({ address, publicKey: new Uint8Array(bytes), chains: ['solana:mainnet'], features: ['solana:signAndSendTransaction'] })];
+            listeners.forEach((l) => l({ accounts: wallet.accounts }));
+          };
+        return wallet;
+      };
+      if (standard) {
+        if (trusted) localStorage.setItem('zecdoor:wallet', `Phantom:${owner}`);
+        register(makeWallet('Phantom', '#ab9ff2', true));
+      }
+      for (const n of otherWallets) register(makeWallet(n, n === 'Solflare' ? '#fc7227' : '#e33e3f', false));
     },
     {
       owner: OWNER,
+      ownerBytes: Array.from(new PublicKey(OWNER).toBytes()),
       phantom: s.phantom ?? true,
+      standard: s.standard ?? s.phantom ?? true,
+      otherWallets: s.otherWallets ?? [],
       trusted: s.trusted ?? true,
       reject: !!s.reject,
+      hold: !!s.hold,
+      signDelayMs: s.signDelayMs ?? 0,
       quoteKey: QUOTE_KEY,
       tip: s.zcashTip ?? 3_510_000,
       arrival: s.arrival === undefined ? { height: 3_510_012, value: 8_663_100 } : s.arrival,
       signature: base58.encode(sigBytes),
+      signatureBytes: Array.from(sigBytes),
       movesClosed: !!s.movesClosed,
     },
   );

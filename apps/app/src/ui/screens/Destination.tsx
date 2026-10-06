@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { wasAddressUsed } from '../../lib/store';
 import { ADDRESS_PROBLEMS, inspect } from '../../lib/zcash';
 import { continueWith } from '../flow';
-import { AsideBox, AsideHead, BackBar, Shell, Tick } from '../parts';
+import { BackBar, Panel, Shell, Tick } from '../parts';
+import { PanelRows } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
 
@@ -48,13 +49,28 @@ export function Destination() {
 
   return (
     <Shell
-      aside={
+      rail={
         <>
-          <AsideHead>Why a new address each time</AsideHead>
-          <p>
-            NEAR Intents’ public explorer shows which Zcash address your Solana wallet paid. Using a new address of the same wallet for each move
-            keeps those payments from collecting on one address. Your wallet sees all of them.
-          </p>
+          <Panel title="Which addresses work">
+            <PanelRows
+              rows={[
+                [<span key="u" className="ok">Works</span>, 'Unified address (u1…) with a shielded Orchard receiver'],
+                [<span key="t" className="err">Refused</span>, 'Transparent (t1…, tex1…): public, like Solana'],
+                [<span key="z" className="err">Refused</span>, 'Older shielded (zs1…): NEAR Intents can’t pay it'],
+                [<span key="n" className="err">Refused</span>, 'Test-network addresses'],
+              ]}
+            />
+            <p className="sub">Checked in your browser before any quote is asked for.</p>
+          </Panel>
+          <Panel title="Why a new address each time">
+            <p className="sub">
+              NEAR Intents’ public explorer shows which Zcash address your Solana wallet paid. Using a new address of the same wallet for each move keeps
+              those payments from collecting on one address. Your wallet sees all of them.
+            </p>
+          </Panel>
+          <Panel title="Addresses you used before" cap="this browser only" full>
+            <p className="sub">We keep only a one-way hash of addresses you pasted, to warn you if you paste one again. Nothing about them leaves this browser.</p>
+          </Panel>
         </>
       }
     >

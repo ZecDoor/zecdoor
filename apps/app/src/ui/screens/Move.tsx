@@ -1,10 +1,11 @@
 import { quoteHash, verifyQuoteSignature } from '@zecdoor/solana';
 import { useEffect, useRef, useState } from 'react';
 import { NEAR_SUPPORT_URL, QUOTE_KEY, SLOW_AFTER_MS, STATUS_POLL_MS } from '../../config';
-import { clock, duration, height, short, sol, usdc, zec } from '../../lib/format';
+import { clock, day, duration, height, short, sol, usdc, zec } from '../../lib/format';
 import { checkArrival, refreshStatus, refundReason } from '../../lib/move';
 import { getMove, type MoveRecord } from '../../lib/store';
-import { AsideBox, AsideHead, CheckCircle, Pending, Rows, Shell, Spinner, StateCard } from '../parts';
+import { CheckCircle, Panel, Pending, Rows, Shell, Spinner, StateCard } from '../parts';
+import { Bullets, PanelRows, RecentPanel, RoutePanel } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
 
@@ -92,6 +93,7 @@ export function MoveScreen({ id }: { id: string }) {
 }
 
 function Progress({ m, now, stale, scanAt, hasWallet }: { m: MoveRecord; now: number; stale: boolean; scanAt: number | null; hasWallet: boolean }) {
+  const { moves } = useApp();
   const seen = ['KNOWN_DEPOSIT_TX', 'PROCESSING', 'SUCCESS'].includes(m.status);
   const converting = m.status === 'KNOWN_DEPOSIT_TX' || m.status === 'PROCESSING';
   const slow = now - m.statusSince > SLOW_AFTER_MS && m.status !== 'SUCCESS' && m.status !== 'FAILED';
@@ -116,23 +118,62 @@ function Progress({ m, now, stale, scanAt, hasWallet }: { m: MoveRecord; now: nu
     },
   ];
 
+  const failed = m.status === 'FAILED';
+  const dest = m.recipientIndex === null ? `${short(m.recipient, 4, 4)} · your wallet` : 'Your wallet in this browser';
   return (
     <Shell
-      aside={
+      rail={
         <>
-          <AsideHead>Where your ZEC is right now</AsideHead>
-          <p>
-            {seen
-              ? 'Your deposit has been received by NEAR Intents on Solana. NEAR Intents is now releasing the same amount of native ZEC from its Zcash wallet to your shielded address.'
-              : 'Your transaction is on its way to the NEAR Intents deposit address on Solana.'}
-          </p>
-          <p>We read this status from NEAR Intents every few seconds. If the bridge stalls, we tell you here and show what to do.</p>
-          <AsideBox>
-            <span>
-              Deposit address <span className="mono" style={{ color: 'var(--text)' }}>{short(m.depositAddress, 4, 4)}</span> — keep it if you ever need to
-              contact NEAR Intents about this move.
-            </span>
-          </AsideBox>
+          <RoutePanel
+            kind={m.kind}
+            owner={m.owner}
+            dest={dest}
+            title="Where your ZEC is now"
+            cap={`live from NEAR Intents · every ${STATUS_POLL_MS / 1000} s`}
+            states={[m.solanaSignature ? 'done' : 'now', failed ? 'fail' : m.status === 'SUCCESS' ? 'done' : seen ? 'now' : 'todo', m.status === 'SUCCESS' ? 'now' : 'todo']}
+          />
+          <Panel title="Records so far">
+            <PanelRows
+              rows={[
+                ['Solana transaction', m.solanaSignature ? <a href={solscan(m.solanaSignature)} target="_blank" rel="noreferrer">{short(m.solanaSignature, 4, 4)}</a> : 'not yet'],
+                ['Quote', `${short(quoteHash(m.quote), 4, 4)} · signed`],
+                ['Deposit address', short(m.depositAddress, 4, 4)],
+                ['Zcash transaction', m.zcashTxid ? <a href={zcashTx(m.zcashTxid)} target="_blank" rel="noreferrer">{short(m.zcashTxid, 4, 4)}</a> : 'not yet'],
+              ]}
+            />
+          </Panel>
+          {failed ? (
+            <Panel title="What not to do">
+              <Bullets tone="warn" items={['Don’t send to the same deposit address again', 'Don’t share your recovery phrase with anyone offering help']} />
+            </Panel>
+          ) : slow ? (
+            <Panel title="If you need help">
+              <p className="sub">
+                Moves can be held for review by NEAR Intents; ZecDoor can’t speed them up or see inside them. Their support needs the deposit address and the
+                quote, which “Copy transfer details” copies.
+              </p>
+              <Bullets
+                items={[
+                  'You can close this page; it picks up again on this device',
+                  'Don’t send the same amount again: this move isn’t lost',
+                  <a key="s" href={NEAR_SUPPORT_URL} target="_blank" rel="noreferrer">
+                    NEAR Intents support
+                  </a>,
+                ]}
+              />
+            </Panel>
+          ) : (
+            <Panel title="Expected">
+              <PanelRows
+                rows={[
+                  ['Arrives, at least', zec(BigInt(m.minAmountOut), 0)],
+                  ['Usually done by', '3–9 min'],
+                  ['If it can’t complete', `refund to ${short(m.owner, 4, 3)}`],
+                ]}
+              />
+            </Panel>
+          )}
+          <RecentPanel moves={moves} owner={m.owner} exclude={m.depositAddress} />
         </>
       }
       wide
@@ -214,6 +255,7 @@ async function copyDetails(m: MoveRecord) {
 }
 
 function Proof({ m }: { m: MoveRecord }) {
+  const { moves } = useApp();
   const [copied, setCopied] = useState(false);
   const sigOk = verifyQuoteSignature(m.quote, QUOTE_KEY);
   const value = m.arrival ? BigInt(m.arrival.value) : BigInt(m.amountOut);
@@ -236,11 +278,24 @@ function Proof({ m }: { m: MoveRecord }) {
 
   return (
     <Shell
-      aside={
+      rail={
         <>
-          <AsideHead>What this proves</AsideHead>
-          <p>Each line can be checked by anyone: the quote against NEAR Intents’ public key, the two transactions on their chains.</p>
-          <p>{viewed ? 'The last line was checked by this browser alone, with a viewing key that can see but not spend.' : 'This page did not make the receiving wallet, so it cannot look inside it. Your wallet app shows the note.'}</p>
+          <RoutePanel kind={m.kind} owner={m.owner} dest={viewed ? 'Found by your browser' : 'Paid to your address'} title="The route, done" cap={took ?? undefined} states={['done', 'done', 'ok']} />
+          <Panel title="What this proves">
+            <p className="sub">Each line can be checked by anyone: the quote against NEAR Intents’ public key, the two transactions on their chains.</p>
+            <p className="sub">
+              {viewed
+                ? 'The last line was checked by this browser alone, with a viewing key that can see but not spend.'
+                : 'This page did not make the receiving wallet, so it cannot look inside it. Your wallet app shows the note.'}
+            </p>
+          </Panel>
+          <Panel title="Sharing the proof">
+            <p className="sub">
+              “Copy proof” copies the quote and the two transaction IDs. Anyone you share it with can look up your Solana wallet and, on NEAR Intents’ explorer,
+              the Zcash address it paid.
+            </p>
+          </Panel>
+          <RecentPanel moves={moves} owner={m.owner} exclude={m.depositAddress} />
         </>
       }
       wide
@@ -271,7 +326,7 @@ function Proof({ m }: { m: MoveRecord }) {
           <CheckCircle />
           <span className="body">
             <b>Solana transaction</b>
-            <span>Your {sent(m)} left your Phantom wallet.</span>
+            <span>Your {sent(m)} left your Solana wallet.</span>
             {m.solanaSignature ? (
               <a className="id" href={solscan(m.solanaSignature)} target="_blank" rel="noreferrer">
                 {short(m.solanaSignature, 4, 4)}
@@ -324,12 +379,45 @@ function Refund({ m }: { m: MoveRecord }) {
   const app = useApp();
   const back = m.refund?.amount ? BigInt(m.refund.amount) : BigInt(m.amountIn);
   const backLabel = m.kind === 'buyUsdc' ? usdc(back) : m.kind === 'buySol' ? sol(back) : zec(back);
+  const t = (ms: number) => new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   return (
     <Shell
-      aside={
+      rail={
         <>
-          <AsideHead>Where the funds are</AsideHead>
-          <p>Back in the Solana wallet that sent them. ZecDoor never held them at any point.</p>
+          <Panel title="What happened" full>
+            <ol className="tl">
+              <li>
+                <span className="n ok">✓</span>
+                <span>
+                  <span className="h">Signed and sent from your wallet</span>
+                  {m.solanaSignature ? <span className="d">Solana transaction {short(m.solanaSignature, 4, 4)}</span> : null}
+                </span>
+                <span className="r">{day(m.createdAt)} {t(m.createdAt)}</span>
+              </li>
+              <li>
+                <span className="n fail">×</span>
+                <span>
+                  <span className="h">Not converted</span>
+                  <span className="d">{refundReason(m.refund?.reason)}</span>
+                </span>
+                <span className="r" />
+              </li>
+              <li>
+                <span className="n ok">✓</span>
+                <span>
+                  <span className="h">Refunded to {short(m.owner, 4, 3)}</span>
+                  {m.refund?.txid ? <span className="d">Refund transaction {short(m.refund.txid, 4, 4)}</span> : null}
+                </span>
+                <span className="r">{t(m.updatedAt)}</span>
+              </li>
+            </ol>
+          </Panel>
+          <Panel title="Where the funds are">
+            <p className="sub">Back in the Solana wallet that sent them. ZecDoor never held them at any point.</p>
+          </Panel>
+          <Panel title="What stays public">
+            <p className="sub">Both Solana transactions, and on NEAR Intents’ explorer that this wallet asked to pay a Zcash address. No ZEC reached the shielded pool.</p>
+          </Panel>
         </>
       }
       wide
@@ -343,7 +431,7 @@ function Refund({ m }: { m: MoveRecord }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <span className="amount lg">{backLabel}</span>
         <span className="muted" style={{ fontSize: 15 }}>
-          is back in your Phantom wallet on Solana
+          is back in your wallet on Solana
         </span>
       </div>
       <Rows

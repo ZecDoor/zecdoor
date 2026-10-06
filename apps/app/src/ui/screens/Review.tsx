@@ -4,21 +4,26 @@ import { MOVES_OPEN, QUOTE_FRESH_MS, TERMS_URL } from '../../config';
 import { clock, short, sol, usdc, zec } from '../../lib/format';
 import { dryQuote, executeMove, MoveError, type DryQuote, type Stage } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
-import { AsideBox, AsideHead, BackBar, CheckCircle, Rows, Shell, Spinner, StateCard } from '../parts';
+import { BackBar, CheckCircle, Panel, Shell, Spinner, StateCard } from '../parts';
+import { Bullets, networkFee, NetworkFeeLabel, PanelRows, PublicPanel } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
 
-const STAGE_TEXT: Record<Stage, string> = {
-  checking: 'Checking the bridge…',
-  quoting: 'Getting your signed quote…',
-  building: 'Building and checking the transaction…',
-  signing: 'Confirm in Phantom…',
-  sending: 'Sending…',
-};
+const stageText = (s: Stage, wallet: string): string =>
+  ({
+    checking: 'Checking the bridge…',
+    quoting: 'Getting your signed quote…',
+    building: 'Building and checking the transaction…',
+    signing: `Confirm in ${wallet}…`,
+    sending: 'Sending…',
+  })[s];
+
+const ORDER: Stage[] = ['checking', 'quoting', 'building', 'signing', 'sending'];
 
 export function Review() {
   const app = useApp();
-  const { draft, owner, provider, balances } = app;
+  const { draft, owner, balances } = app;
+  const walletName = app.wallet$.connected?.name ?? 'your wallet';
   const [dry, setDry] = useState<DryQuote | null>(null);
   const [now, setNow] = useState(Date.now());
   const [stage, setStage] = useState<Stage | null>(null);
@@ -43,7 +48,7 @@ export function Review() {
     return () => clearInterval(t);
   }, []);
 
-  if (!draft?.dest || !owner || !provider) return null;
+  if (!draft?.dest || !owner) return null;
   const dest = draft.dest;
   const left = dry ? QUOTE_FRESH_MS - (now - dry.at) : QUOTE_FRESH_MS;
   const expired = !!dry && left <= 0;
@@ -75,7 +80,8 @@ export function Review() {
         amount: draft.amount,
         dest,
         owner,
-        provider,
+        signAndSend: app.signAndSend,
+        walletName,
         shownMinOut: BigInt(dry.resp.quote.minAmountOut),
         ...(draft.topUp ? { topUpWith: draft.topUp.payWith } : {}),
         ...(draft.pay ? { paid: { amount: draft.pay.amount.toString(), symbol: draft.pay.symbol } } : {}),
@@ -93,15 +99,50 @@ export function Review() {
     }
   };
 
+  const rows: Array<[React.ReactNode, React.ReactNode]> = [
+    ['To', `${short(dest.address, 4, 4)} · ${dest.kind === 'browser' ? 'new address in this browser' : 'your wallet'}`],
+    [<NetworkFeeLabel key="f" />, networkFee(q?.withdrawFee)],
+    [`Our fee (${ourBps / 100}%)`, feeOf(ourBps)],
+    ...(theirBps ? ([[`NEAR Intents fee (${theirBps / 100}%)`, feeOf(theirBps)]] as Array<[string, string]>) : []),
+    ['Solana fees and deposits', `≈ ${sol(solCost)}`],
+    ['Usually arrives', draft.kind === 'exit' || draft.kind === 'topup' ? '3–9 min' : `about ${Math.max(1, Math.round((q?.timeEstimate ?? 180) / 60))}–9 min`],
+    ['If it can’t complete', `refund to ${short(owner.toBase58(), 4, 3)}`],
+  ];
+  const at = stage ? ORDER.indexOf(stage) : -1;
+
   return (
     <Shell
-      aside={
+      rail={
         <>
-          <AsideHead>What you are signing</AsideHead>
-          <p>One Solana transaction. Before Phantom sees it, this page checks that it only sends {sendLabel} from your wallet to the deposit address in NEAR Intents’ signed quote{draft.kind === 'topup' ? ', after a Jupiter swap into your own account' : ''}.</p>
-          <AsideBox title="If it can’t complete">
-            <span>NEAR Intents refunds the wallet that sent it. Nobody at ZecDoor ever holds the funds.</span>
-          </AsideBox>
+          {stage === 'signing' || stage === 'sending' ? (
+            <Panel title={`What ${walletName} will show`} full>
+              <PanelRows
+                plain
+                rows={[
+                  ['Sends', `−${sendLabel}`],
+                  ['To', 'the NEAR Intents deposit address in the quote'],
+                  ...(draft.kind === 'topup' ? ([['Also', 'a Jupiter swap into your own ZEC account, first']] as Array<[string, string]>) : []),
+                  ...(draft.kind !== 'buySol' ? ([['Also creates', 'that address’s token account (≈ 0.0015 SOL)']] as Array<[string, string]>) : []),
+                  ['Network fee', '≈ 0.00001 SOL'],
+                ]}
+              />
+              <p className="sub">If {walletName} shows anything else, cancel. It never needs a message signature or your recovery phrase.</p>
+            </Panel>
+          ) : null}
+          <Panel title="Fees and timing" cap="all shown before signing">
+            {dry ? <PanelRows rows={rows.slice(1)} /> : <p className="sub">Getting a signed quote from NEAR Intents…</p>}
+          </Panel>
+          <Panel title="What you will sign">
+            <p className="sub">
+              One Solana transaction. Before {walletName} sees it, this page checks that it only sends {sendLabel} from your wallet to the deposit
+              address in NEAR Intents’ signed quote{draft.kind === 'topup' ? ', after a Jupiter swap into your own account' : ''}, and simulates it on Solana.
+            </p>
+            <Bullets
+              tone="ok"
+              items={[dry ? 'Quote signature checked' : 'Quote signature: checked when the quote arrives', 'Instruction allowlist checked', 'Simulation runs when you sign', 'No message signature, ever']}
+            />
+          </Panel>
+          <PublicPanel owner={owner.toBase58()} recipient={dest.address} full />
         </>
       }
     >
@@ -121,24 +162,18 @@ export function Review() {
           <span className="label">Arrives shielded · Zcash Ironwood</span>
           <span className="amount md">{q ? `≥ ${zec(BigInt(q.minAmountOut), 0)}` : '—'}</span>
         </div>
+        <div className="dk" style={{ borderTop: '1px solid var(--line)', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', gap: 12, fontSize: 14 }}>
+          <span className="muted">To</span>
+          <span className="mono" style={{ textAlign: 'right' }}>{rows[0]![1]}</span>
+        </div>
       </div>
 
       {!dry && !error ? <Spinner label="Getting a signed quote from NEAR Intents…" /> : null}
 
       {dry ? (
-        <dl className="rows">
-          {(
-            [
-              ['To', `${short(dest.address, 4, 4)} · ${dest.kind === 'browser' ? 'new address in this browser' : 'your wallet'}`],
-              ['Bridge network fee', q?.withdrawFee ? zec(BigInt(q.withdrawFee), 0) : '—'],
-              [`Our fee (${ourBps / 100}%)`, feeOf(ourBps)],
-              ...(theirBps ? ([[`NEAR Intents fee (${theirBps / 100}%)`, feeOf(theirBps)]] as Array<[string, string]>) : []),
-              ['Solana fees and deposits', `≈ ${sol(solCost)}`],
-              ['Usually arrives', draft.kind === 'exit' || draft.kind === 'topup' ? '3–9 min' : `about ${Math.max(1, Math.round((q?.timeEstimate ?? 180) / 60))}–9 min`],
-              ['If it can’t complete', `refund to ${short(owner.toBase58(), 4, 3)}`],
-            ] as Array<[string, string]>
-          ).map(([k, v]) => (
-            <div key={k}>
+        <dl className="rows ph">
+          {rows.map(([k, v], i) => (
+            <div key={i}>
               <dt>{k}</dt>
               <dd>{v}</dd>
             </div>
@@ -151,6 +186,12 @@ export function Review() {
             </dd>
           </div>
         </dl>
+      ) : null}
+      {dry ? (
+        <p className="dk ok" style={{ margin: 0, display: 'flex', gap: 6, alignItems: 'center', fontSize: 14 }}>
+          <CheckCircle />
+          Quote signed by NEAR Intents and checked by this page
+        </p>
       ) : null}
 
       {expired ? (
@@ -165,7 +206,7 @@ export function Review() {
       ) : null}
       {error ? <ErrorCard error={error} onRetry={load} /> : null}
 
-      <div className="note">
+      <div className="note ph">
         <strong>Public:</strong>
         <span>
           this amount and time on Solana, when it enters the shielded pool, and — on the bridge’s explorer — that your Solana wallet paid this Zcash
@@ -177,8 +218,22 @@ export function Review() {
 
       {MOVES_OPEN ? (
         <>
+          {stage ? (
+            <ol className="tl dk" aria-label="Before your wallet sees it">
+              {ORDER.slice(0, 4).map((s2, i) => (
+                <li key={s2}>
+                  <span className={`n ${i < at ? 'ok' : i === at ? 'now' : ''}`}>{i < at ? '✓' : i + 1}</span>
+                  <span>
+                    <span className="h">{stageText(s2, walletName).replace('…', '')}</span>
+                    {s2 === 'signing' && at === i ? <span className="d">{walletName} shows one transaction. Approve it there. Nothing has been sent yet.</span> : null}
+                  </span>
+                  <span className="r">{i < at ? 'done' : ''}</span>
+                </li>
+              ))}
+            </ol>
+          ) : null}
           <button type="button" className="btn" disabled={!dry || expired || busy || noSol} onClick={() => void sign()}>
-            {stage ? STAGE_TEXT[stage] : 'Sign in Phantom'}
+            {stage ? stageText(stage, walletName) : `Sign in ${walletName === 'your wallet' ? 'your wallet' : walletName}`}
           </button>
           <p className="muted center" style={{ margin: 0, fontSize: 13, lineHeight: 1.5 }}>
             One transaction. No message signature. By signing you accept the <a href={TERMS_URL}>Terms</a>.
@@ -209,7 +264,10 @@ function ErrorCard({ error, onRetry }: { error: MoveError; onRetry: () => void }
     price_moved: { title: 'The price moved', tone: 'info', action: 'See the new quote' },
     no_sol: { title: 'Not enough SOL for fees', tone: 'warn', action: 'Check again' },
     no_route: { title: 'No route right now', tone: 'warn', action: 'Try again' },
-    cancelled: { title: 'Cancelled', tone: 'info' },
+    cancelled: { title: 'Cancelled', tone: 'info', action: 'Review again' },
+    wallet_busy: { title: 'Your wallet is waiting for you', tone: 'warn', action: 'Try again' },
+    account_changed: { title: 'Your wallet switched accounts', tone: 'warn' },
+    wallet_failed: { title: 'Your wallet couldn’t send it', tone: 'err', action: 'Try again' },
     rpc: { title: 'Solana is not answering', tone: 'warn', action: 'Try again' },
     quote: { title: 'No quote', tone: 'warn', action: 'Try again' },
     simulation: { title: 'Not offered for signing', tone: 'err', action: 'Try again' },

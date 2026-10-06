@@ -1,6 +1,8 @@
 import qrcode from 'qrcode-generator';
-import type { ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { DOCS_URL, DOMAIN } from '../config';
+import { useWide } from './rail';
+import { WalletButton, WalletPicker } from './wallet-ui';
 import { go } from './router';
 
 export function Logo({ size = 24 }: { size?: number }) {
@@ -61,46 +63,72 @@ export function BackBar({ title, step, back }: { title: string; step?: string; b
 
 type NavKey = 'move' | 'buy' | 'counter';
 
-export function Shell({ children, aside, nav = 'move', wide }: { children: ReactNode; aside?: ReactNode; nav?: NavKey; wide?: boolean }) {
+/**
+ * Every screen: on a phone, one column exactly as before. From 768 px a top bar holds the brand,
+ * navigation and wallet; the screen's own column stays on the left and `rail` (context panels)
+ * fills the rest. Pieces marked `ph` show only on phones, `dk` only from 768 px.
+ */
+export function Shell({ children, rail, nav = 'move', wide }: { children: ReactNode; rail?: ReactNode; nav?: NavKey; wide?: boolean }) {
+  // The rail is not rendered at all on phones, so the phone page is exactly what it was.
+  const showRail = useWide() && !!rail;
   return (
     <>
-      <header className="topbar">
-        <nav aria-label="Main">
-          <a href="#/" aria-current={nav === 'move' ? 'page' : undefined}>
-            Move
-          </a>
-          <a href="#/buy" aria-current={nav === 'buy' ? 'page' : undefined}>
-            Buy
-          </a>
-          <a href="#/counter" aria-current={nav === 'counter' ? 'page' : undefined}>
-            Counter
-          </a>
-          <a href={DOCS_URL}>Docs</a>
-        </nav>
-        <span className="mono muted" style={{ fontSize: 13 }}>
-          {DOMAIN}
-        </span>
-      </header>
-      <div className="layout">
-        <main className="frame">
-          <div className={`phone${wide ? ' gap20' : ''}`}>{children}</div>
-        </main>
-        <aside className="aside">{aside}</aside>
-      </div>
+      <TopBar nav={nav} />
+      <main className={`ws${rail ? '' : ' solo'}`}>
+        <div className={`act${wide ? ' gap20' : ''}`}>{children}</div>
+        {showRail ? (
+          <aside className="rail" aria-label="Details">
+            {rail}
+          </aside>
+        ) : null}
+      </main>
+      <WalletPicker />
     </>
   );
 }
 
-export function AsideHead({ children }: { children: ReactNode }) {
-  return <span className="kicker" style={{ fontSize: 12, letterSpacing: '0.08em' }}>{children}</span>;
+function TopBar({ nav }: { nav: NavKey }) {
+  return (
+    <header className="topbar">
+      <a className="brand" href="#/">
+        <Logo size={22} />
+        ZecDoor
+      </a>
+      <nav aria-label="Main">
+        <a href="#/" aria-current={nav === 'move' ? 'page' : undefined}>
+          Move
+        </a>
+        <a href="#/buy" aria-current={nav === 'buy' ? 'page' : undefined}>
+          Buy
+        </a>
+        <a href="#/counter" aria-current={nav === 'counter' ? 'page' : undefined}>
+          Counter
+        </a>
+        <a href={DOCS_URL}>Docs</a>
+      </nav>
+      <span className="grow" />
+      <span className="domain mono">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <rect x="5" y="11" width="14" height="10" rx="2" />
+          <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+        </svg>
+        {DOMAIN}
+      </span>
+      <WalletButton />
+    </header>
+  );
 }
 
-export function AsideBox({ title, children }: { title?: string; children: ReactNode }) {
+/** A context panel in the rail. */
+export function Panel({ title, cap, full, children }: { title: string; cap?: ReactNode; full?: boolean; children: ReactNode }) {
   return (
-    <div className="note" style={{ fontSize: 14, borderRadius: 16, padding: 18, gap: 10 }}>
-      {title ? <strong>{title}</strong> : null}
+    <section className={`panel${full ? ' full' : ''}`}>
+      <h2>
+        <span>{title}</span>
+        {typeof cap === 'string' ? <span className="cap">{cap}</span> : cap}
+      </h2>
       {children}
-    </div>
+    </section>
   );
 }
 
@@ -124,26 +152,56 @@ export function StateCard({ tone, title, tag, children, action, onAction }: {
   onAction?: () => void;
 }) {
   return (
-    <div className={`note ${tone}`} role={tone === 'err' ? 'alert' : 'status'} style={{ fontSize: 14, borderRadius: 16, padding: '14px 16px', gap: 6 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'baseline' }}>
-        <strong>{title}</strong>
-        {tag ? <span className="caption">{tag}</span> : null}
+    <div className={`state ${tone}`} role={tone === 'err' ? 'alert' : 'status'}>
+      <ToneIcon tone={tone} />
+      <div className="state-body">
+        <div className="state-head">
+          <strong>{title}</strong>
+          {tag ? <span className="caption">{tag}</span> : null}
+        </div>
+        <span>{children}</span>
+        {action ? (
+          <button type="button" className="btn ghost sm" onClick={onAction}>
+            {action}
+          </button>
+        ) : null}
       </div>
-      <span style={{ lineHeight: 1.5 }}>{children}</span>
-      {action ? (
-        <button type="button" className="btn ghost sm" style={{ marginTop: 6 }} onClick={onAction}>
-          {action}
-        </button>
-      ) : null}
     </div>
   );
 }
 
-export function Rows({ rows, plain }: { rows: Array<[string, ReactNode]>; plain?: boolean }) {
+function ToneIcon({ tone }: { tone: Tone }) {
+  return (
+    <svg className="tone-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      {tone === 'ok' ? <path d="m8 12.5 2.8 2.8L16 10" /> : tone === 'info' ? <path d="M12 7v5l3 2" /> : <path d="M12 7.5v5M12 16h.01" />}
+    </svg>
+  );
+}
+
+/** An explanation opened by tap, click or keyboard: never a hover-only tooltip. */
+export function Explain({ label, children }: { label: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  return (
+    <>
+      <button type="button" className="explain" aria-expanded={open} aria-controls={id} aria-label={`About ${label}`} onClick={() => setOpen(!open)}>
+        ?
+      </button>
+      {open ? (
+        <span id={id} className="explained">
+          {children}
+        </span>
+      ) : null}
+    </>
+  );
+}
+
+export function Rows({ rows, plain }: { rows: Array<[ReactNode, ReactNode]>; plain?: boolean }) {
   return (
     <dl className={`rows${plain ? ' plain' : ''}`}>
-      {rows.map(([k, v]) => (
-        <div key={k}>
+      {rows.map(([k, v], i) => (
+        <div key={i}>
           <dt>{k}</dt>
           <dd>{v}</dd>
         </div>

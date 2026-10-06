@@ -2,7 +2,7 @@ import { ASSET, type MoveKind } from '@zecdoor/solana';
 import { PublicKey } from '@solana/web3.js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { exitMinimum, oneClick, type Destination, type TopUpPlan } from '../lib/move';
-import { getPhantom, type PhantomSolana } from '../lib/phantom';
+import type { WalletSnapshot } from '../lib/wallet';
 import { geo as fetchGeo, health as fetchHealth, type Geo, type Health } from '../lib/server';
 import { readBalances, type Balances } from '../lib/solana';
 import { getWallet, type BrowserWallet, type MoveRecord, listMoves } from '../lib/store';
@@ -23,11 +23,20 @@ export interface Prices {
   usdc?: number;
 }
 
+/** Shown once on the home screen when the wallet switched accounts while something was under way. */
+export interface Notice {
+  from: string;
+  to: string;
+}
+
 interface AppState {
-  provider: PhantomSolana | null;
+  wallet$: WalletSnapshot;
   owner: PublicKey | null;
-  connect(): Promise<void>;
+  connect(name: string): Promise<void>;
   disconnect(): Promise<void>;
+  signAndSend: typeof import('../lib/wallet').signAndSend;
+  notice: Notice | null;
+  clearNotice(): void;
   balances: Balances | null;
   balanceError: string | null;
   refreshBalances(): Promise<void>;
@@ -47,8 +56,14 @@ interface AppState {
 
 const Ctx = createContext<AppState | null>(null);
 
-/** Phantom's key object may come from another copy of web3.js; rebuild it as ours. */
-const asKey = (pk: unknown) => new PublicKey(String(pk));
+const NOT_READY: WalletSnapshot = { ready: false, options: [], connected: null, connecting: false };
+
+/**
+ * The wallet layer is loaded after the first paint, so the page shows without waiting for it.
+ * Every caller awaits this one promise.
+ */
+let walletModule: Promise<typeof import('../lib/wallet')> | null = null;
+const loadWallet = () => (walletModule ??= import('../lib/wallet'));
 
 export function useApp(): AppState {
   const c = useContext(Ctx);
@@ -57,8 +72,7 @@ export function useApp(): AppState {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [provider, setProvider] = useState<PhantomSolana | null>(() => getPhantom());
-  const [owner, setOwner] = useState<PublicKey | null>(null);
+  const [wallet$, setWallet$] = useState<WalletSnapshot>(NOT_READY);
   const [balances, setBalances] = useState<Balances | null>(null);
   const [balanceError, setBalanceError] = useState<string | null>(null);
   const [minimum, setMinimum] = useState<bigint | null>(null);
@@ -68,58 +82,47 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [geo, setGeo] = useState<Geo | null>(null);
   const [prices, setPrices] = useState<Prices>({});
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const seed = useRef<AppState['seed']['current']>(null);
+  const draftRef = useRef<Draft | null>(null);
+  draftRef.current = draft;
 
-  // Phantom injects its provider shortly after load on some platforms.
   useEffect(() => {
-    if (provider) return;
-    const t = setInterval(() => {
-      const p = getPhantom();
-      if (p) {
-        setProvider(p);
-        clearInterval(t);
-      }
-    }, 250);
-    const stop = setTimeout(() => clearInterval(t), 3000);
+    let off = () => {};
+    let live = true;
+    void loadWallet().then((w) => {
+      if (!live) return;
+      off = w.subscribeWallet(() => setWallet$(w.getWalletSnapshot()));
+      setWallet$(w.getWalletSnapshot());
+    });
     return () => {
-      clearInterval(t);
-      clearTimeout(stop);
+      live = false;
+      off();
     };
-  }, [provider]);
+  }, []);
 
-  // Reconnect silently only if the user already trusted this site in Phantom.
+  const address = wallet$.connected?.address ?? null;
+  const owner = useMemo(() => (address ? new PublicKey(address) : null), [address]);
+
+  // A different account means different balances, and nothing prepared for the old one may be signed.
+  const last = useRef<string | null>(null);
   useEffect(() => {
-    if (!provider) return;
-    provider
-      .connect({ onlyIfTrusted: true })
-      .then((r) => setOwner(asKey(r.publicKey)))
-      .catch(() => {});
-    const onChange = (pk?: unknown) => {
-      setOwner(pk ? asKey(pk) : null);
-      setBalances(null);
-      setDraft(null);
-    };
-    const onDisconnect = () => setOwner(null);
-    provider.on('accountChanged', onChange);
-    provider.on('disconnect', onDisconnect);
-    return () => {
-      (provider.off ?? provider.removeListener)?.call(provider, 'accountChanged', onChange);
-      (provider.off ?? provider.removeListener)?.call(provider, 'disconnect', onDisconnect);
-    };
-  }, [provider]);
-
-  const connect = useCallback(async () => {
-    if (!provider) throw new Error('Phantom not found');
-    const r = await provider.connect();
-    setOwner(asKey(r.publicKey));
-  }, [provider]);
-
-  const disconnect = useCallback(async () => {
-    await provider?.disconnect().catch(() => {});
-    setOwner(null);
+    const prev = last.current;
+    last.current = address;
+    if (prev === address) return;
     setBalances(null);
+    setMinimum(null);
+    if (prev && address && draftRef.current) setNotice({ from: prev, to: address });
     setDraft(null);
-  }, [provider]);
+  }, [address]);
+
+  const connect = useCallback(async (name: string) => (await loadWallet()).connectWallet(name), []);
+  const disconnect = useCallback(async () => {
+    await (await loadWallet()).disconnectWallet();
+    setDraft(null);
+  }, []);
+  const signAndSend = useCallback<AppState['signAndSend']>(async (tx, expected) => (await loadWallet()).signAndSend(tx, expected), []);
+  const clearNotice = useCallback(() => setNotice(null), []);
 
   const refreshBalances = useCallback(async () => {
     if (!owner) return;
@@ -158,10 +161,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AppState>(
     () => ({
-      provider,
+      wallet$,
       owner,
       connect,
       disconnect,
+      signAndSend,
+      notice,
+      clearNotice,
       balances,
       balanceError,
       refreshBalances,
@@ -177,7 +183,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setDraft,
       seed,
     }),
-    [provider, owner, connect, disconnect, balances, balanceError, refreshBalances, minimum, wallet, reloadWallet, moves, reloadMoves, health, geo, prices, draft],
+    [wallet$, owner, connect, disconnect, signAndSend, notice, clearNotice, balances, balanceError, refreshBalances, minimum, wallet, reloadWallet, moves, reloadMoves, health, geo, prices, draft],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

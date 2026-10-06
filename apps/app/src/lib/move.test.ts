@@ -19,7 +19,7 @@ describe('the moves switch', () => {
   it('refuses before any network request or signature', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('no network in this test'));
     const sign = vi.fn();
-    const req = { kind: 'exit', amount: 200_000n, provider: { signAndSendTransaction: sign } } as unknown as MoveRequest;
+    const req = { kind: 'exit', amount: 200_000n, signAndSend: sign } as unknown as MoveRequest;
     await expect(mod.executeMove(req)).rejects.toMatchObject({ code: 'closed' });
     expect(sign).not.toHaveBeenCalled();
     expect(fetchSpy).not.toHaveBeenCalled();

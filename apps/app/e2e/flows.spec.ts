@@ -74,8 +74,8 @@ test('exit into a new wallet made here: backup, sign, progress, proof, after', a
   await page.getByRole('button', { name: /Move it to shielded/ }).click();
   await makeWallet(page);
 
-  await expect(page.getByText('Signed by NEAR Intents · checked')).toBeVisible();
-  await expect(page.getByText('new address in this browser')).toBeVisible();
+  await expect(page.getByText(/Signed by NEAR Intents · checked|Quote signed by NEAR Intents/).filter({ visible: true }).first()).toBeVisible();
+  await expect(page.getByText(/new address in this browser/).filter({ visible: true }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
 
   await expect(page.getByText(/^Moving /)).toBeVisible();
@@ -87,7 +87,7 @@ test('exit into a new wallet made here: backup, sign, progress, proof, after', a
 
   await page.getByRole('button', { name: 'What to do next' }).click();
   await expect(page.getByText('Open your wallet in Zodl or Zkool')).toBeVisible();
-  await expect(page.getByText('3,509,990')).toBeVisible(); // birthday = tip − 10
+  await expect(page.getByText('3,509,990').first()).toBeVisible(); // birthday = tip − 10
 
   // The 24 words are not stored anywhere in the browser.
   const stored = await page.evaluate(async () => {
@@ -112,7 +112,7 @@ test.describe('moves closed (production until the mainnet test runs pass)', () =
     await expect(page.getByText('Opening soon').first()).toBeVisible();
     await page.getByRole('button', { name: /Move it to shielded/ }).click();
     await makeWallet(page);
-    await expect(page.getByText('Signed by NEAR Intents · checked')).toBeVisible();
+    await expect(page.getByText(/Signed by NEAR Intents · checked|Quote signed by NEAR Intents/).filter({ visible: true }).first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Opening soon' })).toBeDisabled();
     await expect(page.getByRole('button', { name: 'Sign in Phantom' })).toHaveCount(0);
     expect(await m.signed()).toHaveLength(0);
@@ -146,7 +146,7 @@ test('second move from the same browser wallet uses the next address', async ({ 
   await expect(page.getByText('Note found by your browser')).toBeVisible(SLOW);
   await page.goto('./#/');
   await page.getByRole('button', { name: /Move it to shielded/ }).click();
-  await expect(page.getByText('Signed by NEAR Intents · checked')).toBeVisible();
+  await expect(page.getByText(/Signed by NEAR Intents · checked|Quote signed by NEAR Intents/).filter({ visible: true }).first()).toBeVisible();
   const second = await page.locator('dl.rows dd').first().innerText();
   expect(second).not.toEqual(first);
 });
@@ -165,10 +165,10 @@ test('exit to a pasted address: validation, review, proof without a viewing key'
   await input.fill(TEST_UA);
   await expect(page.getByText('Shielded address · can receive in Ironwood')).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.getByText(/My wallet · u1c5…/)).toBeVisible();
+  await expect(page.getByText(/My wallet · u1c5…/).first()).toBeVisible();
 
   await page.getByRole('button', { name: /Move it to shielded/ }).click();
-  await expect(page.getByText(/your wallet$/)).toBeVisible();
+  await expect(page.getByText(/your wallet$/).filter({ visible: true }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByText('Check it in your wallet')).toBeVisible(SLOW);
   await expectAllowed(m, 'exit');
@@ -247,8 +247,8 @@ test('refund: shows the reason and that the funds are back', async ({ page }) =>
   await page.getByRole('button', { name: /Move it to shielded/ }).click();
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByRole('heading', { name: 'Refunded' })).toBeVisible(SLOW);
-  await expect(page.getByText('The price moved past the quote’s limit')).toBeVisible();
-  await expect(page.getByText('is back in your Phantom wallet on Solana')).toBeVisible();
+  await expect(page.getByText('The price moved past the quote’s limit').first()).toBeVisible();
+  await expect(page.getByText('is back in your wallet on Solana')).toBeVisible();
 });
 
 test('cancelling in Phantom sends nothing and keeps no record', async ({ page }) => {
@@ -261,7 +261,7 @@ test('cancelling in Phantom sends nothing and keeps no record', async ({ page })
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByText('You cancelled in Phantom. Nothing was sent.')).toBeVisible();
   await page.goto('./#/');
-  await expect(page.getByText('None yet')).toBeVisible();
+  await expect(page.getByText(/^None yet/).filter({ visible: true }).first()).toBeVisible();
 });
 
 test('the bridge is paused: no moves offered', async ({ page }) => {

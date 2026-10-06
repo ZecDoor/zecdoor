@@ -4,7 +4,8 @@ import { clock, parseUnits, sol, units, usd, usdc, zec } from '../../lib/format'
 import { dryQuote, MoveError, type DryQuote } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
 import { feeOk } from '../../lib/server';
-import { AsideHead, BackBar, Rows, Shell, StateCard } from '../parts';
+import { BackBar, Panel, Rows, Shell, StateCard } from '../parts';
+import { Bullets, networkFee, NetworkFeeLabel, PanelRows, RoutePanel } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
 
@@ -74,13 +75,30 @@ export function Buy() {
   return (
     <Shell
       nav="buy"
-      aside={
+      rail={
         <>
-          <AsideHead>Where your money goes</AsideHead>
-          <p>
-            Your {symbol} goes from Phantom to a NEAR Intents deposit address. NEAR Intents swaps it and pays native ZEC to your shielded address. If the
-            price moves more than 1% before it completes, it refunds your Solana wallet instead.
-          </p>
+          <RoutePanel kind={kind} owner={owner?.toBase58() ?? null} dest="Your wallet" />
+          <Panel title="Fees">
+            <PanelRows
+              rows={[
+                ['ZecDoor fee', q ? `${(ours + theirs) / 100}%` : '0.5%'],
+                ['of which kept by NEAR Intents', q ? `${theirs / 100}%` : '0.25%'],
+                [<NetworkFeeLabel key="f" />, q ? networkFee(q.withdrawFee) : '—'],
+                ['Solana network fee', '≈ 0.00001 SOL'],
+                ...(kind === 'buyUsdc' ? ([['Deposit token account', '≈ 0.0015 SOL']] as Array<[string, string]>) : []),
+              ]}
+            />
+          </Panel>
+          <Panel title="Before you sign">
+            <Bullets
+              tone="ok"
+              items={[
+                'You see the least ZEC you will receive',
+                'If the price moves more than 1% before it completes, NEAR Intents refunds your Solana wallet',
+                'The minimum order is read from NEAR Intents before every quote',
+              ]}
+            />
+          </Panel>
         </>
       }
     >
@@ -136,7 +154,7 @@ export function Buy() {
       <Rows
         rows={[
           ['Rate', rate ? `1 ZEC ≈ ${rate.toFixed(symbol === 'SOL' ? 4 : 2)} ${symbol}` : '—'],
-          ['Bridge network fee', q?.withdrawFee ? zec(BigInt(q.withdrawFee), 0) : '—'],
+          [<NetworkFeeLabel key="f" />, q ? networkFee(q.withdrawFee) : '—'],
           ['NEAR Intents fee', q ? `${theirs / 100}%` : '—'],
           ['Our fee', q ? `${ours / 100}%` : '—'],
           ['Value in', usdIn !== null ? usd(usdIn) : '—'],

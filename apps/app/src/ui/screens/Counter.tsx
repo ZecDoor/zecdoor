@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { SOURCE_PENDING, SOURCE_URL } from '../../config';
 import { duration, units } from '../../lib/format';
 import { counter as fetchCounter, type Counter as Data } from '../../lib/server';
-import { AsideHead, Shell } from '../parts';
+import { Panel, Shell } from '../parts';
+import { Bullets } from '../rail';
 
 /** Public totals from our own records. Placeholders until real moves exist. */
 export function Counter() {
@@ -27,10 +28,14 @@ export function Counter() {
   return (
     <Shell
       nav="counter"
-      aside={
+      rail={
         <>
-          <AsideHead>Why count at all</AsideHead>
-          <p>So anyone can see whether ZecDoor is used, without us keeping anything that points at a person.</p>
+          <Panel title="Why count at all">
+            <p className="sub">So anyone can see whether ZecDoor is used, without us keeping anything that points at a person.</p>
+          </Panel>
+          <Panel title="Never kept">
+            <Bullets items={['Solana or Zcash addresses', 'Transaction IDs', 'IP addresses or device IDs', 'Anything after a move’s 24-hour duplicate check']} />
+          </Panel>
         </>
       }
       wide
@@ -51,11 +56,20 @@ export function Counter() {
       <div className="card plain tight">
         <span style={{ fontSize: 15, fontWeight: 600 }}>Moves per day</span>
         {live && c!.days.length ? (
-          <div className="bars" role="img" aria-label="Moves per day">
-            {c!.days.map((d) => (
-              <span key={d.day} title={`${d.day}: ${d.exits + d.buys}`} style={{ height: `${((d.exits + d.buys) / max) * 100}%` }} />
-            ))}
-          </div>
+          <>
+            <div className="bars" aria-hidden="true">
+              {c!.days.map((d) => (
+                <span key={d.day} style={{ height: `${((d.exits + d.buys) / max) * 100}%` }} />
+              ))}
+            </div>
+            <ul className="sr-only">
+              {c!.days.map((d) => (
+                <li key={d.day}>
+                  {d.day}: {d.exits + d.buys} moves
+                </li>
+              ))}
+            </ul>
+          </>
         ) : (
           <div className="muted" style={{ fontSize: 14, border: '1px dashed var(--line)', borderRadius: 12, padding: 24, textAlign: 'center' }}>
             Fills in from launch day. No numbers until there are real ones.

@@ -13,6 +13,34 @@ export type Shot = { name: string; scenario?: Scenario; clock?: boolean; go: (pa
 
 export const shots: Shot[] = [
   { name: 'connect', scenario: { trusted: false }, go: async (p) => void (await p.goto('./'), await expect(p.getByText('Connect Phantom')).toBeVisible()) },
+  {
+    name: 'picker',
+    scenario: { trusted: false, otherWallets: ['Solflare', 'Backpack'] },
+    go: async (p) => {
+      await p.goto('./');
+      await p.getByRole('button', { name: 'Connect wallet' }).first().click();
+      await expect(p.getByRole('dialog', { name: 'Connect a wallet' })).toBeVisible();
+    },
+  },
+  {
+    name: 'wallet-menu',
+    go: async (p) => {
+      await p.goto('./');
+      await p.getByRole('button', { name: /open wallet menu/ }).filter({ visible: true }).click();
+      await expect(p.getByRole('menuitem', { name: 'Disconnect' }).filter({ visible: true })).toBeVisible();
+    },
+  },
+  {
+    name: 'signing',
+    scenario: { hold: true },
+    go: async (p) => {
+      await own(p);
+      await p.getByRole('button', { name: 'Continue' }).click();
+      await p.getByRole('button', { name: /Move it to shielded/ }).click();
+      await p.getByRole('button', { name: 'Sign in Phantom' }).click();
+      await expect(p.getByRole('button', { name: /Confirm in Phantom/ })).toBeVisible();
+    },
+  },
   { name: 'home', go: async (p) => void (await p.goto('./'), await expect(p.getByText('Move 0.0874 ZEC')).toBeVisible()) },
   { name: 'home-below-minimum', scenario: { zec: 37_814n }, go: async (p) => void (await p.goto('./'), await expect(p.getByText(/Below the bridge minimum/)).toBeVisible()) },
   { name: 'home-no-zec', scenario: { zec: 0n }, go: async (p) => void (await p.goto('./'), await expect(p.getByText('You have no ZEC on Solana.', { exact: false })).toBeVisible()) },
@@ -54,7 +82,7 @@ export const shots: Shot[] = [
       await own(p);
       await p.getByRole('button', { name: 'Continue' }).click();
       await p.getByRole('button', { name: /Move it to shielded/ }).click();
-      await expect(p.getByText('Signed by NEAR Intents · checked')).toBeVisible();
+      await expect(p.getByText(/Signed by NEAR Intents · checked|Quote signed by NEAR Intents/).filter({ visible: true }).first()).toBeVisible();
     },
   },
   {
@@ -114,8 +142,9 @@ export const shots: Shot[] = [
       await p.getByRole('button', { name: 'Sign in Phantom' }).click();
       await expect(p.getByText(/^Moving /)).toBeVisible();
       // A realistic arrival time for the picture (3 min 40 s, as in the design), not the mock's instant one.
-      for (let i = 0; i < 44; i++) await p.clock.runFor(5_000);
-      await expect(p.getByText('Note found by your browser')).toBeVisible({ timeout: 25_000 });
+      const found = p.getByText('Note found by your browser');
+      for (let i = 0; i < 90 && !(await found.isVisible()); i++) await p.clock.runFor(5_000);
+      await expect(found).toBeVisible({ timeout: 25_000 });
     },
   },
   {
@@ -126,7 +155,7 @@ export const shots: Shot[] = [
       await p.getByRole('button', { name: 'Continue' }).click();
       await p.getByRole('button', { name: /Move it to shielded/ }).click();
       await p.getByRole('button', { name: 'Sign in Phantom' }).click();
-      await expect(p.getByText('is back in your Phantom wallet on Solana')).toBeVisible({ timeout: 25_000 });
+      await expect(p.getByText('is back in your wallet on Solana')).toBeVisible({ timeout: 25_000 });
     },
   },
   {

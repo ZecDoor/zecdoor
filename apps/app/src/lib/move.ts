@@ -21,10 +21,9 @@ import {
   type QuoteResponse,
 } from '@zecdoor/solana';
 import { newWallet } from '@zecdoor/zcash';
-import type { PublicKey } from '@solana/web3.js';
+import type { PublicKey, VersionedTransaction } from '@solana/web3.js';
 import { MOVES_OPEN, QUOTE_KEY } from '../config';
-import type { PhantomSolana } from './phantom';
-import { isUserRejection } from './phantom';
+import { WalletError } from './wallet-error';
 import { withRpc } from './rpc';
 import { feeOk, geo, health, isSanctioned, reportMove } from './server';
 import { getWallet, markAddressUsed, putMove, putWallet, deleteMove, type BrowserWallet, type MoveRecord } from './store';
@@ -54,6 +53,9 @@ export type MoveErrorCode =
   | 'no_route'
   | 'simulation'
   | 'cancelled'
+  | 'wallet_busy'
+  | 'account_changed'
+  | 'wallet_failed'
   | 'rpc'
   | 'quote'
   | 'closed';
@@ -153,7 +155,9 @@ export interface MoveRequest {
   amount: bigint;
   dest: Destination;
   owner: PublicKey;
-  provider: PhantomSolana;
+  /** The connected wallet's signAndSendTransaction; refuses if the wallet is on another account. */
+  signAndSend: (tx: VersionedTransaction, expectedOwner: string) => Promise<string>;
+  walletName?: string;
   topUpWith?: 'sol' | 'usdc';
   /** The minimum output shown to the user; a real quote more than 1% worse is not signed. */
   shownMinOut?: bigint;
@@ -233,18 +237,25 @@ export async function executeMove(r: MoveRequest): Promise<MoveRecord> {
     updatedAt: now,
     statusSince: now,
     ...(wallet?.firstMovePending ? { firstWallet: true } : {}),
+    // Exactly what the wallet was handed, kept in this browser only: comparing it with the
+    // landed transaction shows whether the wallet changed anything.
+    builtTx: Buffer.from(prepared.tx.serialize()).toString('base64'),
   };
   // Saved before signing, so a page closed mid-signature can still find the move.
   await putMove(record);
 
   stage('signing');
   let signature: string;
+  const name = r.walletName ?? 'Your wallet';
   try {
-    ({ signature } = await r.provider.signAndSendTransaction(prepared.tx));
+    signature = await r.signAndSend(prepared.tx, owner);
   } catch (e) {
     await deleteMove(record.depositAddress);
-    if (isUserRejection(e)) throw new MoveError('cancelled', 'You cancelled in Phantom. Nothing was sent.');
-    throw new MoveError('simulation', `Phantom could not send it: ${(e as Error).message}. Nothing was sent.`);
+    const code = e instanceof WalletError ? e.code : 'failed';
+    if (code === 'cancelled') throw new MoveError('cancelled', `You cancelled in ${name}. Nothing was sent.`);
+    if (code === 'busy') throw new MoveError('wallet_busy', `${name} already has a request open. Finish or close it there, then try again. Nothing was sent.`);
+    if (code === 'account_changed') throw new MoveError('account_changed', `${name} switched accounts after this was prepared. Nothing was sent.`);
+    throw new MoveError('wallet_failed', `${name} could not send it (${(e as Error).message}). Nothing was sent.`);
   }
 
   stage('sending');

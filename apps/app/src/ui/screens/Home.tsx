@@ -1,20 +1,26 @@
-import { useState } from 'react';
-import { ZEC_MINT } from '@zecdoor/solana';
-import { APP_URL, MOVES_OPEN } from '../../config';
-import { day, short, usd, zec } from '../../lib/format';
-import { phantomBrowseLink } from '../../lib/phantom';
+import { useEffect, useState } from 'react';
+import { APP_FEE_BPS, ZEC_MINT } from '@zecdoor/solana';
+import { MOVES_OPEN } from '../../config';
+import { day, short, sol, usd, zec } from '../../lib/format';
+import { dryQuote, type DryQuote } from '../../lib/move';
+import { solNeeded } from '../../lib/solana';
 import { continueWith, landsIn } from '../flow';
-import { AsideBox, AsideHead, Chevron, Logo, Qr, Shell, StateCard } from '../parts';
+import { Chevron, Logo, Panel, Shell, StateCard } from '../parts';
+import { networkFee, NetworkFeeLabel, PanelRows, PublicPanel, RecentPanel, RoutePanel, useWide } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
+import { Menu, useWalletMenuItems } from '../wallet-ui';
 import { statusLabel } from './Move';
 import { feeOk } from '../../lib/server';
 
+const QUOTE_REFRESH_MS = 30_000;
+
 export function Home() {
   const app = useApp();
-  const { owner, balances, balanceError, minimum, wallet, draft, health, geo, prices, moves } = app;
-  const [menu, setMenu] = useState(false);
+  const { owner, balances, balanceError, minimum, wallet, draft, health, geo, prices, moves, notice } = app;
   const [busy, setBusy] = useState(false);
+  const menuItems = useWalletMenuItems();
+  const wide = useWide();
 
   const blocked = geo?.allowed === false;
   const paused = !!health?.paused || !feeOk(health, 'exit');
@@ -38,42 +44,87 @@ export function Home() {
   };
 
   const mine = moves.filter((m) => m.owner === owner?.toBase58()).slice(0, 5);
+  const ownerStr = owner?.toBase58() ?? null;
+
+  // The live quote in the rail (from 768 px only: the phone layout never shows it).
+  const [live, setLive] = useState<DryQuote | null>(null);
+  const quotable = wide && !!owner && !!bal && !loading && !small && !blocked;
+  useEffect(() => {
+    setLive(null);
+    if (!quotable || !owner || !bal) return;
+    let on = true;
+    const run = () => dryQuote('exit', bal, owner).then((q) => on && setLive(q)).catch(() => on && setLive(null));
+    void run();
+    const t = setInterval(run, QUOTE_REFRESH_MS);
+    return () => {
+      on = false;
+      clearInterval(t);
+    };
+  }, [quotable, owner, bal]);
+  const lq = live?.resp.quote;
 
   return (
     <Shell
-      aside={
+      rail={
         <>
-          <AsideHead>On a computer?</AsideHead>
-          <p>Use the Phantom browser extension. Everything works the same, and the view-only check runs in this tab.</p>
-          <AsideBox title="The route">
-            <span>Phantom → NEAR Intents deposit address → NEAR Intents pays your Zcash address → shielded pool (Ironwood).</span>
-          </AsideBox>
-          <AsideBox title="Rather use your phone?">
-            <span>Scan to open this page inside Phantom mobile.</span>
-            <Qr text={phantomBrowseLink(APP_URL)} label="QR code that opens ZecDoor in Phantom" />
-          </AsideBox>
+          <RoutePanel kind={small ? 'topup' : 'exit'} owner={ownerStr} dest={landsIn(draft, wallet).replace(' · fresh address', '')} />
+          <Panel title="Live quote" cap={lq ? <span className="chip okc">Signed by NEAR Intents · checked</span> : undefined}>
+            {lq && bal ? (
+              <>
+                <PanelRows
+                  rows={[
+                    ['You send', zec(bal)],
+                    ['Arrives shielded, at least', zec(BigInt(lq.minAmountOut), 0)],
+                    [<NetworkFeeLabel key="f" />, networkFee(lq.withdrawFee)],
+                    [`Our fee (${APP_FEE_BPS.exit / 100}%)`, zec((bal * BigInt(APP_FEE_BPS.exit)) / 10_000n, 0)],
+                    ['Solana fees and deposits', `≈ ${sol(solNeeded('exit'))}`],
+                    ['Usually arrives', '3–9 min'],
+                  ]}
+                />
+                <p className="sub">Refreshes every 30 s. Nothing is signed until you review and sign.</p>
+              </>
+            ) : (
+              <p className="sub">
+                {loading
+                  ? 'Reading your balance…'
+                  : empty
+                    ? 'You have no ZEC on Solana. Buy shielded ZEC with USDC or SOL instead.'
+                    : small
+                      ? `Your balance is below the bridge minimum of ${zec(minimum!)}. The top-up screen prices the swap that brings it over.`
+                      : blocked || paused
+                        ? 'No quote while moves are unavailable here.'
+                        : 'Getting a signed quote from NEAR Intents…'}
+              </p>
+            )}
+          </Panel>
+          <PublicPanel owner={ownerStr} />
+          <RecentPanel moves={moves} owner={ownerStr} />
         </>
       }
     >
-      <div className="bar">
+      <div className="bar ph">
         <div className="brand">
           <Logo />
           ZecDoor
         </div>
-        <div style={{ position: 'relative' }}>
-          <button type="button" className="pill" aria-expanded={menu} onClick={() => setMenu(!menu)}>
-            <span className="dot" />
-            {owner ? short(owner.toBase58(), 4, 3) : ''}
-          </button>
-          {menu ? (
-            <div className="card" style={{ position: 'absolute', right: 0, top: 46, zIndex: 2, padding: 8, minWidth: 180 }}>
-              <button type="button" className="btn ghost sm" onClick={() => void app.disconnect()}>
-                Disconnect
-              </button>
-            </div>
-          ) : null}
-        </div>
+        <Menu
+          label="Wallet"
+          items={menuItems}
+          button={(p) => (
+            <button type="button" className="pill" aria-label={`Wallet ${owner ? short(owner.toBase58(), 4, 3) : ''}, open wallet menu`} {...p}>
+              <span className="dot" />
+              {owner ? short(owner.toBase58(), 4, 3) : ''}
+            </button>
+          )}
+        />
       </div>
+
+      {notice ? (
+        <StateCard tone="warn" title="Your wallet switched accounts" action="OK" onAction={app.clearNotice}>
+          What you had started was for {short(notice.from, 4, 3)} and was stopped before signing. Now connected as {short(notice.to, 4, 3)}; balances and
+          quotes are for this account. Nothing was sent.
+        </StateCard>
+      ) : null}
 
       {!MOVES_OPEN ? (
         <StateCard tone="info" title="Opening soon" tag="Moves and buys">
@@ -164,7 +215,7 @@ export function Home() {
         </button>
       </div>
 
-      <div className="history">
+      <div className="history ph">
         <span className="muted" style={{ fontSize: 13 }}>
           Recent moves · kept in this browser only
         </span>

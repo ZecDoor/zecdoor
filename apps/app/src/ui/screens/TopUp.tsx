@@ -4,7 +4,8 @@ import { sol, usdc, zec } from '../../lib/format';
 import { dryQuote, MoveError, planTopUp, type DryQuote, type TopUpPlan } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
 import { continueWith } from '../flow';
-import { AsideBox, AsideHead, BackBar, Shell, Spinner, StateCard } from '../parts';
+import { BackBar, Panel, Shell, Spinner, StateCard } from '../parts';
+import { Bullets, networkFee, NetworkFeeLabel, RouteMap } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
 
@@ -67,13 +68,38 @@ export function TopUp() {
 
   return (
     <Shell
-      aside={
+      rail={
         <>
-          <AsideHead>What happens in the one transaction</AsideHead>
-          <p>Jupiter swaps just enough {payWith === 'sol' ? 'SOL' : 'USDC'} into ZEC in your own account, then the whole balance goes to the bridge. If any part fails, the whole transaction fails and nothing moves.</p>
-          <AsideBox title="Why top up">
-            <span>The bridge only moves {minimum ? zec(minimum) : 'about 0.00134 ZEC'} or more. Below that, bridged ZEC is stuck on Solana unless something adds to it.</span>
-          </AsideBox>
+          <Panel title="The route" cap="one transaction, two parts" full>
+            <RouteMap
+              stops={[
+                { icon: 'swap', t: '1 · Swap on Solana', s: `Jupiter, exact output, into your own ZEC account`, pub: 'Public: the swap and its amounts' },
+                { icon: 'wallet', t: '2 · Send', s: 'All of it to the deposit address', pub: 'Public: your transfer and its amount' },
+                { icon: 'bridge', t: '3 · NEAR Intents', s: 'Pays your Zcash address', pub: 'Public: which address you paid' },
+                { icon: 'lock', t: '4 · Shielded pool', s: 'Your wallet', prv: 'Private after arrival' },
+              ]}
+            />
+          </Panel>
+          <Panel title="What the transaction may do">
+            <p className="sub">Checked against our allowlist before your wallet sees it, then simulated on Solana:</p>
+            <Bullets
+              tone="ok"
+              items={[
+                'One swap whose output is your own ZEC account',
+                `Use at most the swap’s maximum input of your ${payWith === 'sol' ? 'SOL' : 'USDC'}`,
+                'Send exactly the quoted ZEC to the deposit address',
+              ]}
+            />
+            <p className="sub">Nothing else. No message to sign, no approval left behind.</p>
+          </Panel>
+          <Panel title="Why top up">
+            <p className="sub">
+              The bridge only moves {minimum ? zec(minimum) : 'about 0.00134 ZEC'} or more. Below that, bridged ZEC stays on Solana unless something adds to it.
+            </p>
+            <p className="sub">
+              If it can’t complete, NEAR Intents refunds Solana ZEC, including what the swap bought, to the wallet that sent it. Not the {payWith === 'sol' ? 'SOL' : 'USDC'} you spent.
+            </p>
+          </Panel>
         </>
       }
     >
@@ -135,8 +161,8 @@ export function TopUp() {
           <div className="rule" />
           <div className="sum">
             <div>
-              <span>Bridge network fee</span>
-              <span className="mono">{dry?.resp.quote.withdrawFee ? zec(BigInt(dry.resp.quote.withdrawFee), 0) : '…'}</span>
+              <NetworkFeeLabel />
+              <span className="mono">{dry ? networkFee(dry.resp.quote.withdrawFee) : '…'}</span>
             </div>
             <div>
               <span>Our fee ({APP_FEE_BPS.topup / 100}%)</span>
@@ -157,13 +183,13 @@ export function TopUp() {
       {notEnough ? (
         <StateCard tone="warn" title={payWith === 'usdc' && balances!.usdc < plan!.maxPay ? 'Not enough USDC' : 'Not enough SOL for fees'} tag="Before signing" action="Check again" onAction={() => void app.refreshBalances()}>
           {payWith === 'usdc' && balances!.usdc < plan!.maxPay
-            ? `You need ${usdc(plan!.maxPay)} for the swap. Pay with SOL instead, or add USDC in Phantom.`
-            : `You need about ${sol(solCost)} for the swap, Solana fees and the token accounts this transaction opens. Add SOL in Phantom, then come back.`}
+            ? `You need ${usdc(plan!.maxPay)} for the swap. Pay with SOL instead, or add USDC in your wallet.`
+            : `You need about ${sol(solCost)} for the swap, Solana fees and the token accounts this transaction opens. Add SOL in your wallet, then come back.`}
         </StateCard>
       ) : null}
 
       <div className="note">
-        Phantom will show a swap and a transfer in the same transaction. That is expected. If anything fails, the whole transaction fails and
+        Your wallet will show a swap and a transfer in the same transaction. That is expected. If anything fails, the whole transaction fails and
         nothing moves.
       </div>
       <button type="button" className="btn" disabled={!plan || notEnough} onClick={() => void review()}>
