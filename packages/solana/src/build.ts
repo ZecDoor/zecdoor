@@ -91,5 +91,12 @@ export function compile(o: CompileOptions): VersionedTransaction {
 /** Compute-unit limits that cover each kind with margin (simulated 15k–255k, research e4 §1a). */
 export const COMPUTE_UNITS: Record<MoveKind, number> = { exit: 60_000, topup: 350_000, buyUsdc: 60_000, buySol: 20_000 };
 
-/** Phantom may append instructions; stay under this many bytes (research p1-wallet §B2). */
-export const MAX_TX_BYTES = 1100;
+/**
+ * Phantom may append Lighthouse checks after its own simulation; stay under this many bytes so they
+ * fit in Solana's 1,232. Measured on mainnet (scripts/mainnet/inspect-landed.ts): the first check
+ * costs about 62 bytes (its program id is a static key), each further one about 24; a four-check
+ * guard is 134. 1,060 leaves 172.
+ */
+export const MAX_TX_BYTES = 1060;
+/** Jupiter route sizes tried in turn for a top-up, until the transaction fits MAX_TX_BYTES. */
+export const TOPUP_MAX_ACCOUNTS = [24, 16] as const;

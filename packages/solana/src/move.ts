@@ -1,7 +1,7 @@
 // Turns a checked 1Click quote into the one transaction the user signs, and refuses to hand
 // back anything the allowlist rejects.
 
-import { AddressLookupTableAccount, Connection, PublicKey, VersionedTransaction } from '@solana/web3.js';
+import { AddressLookupTableAccount, Connection, PublicKey, VersionedTransaction, type TransactionInstruction } from '@solana/web3.js';
 import { assertAllowed, type AllowlistContext } from './allowlist.js';
 import {
   ata,
@@ -11,6 +11,7 @@ import {
   COMPUTE_UNITS,
   exitInstructions,
   MAX_TX_BYTES,
+  TOPUP_MAX_ACCOUNTS,
   topUpInstructions,
   type MoveContext,
 } from './build.js';
@@ -72,7 +73,7 @@ export async function prepareMove(o: PrepareOptions): Promise<PreparedMove> {
     amountIn: BigInt(o.quote.quote.amountIn),
   };
 
-  let instructions;
+  let instructions: TransactionInstruction[] = [];
   let tables: AddressLookupTableAccount[] = [];
   let swap: JupiterQuote | undefined;
   let maxWrapLamports: bigint | undefined;
@@ -93,12 +94,18 @@ export async function prepareMove(o: PrepareOptions): Promise<PreparedMove> {
       if (need <= 0n) throw new Error('Balance already covers the move; use a plain exit');
       const jup = o.jupiter ?? new JupiterClient();
       const inputMint = o.topUpWith === 'usdc' ? USDC_MINT : WSOL_MINT;
-      swap = await jup.quoteExactOut({ inputMint, outAmount: need });
-      const ixs = await jup.swapInstructions(swap, o.owner);
-      tables = await lookupTables(o.connection, ixs.lookupTables);
-      // Jupiter wraps at most the quote's maximum input; USDC needs no wrapping.
-      maxWrapLamports = inputMint.equals(WSOL_MINT) ? BigInt(swap.otherAmountThreshold) : 0n;
-      instructions = topUpInstructions(ctx, ixs);
+      // A route with fewer accounts makes a smaller transaction; try the next one only if needed.
+      for (const maxAccounts of TOPUP_MAX_ACCOUNTS) {
+        swap = await jup.quoteExactOut({ inputMint, outAmount: need, maxAccounts });
+        const ixs = await jup.swapInstructions(swap, o.owner);
+        tables = await lookupTables(o.connection, ixs.lookupTables);
+        // Jupiter wraps at most the quote's maximum input; USDC needs no wrapping.
+        maxWrapLamports = inputMint.equals(WSOL_MINT) ? BigInt(swap.otherAmountThreshold) : 0n;
+        instructions = topUpInstructions(ctx, ixs);
+        const size = compile({ payer: o.owner, instructions, blockhash: PublicKey.default.toBase58(), lookupTables: tables, computeUnits: COMPUTE_UNITS.topup })
+          .serialize().length;
+        if (size <= MAX_TX_BYTES) break;
+      }
       break;
     }
   }

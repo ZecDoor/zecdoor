@@ -23,7 +23,8 @@ in the repository.
 - **Minimum:** 1Click answers "Amount is too low for bridge, try at least 133334" with no app fee and "…133669" with
   ZecDoor's 25 bps fee (basis points: 100 bps = 1%); the lowest amounts it accepted were 133,011 and 133,345 zat. Hands-on, 5 Oct 2026 (live tests in
   `packages/solana`).
-- **Bridge network fee:** `withdrawFee` 32,000 zat (0.00032 ZEC) in every quote we requested, Oct 2026.
+- **Bridge network fee:** `withdrawFee` 32,000 zat (0.00032 ZEC) in every quote we requested, Oct 2026. It is a ceiling:
+  on our first mainnet move the payout cost 25,000 zat ([testing](/testing#mainnet-transactions)).
 - **Buy minimums:** about 1.79 USDC and 0.0148 SOL. Hands-on, Oct 2026.
 - **Orchard-receiver addresses accepted; Sapling-only and `zs1` refused** ("recipient is not valid"). Hands-on, Oct 2026.
 - **Quote signature key and construction:** NEAR Intents' SDK `@defuse-protocol/one-click-sdk-typescript` 0.1.26
@@ -66,8 +67,12 @@ These wallets belong to other people; they were used only as read-only simulatio
 - **1,232 bytes** is the size limit for the v0 transactions Phantom signs; Phantom does not yet sign the larger v1
   format ([solana.com](https://solana.com/upgrades/larger-transaction-sizes),
   [phantom-connect-sdk#407](https://github.com/phantom/phantom-connect-sdk/issues/407), Oct 2026).
-- **ZecDoor keeps transactions under 1,100 bytes** because Phantom may add Lighthouse assertion instructions
-  ([Phantom docs](https://docs.phantom.com/developer-powertools/lighthouse)).
+- **ZecDoor keeps transactions under 1,060 bytes** because Phantom may add Lighthouse assertion instructions after its
+  own simulation ([Phantom docs](https://docs.phantom.com/developer-powertools/lighthouse)). Measured on mainnet
+  transactions that carry them (`scripts/mainnet/inspect-landed.ts`, 6 Oct 2026): the first check costs about 62
+  bytes, because the Lighthouse program's address (`L2TExMFKdjpN9kozasaurPirfHy9P8sbXoAN1qA3S95`) must be in the
+  transaction itself, and each further check about 24; a four-check guard took 134 bytes. 1,060 leaves 172. If a top-up's
+  Jupiter route would go over, the app asks Jupiter for a route with fewer accounts.
 - **Solana network fee:** 5,000 lamports per signature ([Solana docs](https://solana.com/docs/core/fees)) plus the
   priority fee ZecDoor sets (20,000 micro-lamports per compute unit, at most 7,000 lamports for a top-up's 350,000-unit
   limit) — about 0.00001 SOL.
