@@ -19,6 +19,7 @@ SECURITY_EMAIL="${SECURITY_EMAIL-jagadeesh26062002@gmail.com}"
 export NEXT_PUBLIC_CONTACT_EMAIL="$SECURITY_EMAIL"
 
 pnpm --dir "$ROOT" check:allowlist
+node "$ROOT/scripts/stats/holders-page.mjs" --check   # the holders page matches the committed snapshots
 LANDING_DIR="$LANDING_DIR" pnpm --dir "$ROOT" check:copy   # text and images (OCR), landing included
 pnpm --dir "$ROOT/apps/app" exec tsc --noEmit
 # Moves and buys stay closed (no transaction can be signed) unless VITE_MOVES_OPEN=1 is set on

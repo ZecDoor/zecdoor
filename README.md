@@ -6,9 +6,10 @@ balance is below the bridge minimum.
 - **Non-custodial.** Your wallet sends to a NEAR Intents deposit address; NEAR Intents pays your shielded address. ZecDoor
   never holds funds and never sees keys.
 - **Top-up for small balances.** A Jupiter exact-output swap fills the gap to the bridge minimum inside the same
-  transaction, for balances worth more than a move costs; below that line (about $0.63 on 6 Oct 2026) the app says
-  moving is not worth it. On 6 Oct 2026: 47,236 Solana ZEC accounts above the minimum, 17,647 below it but worth moving,
-  73,312 dust ([script](scripts/stats/solana-zec-holders.mjs), [snapshot](docs/stats-2026-10-06.json)).
+  transaction, for balances worth more than a move costs; below that line (about $0.62 on 7 Oct 2026) the app says
+  moving is not worth it. On 7 Oct 2026: 47,140 Solana ZEC accounts above the minimum, 17,773 below it but worth moving,
+  75,349 dust ([script](scripts/stats/solana-zec-holders.mjs), [snapshot](docs/stats-2026-10-07.json),
+  [every snapshot](https://zecdoor.0xo.in/docs/holders)).
 - **A first Zcash wallet, backed up properly.** 24 words made in the browser, a three-word check, and the birthday height
   for Zodl or Zkool. Only a viewing key is kept, on the device.
 - **Proof of arrival.** NEAR Intents' signed quote, both transaction IDs, and the shielded note found by your own browser

@@ -8,33 +8,31 @@ in the repository.
 
 ## Solana ZEC holders [#holders]
 
-Read on 6 October 2026, 08:22 UTC: every SPL token account of mint `A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS`,
-with `getProgramAccounts`. Reproduce: [`scripts/stats/solana-zec-holders.mjs`](https://github.com/ZecDoor/zecdoor/blob/main/scripts/stats/solana-zec-holders.mjs);
-the output we used is [`docs/stats-2026-10-06.json`](https://github.com/ZecDoor/zecdoor/blob/main/docs/stats-2026-10-06.json).
+Every dated snapshot, with its tiers and sources, is on **[Solana ZEC holders](/holders)**. The latest was read on 7 October
+2026, 11:00 UTC: every SPL token account of mint `A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS`, with `getProgramAccounts`.
+Reproduce: [`scripts/stats/solana-zec-holders.mjs`](https://github.com/ZecDoor/zecdoor/blob/main/scripts/stats/solana-zec-holders.mjs);
+the output is [`docs/stats-2026-10-07.json`](https://github.com/ZecDoor/zecdoor/blob/main/docs/stats-2026-10-07.json).
 
 | Tier | Token accounts | Share | ZEC held | Of which owned by a wallet (not a pool or program) |
 |---|---|---|---|---|
-| At or above the bridge minimum (0.00133669 ZEC): a plain move | 47,236 | 34.2% | 99,536.73 | 36,397 accounts, 88,408.86 ZEC |
-| Below the minimum but worth more than a move costs: the top-up | 17,647 | 12.8% | 14.52 | 15,652 accounts, 12.83 ZEC |
-| Dust: worth less than a move costs | 73,312 | 53.0% | 7.25 | 64,935 accounts, 6.69 ZEC |
-| **All non-empty accounts** | **138,195** | | **99,558.50** | |
+| At or above the bridge minimum (0.00133669 ZEC): a plain move | 47,140 | 33.6% | 100,301.13 | 36,147 accounts, 88,743.76 ZEC |
+| Below the minimum but worth more than a move costs: the top-up | 17,773 | 12.7% | 14.63 | 15,712 accounts, 12.88 ZEC |
+| Dust: worth less than a move costs | 75,349 | 53.7% | 7.40 | 66,609 accounts, 6.81 ZEC |
+| **All non-empty accounts** | **140,262** | | **100,323.15** | |
 
-**"Worth moving" means worth more than the fixed costs of one move**, which were 47,178 zat (0.00047178 ZEC, about
-$0.63) at that time: the bridge's payout fee as quoted (32,000 zat, a ceiling), the deposit address's token account and
-the Solana fee (1,503,440 lamports, 13,508 zat at NEAR Intents' prices of $1,340.52 per ZEC and $120.45 per SOL), our
-0.25% of the minimum (334 zat) and the top-up swap's 1% slippage limit (1,336 zat). Below that line, moving a balance
-costs more than it is worth, and the app says so. The line moves with prices and the bridge's terms; the script reads
-them live.
+**"Worth moving" means worth more than the fixed costs of one move**, which were 47,214 zat (0.00047214 ZEC, about
+$0.62) at that time: the bridge's payout fee as quoted (32,000 zat, a ceiling), the deposit address's token account and
+the Solana fee (13,544 zat at NEAR Intents' prices of $1,306.38 per ZEC and $117.69 per SOL), our 0.25% of the minimum
+(334 zat) and the top-up swap's 1% slippage limit (1,336 zat). Below that line, moving a balance costs more than it is
+worth, and the app says so. The line moves with prices and the bridge's terms; the script reads them live.
 
 What this means: almost all Solana ZEC (99.98%) is in accounts that can already use the bridge, so ZecDoor's main job for
-them is one signature into a shielded wallet, with a proof of arrival. The top-up matters for the 17,647 accounts in the
+them is one signature into a shielded wallet, with a proof of arrival. The top-up matters for the 17,773 accounts in the
 middle tier. More than half of all accounts hold dust that is not worth moving with any route, ours included.
 
 Token accounts are not people: one person can hold several, exchanges hold many users' balances in one, and pools are
-programs. Token supply cross-checked with Solana `getTokenSupply` and
+programs. The 6 October snapshot's token supply was cross-checked with Solana `getTokenSupply` and
 [Jupiter's token API](https://lite-api.jup.ag/tokens/v2/search?query=A7bdiYdS5GjqGFtxf17ppRHtDKPkkRqbKtR27dxvQXaS).
-The earlier snapshot ([`docs/stats-2026-10-05.json`](https://github.com/ZecDoor/zecdoor/blob/main/docs/stats-2026-10-05.json))
-counted every balance below the minimum together (87,307 of 134,074 accounts); it did not separate dust.
 
 ## NEAR Intents 1Click [#oneclick]
 
