@@ -49,6 +49,12 @@ export function Connect() {
               ]}
             />
           </Panel>
+          <Panel title="Just looking?">
+            <p className="sub">Check what any Solana address holds and what a move would cost, without connecting a wallet.</p>
+            <a className="lnk" href="#/check">
+              Check a wallet
+            </a>
+          </Panel>
           <CounterPanel />
           <FeesPanel minimum={null} />
           <FaqPanel />

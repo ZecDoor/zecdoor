@@ -62,7 +62,7 @@ export function BackBar({ title, step, back }: { title: string; step?: string; b
   );
 }
 
-type NavKey = 'move' | 'buy' | 'counter';
+type NavKey = 'move' | 'buy' | 'check' | 'counter';
 
 /**
  * Every screen: on a phone, one column exactly as before. From 768 px a top bar holds the brand,
@@ -105,6 +105,9 @@ function TopBar({ nav }: { nav: NavKey }) {
         </a>
         <a href="#/buy" aria-current={nav === 'buy' ? 'page' : undefined}>
           Buy
+        </a>
+        <a href="#/check" aria-current={nav === 'check' ? 'page' : undefined}>
+          Check a wallet
         </a>
         <a href="#/counter" aria-current={nav === 'counter' ? 'page' : undefined}>
           Counter

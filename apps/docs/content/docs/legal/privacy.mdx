@@ -43,6 +43,10 @@ To make a move, your browser talks directly to these services. Each sees your IP
   screen) and **the Solana Explorer** (explorer.solana.com, if you open a Solana transaction link): the transaction you look up.
 - **Phantom:** under Phantom's own policy.
 
+**Checking a wallet** ([Check any wallet](/docs/check)) asks the Solana RPC provider above for the address's balances. The
+address stays in the link after the `#`, which is not sent to our server; NEAR Intents is asked for the minimum and a quote
+with a throwaway address made in your browser, not the one you checked. Nothing is stored.
+
 ## Your device
 
 This browser keeps, until you clear it: the viewing key and next address number of a wallet made here, a list of hashed

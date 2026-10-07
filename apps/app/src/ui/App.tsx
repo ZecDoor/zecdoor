@@ -1,5 +1,6 @@
 import { After } from './screens/After';
 import { Buy } from './screens/Buy';
+import { Check } from './screens/Check';
 import { Connect } from './screens/Connect';
 import { Counter } from './screens/Counter';
 import { Destination } from './screens/Destination';
@@ -18,6 +19,7 @@ export function App() {
 
   // Pages that work without a connected wallet.
   if (a === 'counter') return <Counter />;
+  if (a === 'check') return <Check address={b} />;
   if (a === 'move' && b) return <MoveScreen id={b} />;
   if (a === 'after' && b) return <After id={b} />;
   if (!owner) return <Connect />;

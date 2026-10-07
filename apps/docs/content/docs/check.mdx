@@ -1,0 +1,37 @@
+---
+title: Check any wallet
+description: See what a Solana address holds in bridged ZEC and whether moving it is worth it, without connecting a wallet.
+---
+
+Open **[zecdoor.0xo.in/app/#/check](https://zecdoor.0xo.in/app/#/check)** and paste a Solana address. No wallet is connected and nothing can be
+signed from that page.
+
+## What it shows
+
+- The ZEC the address holds on Solana, and about what it is worth at NEAR Intents' current price.
+- The bridge minimum, read live from NEAR Intents, and whether the balance clears it.
+- What ZecDoor would do, with its costs:
+
+| The balance is | ZecDoor would | Shown |
+|---|---|---|
+| At or above the minimum | Move all of it in one signature | A signed NEAR Intents quote: what arrives shielded at least, the bridge payout fee (an upper figure), our 0.25%, NEAR Intents' own estimate of the time |
+| Below the minimum, worth more than one move costs | [Top up](/docs/top-up) with SOL or USDC and move all of it, in the same signature | About how much to swap in, and the fixed cost of one move |
+| Worth less than one move costs | Nothing we recommend | **Not worth moving**: what the balance is worth against what a move costs |
+| Empty | Nothing to move | A link to [buy shielded ZEC](/docs/buy) |
+
+The fixed cost of one move is the same figure the [holder breakdown](/docs/sources#holders) uses: the bridge's payout fee,
+the deposit account's rent and the Solana fee, our fee and the swap's 1% limit.
+
+It reads the address's associated ZEC token account, the standard one wallets receive into. ZEC in any other token account
+of the same address is not counted, and ZecDoor would not move it.
+
+## Who sees the address
+
+- **Public Solana RPC endpoints** your browser asks for the balances, as any explorer would. They are not ours.
+- **Not our server.** The address is kept in the link after the `#`, which browsers do not send to any server, and the
+  page never sends it to us.
+- **Not NEAR Intents.** The minimum and the quote are asked for with a throwaway address made in your browser; neither
+  depends on whose balance it is. An automated test checks that no request to our server or to NEAR Intents contains the
+  address.
+
+Nothing is stored. A shared link names the address, so anyone who opens it sees the same result, read fresh.

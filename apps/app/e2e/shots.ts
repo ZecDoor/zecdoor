@@ -1,6 +1,6 @@
 // Scenarios for each app screen, shared by the screenshot suite and the landing demo capture.
 import { expect, type Page } from '@playwright/test';
-import { status, TEST_UA, type Scenario } from './mock';
+import { OWNER, status, TEST_UA, type Scenario } from './mock';
 
 export async function own(page: Page) {
   await page.goto('./#/destination');
@@ -171,5 +171,10 @@ export const shots: Shot[] = [
     },
   },
   { name: 'counter', go: async (p) => void (await p.goto('./#/counter'), await expect(p.getByText('Fills in from launch day', { exact: false })).toBeVisible()) },
+  { name: 'check', scenario: { trusted: false }, go: async (p) => void (await p.goto('./#/check'), await expect(p.getByRole('heading', { name: 'Check any Solana wallet' })).toBeVisible()) },
+  { name: 'check-ready', scenario: { trusted: false }, go: async (p) => void (await p.goto(`./#/check/${OWNER}`), await expect(p.getByText('Arrives shielded, at least')).toBeVisible()) },
+  { name: 'check-below', scenario: { trusted: false, zec: 60_000n }, go: async (p) => void (await p.goto(`./#/check/${OWNER}`), await expect(p.getByText('Below the minimum, worth moving')).toBeVisible()) },
+  { name: 'check-dust', scenario: { trusted: false, zec: 20_000n }, go: async (p) => void (await p.goto(`./#/check/${OWNER}`), await expect(p.getByText('Not worth moving')).toBeVisible()) },
+  { name: 'check-none', scenario: { trusted: false, zec: 0n }, go: async (p) => void (await p.goto(`./#/check/${OWNER}`), await expect(p.getByText('No ZEC on Solana here')).toBeVisible()) },
 ];
 
