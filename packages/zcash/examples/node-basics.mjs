@@ -1,7 +1,7 @@
 // Runs in Node 20+: node examples/node-basics.mjs
 // Address checks, a new wallet's viewing key and addresses, and two read-only lightwalletd lookups.
 import { readFile } from 'node:fs/promises';
-import { addressAt, GrpcWebSource, inspectAddress, loadZcashWasm, MAINNET_GRPC_WEB, newWallet } from '@zecdoor/zcash';
+import { addressAt, addressOwner, GrpcWebSource, inspectAddress, loadZcashWasm, MAINNET_GRPC_WEB, newWallet } from '@zecdoor/zcash';
 
 // In Node, hand the engine its bytes. In a browser with a bundler, call loadZcashWasm() with no argument.
 await loadZcashWasm(await readFile(new URL(import.meta.resolve('@zecdoor/zcash/zecdoor_wasm_bg.wasm'))));
@@ -22,6 +22,9 @@ const w = newWallet('main', 3_507_000);
 console.log('viewing key:', w.ufvk.slice(0, 16) + '…');
 console.log('address 0:  ', addressAt(w.ufvk, 'main', 0).slice(0, 24) + '…');
 console.log('address 1:  ', addressAt(w.ufvk, 'main', 1).slice(0, 24) + '…', '(a new one for every payment)');
+
+// Is an address from this wallet? (The check behind "your restored wallet is the same wallet".)
+console.log('owner check:', addressOwner(w.ufvk, 'main', addressAt(w.ufvk, 'main', 1)));
 
 // 3. Read-only lookups on lightwalletd over gRPC-web (zec.rocks).
 const lwd = new GrpcWebSource(MAINNET_GRPC_WEB);
