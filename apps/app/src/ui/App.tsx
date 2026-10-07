@@ -6,6 +6,7 @@ import { Counter } from './screens/Counter';
 import { Destination } from './screens/Destination';
 import { Home } from './screens/Home';
 import { MoveScreen } from './screens/Move';
+import { Proof } from './screens/Proof';
 import { Review } from './screens/Review';
 import { TopUp } from './screens/TopUp';
 import { WalletCreate, WalletVerify } from './screens/Wallet';
@@ -20,6 +21,7 @@ export function App() {
   // Pages that work without a connected wallet.
   if (a === 'counter') return <Counter />;
   if (a === 'check') return <Check address={b} />;
+  if (a === 'proof') return <Proof />;
   if (a === 'move' && b) return <MoveScreen id={b} />;
   if (a === 'after' && b) return <After id={b} />;
   if (!owner) return <Connect />;

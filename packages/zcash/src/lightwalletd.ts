@@ -1,5 +1,6 @@
 // Minimal client for the lightwalletd `CompactTxStreamer` service over gRPC-web (binary),
-// using only `fetch`. Only the two calls ZecDoor needs: GetLatestBlock and GetBlockRange.
+// using only `fetch`. Only the calls ZecDoor needs: GetLatestBlock, GetBlockRange, and GetTransaction
+// (for the public proof page).
 // Protocol: https://github.com/zcash/lightwallet-protocol (service.proto, compact_formats.proto).
 
 const SERVICE = '/cash.z.wallet.sdk.rpc.CompactTxStreamer/';
@@ -65,6 +66,35 @@ export function decodeBlockIdHeight(msg: Uint8Array): number {
     } else throw new Error(`unexpected wire type ${wire}`);
   }
   throw new Error('BlockID has no height');
+}
+
+/**
+ * `TxFilter { bytes hash = 3; }` for a transaction ID as explorers and NEAR Intents show it. lightwalletd
+ * wants the bytes in internal order, which is the reverse of that hex (checked on mainnet, 7 Oct 2026: the
+ * display order is "not found", the reversed order returns the transaction).
+ */
+export function encodeTxFilter(txid: string): Uint8Array {
+  if (!/^[0-9a-f]{64}$/i.test(txid)) throw new Error('not a transaction ID');
+  const bytes = txid.match(/../g)!.map((b) => parseInt(b, 16)).reverse();
+  return new Uint8Array([0x1a, 32, ...bytes]);
+}
+
+/** Reads `height` (field 2, varint) from a `RawTransaction { bytes data = 1; uint64 height = 2; }`. */
+export function decodeRawTxHeight(msg: Uint8Array): number {
+  let i = 0;
+  while (i < msg.length) {
+    const [key, next] = decodeVarint(msg, i);
+    i = next;
+    const field = key >> 3;
+    const wire = key & 7;
+    if (field === 2 && wire === 0) return decodeVarint(msg, i)[0];
+    if (wire === 0) i = decodeVarint(msg, i)[1];
+    else if (wire === 2) {
+      const [len, after] = decodeVarint(msg, i);
+      i = after + len;
+    } else throw new Error(`unexpected wire type ${wire}`);
+  }
+  throw new Error('RawTransaction has no height');
 }
 
 // ---- gRPC-web framing ----
@@ -143,6 +173,23 @@ export class GrpcWebSource implements BlockSource {
     const first = messages[0];
     if (!first) throw new Error('GetLatestBlock returned nothing');
     return decodeBlockIdHeight(first);
+  }
+
+  /** The height of the block holding `txid` (explorer byte order), or null if lightwalletd does not know it. */
+  async transactionHeight(txid: string, signal?: AbortSignal): Promise<number | null> {
+    let res: Response;
+    try {
+      res = await this.call('GetTransaction', encodeTxFilter(txid), signal);
+    } catch (e) {
+      if (/lightwalletd error 5\b/.test((e as Error).message)) return null;
+      throw e;
+    }
+    const { messages, trailer } = new FrameReader().push(new Uint8Array(await res.arrayBuffer()));
+    if (trailer) checkTrailer(trailer);
+    const first = messages[0];
+    if (!first) return null;
+    const h = decodeRawTxHeight(first);
+    return h > 0 ? h : null;
   }
 
   async *blocks(start: number, end: number, signal?: AbortSignal): AsyncIterable<Uint8Array> {

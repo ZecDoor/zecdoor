@@ -74,6 +74,9 @@ export function FirstRun() {
           ],
         ]}
       />
+      <a className="lnk" href="#/proof">
+        Check it again, live in your browser
+      </a>
       <a className="lnk" href={FEE_RUN_URL}>
         Every transaction, with the checks we ran
       </a>

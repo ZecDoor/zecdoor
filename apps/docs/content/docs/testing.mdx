@@ -28,7 +28,10 @@ these runs have passed.
 
 A wallet holding 0.0003 ZEC, below the bridge minimum, moved all of it into a new wallet made in the app, topped up by a
 Jupiter swap from SOL inside the same transaction. **Passed:** NEAR Intents credited the combined transaction, and the
-ZEC arrived in the shielded pool 2 minutes 13 seconds after signing.
+ZEC arrived in the shielded pool 2 minutes 13 seconds after signing. The transaction was signed by our test key, standing
+in for Phantom. **[Check it again, live in your browser](https://zecdoor.0xo.in/app/#/proof)**: the page verifies NEAR
+Intents' signature on the quote, reads the Solana transaction from a public RPC and finds the Zcash transaction's block on
+lightwalletd.
 
 | Step | Record |
 |---|---|
@@ -37,7 +40,7 @@ ZEC arrived in the shielded pool 2 minutes 13 seconds after signing.
 | NEAR Intents | deposit `6HVDicNC2ureqoJHHyJ6PmRjE82pTAiJhPZVNQTWdTbe`, status **SUCCESS**, `amountOut` 0.00101335 ZEC |
 | Zcash | [`2fac74…f206d6`](https://mainnet.zcashexplorer.app/transactions/2fac74310c294c306f56bb9d60891af9d0f8f2ff9c4244f77e1939cf7df206d6), block 3,507,539, into the Ironwood pool |
 | Found by the browser | 0.00108335 ZEC, at or above the quote's minimum (0.00100320) |
-| Restored in Zodl's engine | `zcash-devtool` (librustzcash) restored the 24 words from birthday 3,507,524 and shows 0.00108335 ZEC |
+| Restored with Zodl's wallet libraries | `zcash-devtool`, built on the same Rust wallet libraries as Zodl's wallets (`zcash_client_backend` 0.24, `zcash_client_sqlite` 0.22), restored the 24 words from birthday 3,507,524 and shows 0.00108335 ZEC |
 
 Two findings:
 

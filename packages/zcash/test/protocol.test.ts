@@ -4,7 +4,9 @@ import {
   GrpcWebSource,
   checkTrailer,
   decodeBlockIdHeight,
+  decodeRawTxHeight,
   encodeBlockRange,
+  encodeTxFilter,
   encodeVarint,
   frame,
 } from '../src/lightwalletd.js';
@@ -24,6 +26,20 @@ describe('protobuf helpers', () => {
     // BlockID with a hash (field 2) before the height.
     const id = new Uint8Array([0x12, 2, 0xaa, 0xbb, 0x08, 0xc9, 0x81, 0xd6, 0x01]);
     expect(decodeBlockIdHeight(id)).toBe(3_506_377);
+  });
+});
+
+describe('GetTransaction', () => {
+  it('asks for a transaction in internal byte order and reads its height', () => {
+    // B1's Zcash transaction (docs/testing): explorers show 2fac74…06d6; lightwalletd wants the bytes reversed.
+    const f = encodeTxFilter('2fac74310c294c306f56bb9d60891af9d0f8f2ff9c4244f77e1939cf7df206d6');
+    expect(f[0]).toBe(0x1a);
+    expect(f[1]).toBe(32);
+    expect(Buffer.from(f.slice(2)).toString('hex')).toBe('d606f27dcf39197ef744429cfff2f8d0f91a89609dbb566f304c290c3174ac2f');
+    expect(() => encodeTxFilter('xyz')).toThrow();
+    // RawTransaction: data (field 1) then height 3,507,539 (field 2).
+    const raw = new Uint8Array([0x0a, 3, 1, 2, 3, 0x10, ...encodeVarint(3_507_539)]);
+    expect(decodeRawTxHeight(raw)).toBe(3_507_539);
   });
 });
 
