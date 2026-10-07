@@ -25,7 +25,7 @@ described plainly in [what-is-public.mdx](apps/docs/content/docs/what-is-public.
 | Path | What |
 |---|---|
 | [`crates/zecdoor-wasm`](crates/zecdoor-wasm) | Rust → WebAssembly: BIP-39 seed, Orchard-only viewing key, fresh unified addresses, address inspection, compact-block trial decryption (Orchard and Ironwood) |
-| [`packages/zcash`](packages/zcash) | TypeScript wallet API and a fetch-only gRPC-web lightwalletd client; Web Worker for the arrival scan |
+| [`packages/zcash`](packages/zcash) | TypeScript wallet API and a fetch-only gRPC-web lightwalletd client; Web Worker for the arrival scan. Built as the open library `@zecdoor/zcash` ([README](packages/zcash/README.md), `pnpm build:npm`); not yet on npm |
 | [`packages/solana`](packages/solana) | NEAR Intents 1Click client and quote-signature verification, transaction builders (exit, top-up, buy), the instruction allowlist, simulation, fee self-test |
 | [`apps/app`](apps/app) | The app (Vite + React), served at `/app` |
 | [`apps/docs`](apps/docs) | The docs (Fumadocs), served at `/docs` |

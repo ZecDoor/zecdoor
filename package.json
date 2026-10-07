@@ -19,7 +19,8 @@
     "dev:server": "pnpm --filter @zecdoor/server dev",
     "check:copy": "node scripts/check-copy.mjs",
     "check:copy:text": "node scripts/check-copy.mjs --text-only",
-    "check:public": "node scripts/check-public-repo.mjs"
+    "check:public": "node scripts/check-public-repo.mjs",
+    "build:npm": "node packages/zcash/scripts/build-npm.mjs"
   },
   "devDependencies": {
     "@solana/web3.js": "1.99.0",
