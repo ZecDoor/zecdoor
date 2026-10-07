@@ -17,7 +17,7 @@ Zcash builders can use it.
 **It cannot** build, sign or send a Zcash transaction. The seed and spending key exist only inside the call that turns
 the words into a viewing key, and are wiped before it returns.
 
-The engine is 657,053 bytes of WebAssembly (about 350 KB with brotli). It has not had an independent security audit.
+The engine is 659,742 bytes of WebAssembly (351 KB as served with brotli). It has not had an independent security audit.
 
 ## Install
 
