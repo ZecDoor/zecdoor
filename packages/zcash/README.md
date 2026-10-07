@@ -12,6 +12,8 @@ Zcash builders can use it.
   says why (transparent, Sapling-only, TEX, Sprout, wrong network, invalid).
 - Find incoming Orchard and Ironwood payments ("notes") to a viewing key in compact blocks from lightwalletd, over
   gRPC-web, in a page or a Web Worker.
+- Tell whether an address belongs to a viewing key, and at which index: the check that a wallet restored in Zodl or
+  Zkool is the same wallet, from an address it shows, without the words.
 - Look up which block holds a transaction.
 
 **It cannot** build, sign or send a Zcash transaction. The seed and spending key exist only inside the call that turns
@@ -82,6 +84,19 @@ Start it with `new Worker(new URL('./scan.worker.ts', import.meta.url), { type: 
 messages, then one `result` or `error` (types `ArrivalRequest` and `WorkerReply`). The WebAssembly is single-threaded,
 so it needs no `SharedArrayBuffer` and runs in wallet in-app browsers.
 
+### Is it the same wallet?
+
+```ts
+import { addressOwner } from '@zecdoor/zcash';
+
+// After the user restores their words in Zodl, they paste an address from its Receive screen.
+addressOwner(ufvk, 'main', pastedAddress);
+// { belongs: true, scope: 'external', index: 0, reason: 'ok' }  or  { belongs: false, reason: 'not_this_wallet', ... }
+```
+
+Wallet apps show unified addresses with Sapling and transparent receivers next to the Orchard one; only the Orchard
+receiver is checked, which is enough.
+
 ### Which block holds a transaction
 
 ```ts
@@ -105,6 +120,7 @@ await new GrpcWebSource(MAINNET_GRPC_WEB).transactionHeight('2fac74310c294c306f5
 | `ufvkFromMnemonic(phrase, network)` | The Orchard-only unified full viewing key (`uview1…`) of account 0. |
 | `addressAt(ufvk, network, index)` | The Orchard-only unified address at `index`. |
 | `inspectAddress(address, network)` | `{ ok, reason, kind, network, receivers }`. |
+| `addressOwner(ufvk, network, address)` | `{ belongs, scope, index, reason }`: whether the address's Orchard receiver comes from this key. |
 | `scanRange(options)` | Every note to the key in `from..=to`. |
 | `findArrival(options)` | The note to `index` worth at least `minValue` (and in `txid`, if given), or null. |
 | `GrpcWebSource(url)` | lightwalletd over gRPC-web: `latestHeight()`, `blocks(from, to)`, `transactionHeight(txid)`. |
