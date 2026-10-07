@@ -3,7 +3,9 @@ import { WALLET_APPS } from '../../config';
 import { height, short, zec } from '../../lib/format';
 import { quoteHash } from '@zecdoor/solana';
 import { forgetWallet, getMove, type MoveRecord } from '../../lib/store';
-import { BackBar, Panel, Shell } from '../parts';
+import { ownedBy } from '../../lib/zcash';
+import type { Ownership } from '@zecdoor/zcash';
+import { BackBar, Panel, Shell, Tick } from '../parts';
 import { CounterPanel, FaqPanel } from '../extras';
 import { PanelRows, RecentPanel } from '../rail';
 import { solanaTx, zcashTx } from './Move';
@@ -100,6 +102,8 @@ export function After({ id }: { id: string }) {
         </div>
       </div>
 
+      {ours ? <RestoreCheck ufvk={wallet!.ufvk} amount={amount} /> : null}
+
       <div className="card plain tight">
         <span className="kicker">2 · To keep it private</span>
         <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 8, fontSize: 15, lineHeight: 1.5 }} className="muted">
@@ -143,5 +147,67 @@ export function After({ id }: { id: string }) {
         )
       ) : null}
     </Shell>
+  );
+}
+
+const NOT_OURS: Record<Exclude<Ownership['reason'], 'ok'>, string> = {
+  not_this_wallet:
+    'This address is not from the wallet made here. Check that you entered all 24 words in order, then restore again. Your ZEC is safe either way: the words you wrote down still open it.',
+  no_orchard_receiver: 'This address has no shielded Orchard part. Copy the wallet’s shielded (unified) address instead.',
+  wrong_network: 'This is a testnet address. Restore on mainnet.',
+  invalid: 'This is not a Zcash address. Check for a missing or extra character.',
+};
+
+/**
+ * After restoring the 24 words in Zodl or Zkool: paste the address its Receive screen shows, and this
+ * browser checks with the viewing key that it belongs to the same wallet. The words are never asked for.
+ */
+function RestoreCheck({ ufvk, amount }: { ufvk: string; amount: bigint | null }) {
+  const [addr, setAddr] = useState('');
+  const [r, setR] = useState<Ownership | null>(null);
+
+  useEffect(() => {
+    const a = addr.trim();
+    if (!a) return setR(null);
+    let live = true;
+    void ownedBy(ufvk, a).then((o) => live && setR(o), () => live && setR({ belongs: false, scope: '', index: null, reason: 'invalid' }));
+    return () => {
+      live = false;
+    };
+  }, [addr, ufvk]);
+
+  return (
+    <div className="card plain tight">
+      <span className="kicker">Check your restore</span>
+      <span className="muted" style={{ fontSize: 15, lineHeight: 1.5 }}>
+        Once Zodl or Zkool has restored the wallet, copy a receiving address from it (in Zodl: Receive) and paste it here. This browser checks it belongs to the
+        same wallet. We never ask for your words.
+      </span>
+      <div className="field">
+        <label htmlFor="restored" className="label">
+          Address from your restored wallet
+        </label>
+        <input
+          id="restored"
+          className={`input${r ? (r.belongs ? ' ok' : ' bad') : ''}`}
+          value={addr}
+          onChange={(e) => setAddr(e.target.value)}
+          placeholder="u1…"
+          autoComplete="off"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          aria-describedby="restored-check"
+        />
+        <span id="restored-check" role="status" style={{ fontSize: 14, display: 'flex', gap: 8, alignItems: 'flex-start', lineHeight: 1.5 }} className={r ? (r.belongs ? 'ok' : 'err') : 'muted'}>
+          {r?.belongs ? <Tick size={16} /> : null}
+          {r === null
+            ? 'Checked in this browser with the viewing key. Nothing is sent.'
+            : r.belongs
+              ? `Same wallet${r.index !== null && r.scope === 'external' ? `: this is its address number ${r.index}` : ''}. Once it has synced from the birthday height, it shows ${amount !== null ? `at least ${zec(amount, 0)}` : 'this move'}, unless you have spent it.`
+              : NOT_OURS[r.reason as Exclude<Ownership['reason'], 'ok'>]}
+        </span>
+      </div>
+    </div>
   );
 }

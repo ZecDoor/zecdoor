@@ -1,5 +1,8 @@
 // Scenarios for each app screen, shared by the screenshot suite and the landing demo capture.
 import { expect, type Page } from '@playwright/test';
+import { addressAt, loadZcashWasm, ufvkFromMnemonic } from '@zecdoor/zcash';
+import fs from 'node:fs';
+import path from 'node:path';
 import { OWNER, status, TEST_UA, type Scenario } from './mock';
 
 export async function own(page: Page) {
@@ -7,6 +10,26 @@ export async function own(page: Page) {
   await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
   await page.getByLabel('Zcash address').fill(TEST_UA);
   await expect(page.getByText('Shielded address · can receive in Ironwood')).toBeVisible();
+}
+
+/** A move into a new wallet made here, to the after screen; returns the 24 words (test only). */
+async function intoNewWallet(page: Page): Promise<string[]> {
+  await page.goto('./');
+  await page.getByRole('button', { name: /Move it to shielded/ }).click();
+  await expect(page.getByRole('heading', { name: 'Your new shielded wallet' })).toBeVisible();
+  await page.getByRole('button', { name: /Tap to show/ }).click();
+  const words = (await page.locator('ol.words li').allInnerTexts()).map((t) => t.replace(/^\d+\s*/, '').trim());
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: 'Check my backup' }).click();
+  await expect(page.locator('fieldset')).toHaveCount(3);
+  for (const f of await page.locator('fieldset').all()) {
+    const n = Number((await f.locator('legend').innerText()).replace(/\D/g, ''));
+    await f.getByRole('button', { name: words[n - 1]!, exact: true }).click();
+  }
+  await page.getByRole('button', { name: 'Continue to review' }).click();
+  await page.getByRole('button', { name: 'Sign in Phantom' }).click();
+  await page.getByRole('button', { name: 'What to do next' }).click({ timeout: 25_000 });
+  return words;
 }
 
 export type Shot = { name: string; scenario?: Scenario; clock?: boolean; go: (page: Page) => Promise<void> };
@@ -171,6 +194,17 @@ export const shots: Shot[] = [
     },
   },
   { name: 'counter', go: async (p) => void (await p.goto('./#/counter'), await expect(p.getByText('Fills in from launch day', { exact: false })).toBeVisible()) },
+  {
+    name: 'after-restore-check',
+    scenario: { statuses: [status.processing(), status.success()] },
+    go: async (p) => {
+      const words = await intoNewWallet(p);
+      await loadZcashWasm(fs.readFileSync(path.join(import.meta.dirname, '../../../crates/zecdoor-wasm/pkg/zecdoor_wasm_bg.wasm')));
+      await p.getByLabel('Address from your restored wallet').fill(addressAt(ufvkFromMnemonic(words.join(' '), 'main'), 'main', 0));
+      await expect(p.getByText('Same wallet: this is its address number 0.', { exact: false })).toBeVisible();
+      // Screenshots never show recovery words: the words were only on the earlier screen.
+    },
+  },
   { name: 'check', scenario: { trusted: false }, go: async (p) => void (await p.goto('./#/check'), await expect(p.getByRole('heading', { name: 'Check any Solana wallet' })).toBeVisible()) },
   { name: 'check-ready', scenario: { trusted: false }, go: async (p) => void (await p.goto(`./#/check/${OWNER}`), await expect(p.getByText('Arrives shielded, at least')).toBeVisible()) },
   { name: 'check-below', scenario: { trusted: false, zec: 60_000n }, go: async (p) => void (await p.goto(`./#/check/${OWNER}`), await expect(p.getByText('Below the minimum, worth moving')).toBeVisible()) },

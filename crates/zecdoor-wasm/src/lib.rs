@@ -4,7 +4,8 @@
 //! - makes a 24-word seed (BIP 39, standard ZIP 32 keys, `use_qsk = false`),
 //! - derives an Orchard-only viewing key and fresh Orchard-only addresses,
 //! - checks whether a pasted Zcash address can receive a shielded payment,
-//! - finds incoming Orchard and Ironwood notes in compact blocks with the viewing key.
+//! - finds incoming Orchard and Ironwood notes in compact blocks with the viewing key,
+//! - tells whether an address (for example from Zodl's Receive screen) belongs to the viewing key.
 //!
 //! The seed and the spending key exist only inside `ufvk_from_mnemonic` and are wiped
 //! before it returns. Nothing here talks to the network.
@@ -12,6 +13,7 @@
 pub mod address;
 pub mod keys;
 pub mod net;
+pub mod owner;
 pub mod scan;
 
 use wasm_bindgen::prelude::*;
@@ -53,6 +55,14 @@ pub fn address_at(ufvk: &str, network: &str, index: u32) -> Result<String, JsVal
 pub fn inspect_address(addr: &str, network: &str) -> Result<String, JsValue> {
     let n = net::Net::parse(network).map_err(js_err)?;
     serde_json::to_string(&address::inspect(addr, n)).map_err(js_err)
+}
+
+/// JSON saying whether `addr` belongs to `ufvk` (its Orchard receiver was derived from the key),
+/// and at which diversifier index. See [`owner::Ownership`].
+#[wasm_bindgen]
+pub fn address_owner(ufvk: &str, network: &str, addr: &str) -> Result<String, JsValue> {
+    let n = net::Net::parse(network).map_err(js_err)?;
+    serde_json::to_string(&owner::owner(ufvk, n, addr).map_err(js_err)?).map_err(js_err)
 }
 
 /// Finds notes paid to a viewing key in serialized `CompactBlock`s.

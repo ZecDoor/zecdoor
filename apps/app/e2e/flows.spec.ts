@@ -4,6 +4,7 @@ import { AddressLookupTableAccount, PublicKey } from '@solana/web3.js';
 import { checkTransaction, JUPITER_PROGRAM, type MoveKind, type QuoteResponse } from '@zecdoor/solana';
 import fs from 'node:fs';
 import path from 'node:path';
+import { addressAt, loadZcashWasm, ufvkFromMnemonic } from '@zecdoor/zcash';
 import { decodeSigned, mock, OWNER, status, TEST_UA, type Mocks } from './mock';
 
 const SLOW = { timeout: 25_000 };
@@ -72,7 +73,7 @@ test('exit into a new wallet made here: backup, sign, progress, proof, after', a
   const m = await mock(page, { statuses: [status.pending(), status.processing(), status.processing(), status.success()] });
   await page.goto('./');
   await page.getByRole('button', { name: /Move it to shielded/ }).click();
-  await makeWallet(page);
+  const words = await makeWallet(page);
 
   await expect(page.getByText(/Signed by NEAR Intents · checked|Quote signed by NEAR Intents/).filter({ visible: true }).first()).toBeVisible();
   await expect(page.getByText(/new address in this browser/).filter({ visible: true }).first()).toBeVisible();
@@ -88,6 +89,15 @@ test('exit into a new wallet made here: backup, sign, progress, proof, after', a
   await page.getByRole('button', { name: 'What to do next' }).click();
   await expect(page.getByText('Open your wallet in Zodl or Zkool')).toBeVisible();
   await expect(page.getByText('3,509,990').first()).toBeVisible(); // birthday = tip − 10
+
+  // Check the restore: an address of the same words, as a wallet app would show it, is recognised; another is not.
+  await loadZcashWasm(fs.readFileSync(path.join(import.meta.dirname, '../../../crates/zecdoor-wasm/pkg/zecdoor_wasm_bg.wasm')));
+  const restored = addressAt(ufvkFromMnemonic(words.join(' '), 'main'), 'main', 7);
+  const field = page.getByLabel('Address from your restored wallet');
+  await field.fill(restored);
+  await expect(page.getByText('Same wallet: this is its address number 7.', { exact: false })).toBeVisible();
+  await field.fill(TEST_UA);
+  await expect(page.getByText('This address is not from the wallet made here.', { exact: false })).toBeVisible();
 
   // The 24 words are not stored anywhere in the browser.
   const stored = await page.evaluate(async () => {

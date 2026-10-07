@@ -68,6 +68,24 @@ export const addressAt = (ufvk: string, network: Network, index: number): string
 export const inspectAddress = (address: string, network: Network): Inspection =>
   JSON.parse(wasm.inspect_address(address, network)) as Inspection;
 
+export interface Ownership {
+  /** The address's Orchard receiver was derived from this viewing key. */
+  belongs: boolean;
+  /** `external` for a receiving address, `internal` for change; empty when it does not belong. */
+  scope: 'external' | 'internal' | '';
+  /** Diversifier index of the address, when it belongs. */
+  index: number | null;
+  reason: 'ok' | 'not_this_wallet' | 'no_orchard_receiver' | 'wrong_network' | 'invalid';
+}
+
+/**
+ * Whether `address` belongs to the wallet of `ufvk`, at which index. Works for any unified address with an
+ * Orchard receiver, including the ones Zodl and Zkool show with Sapling and transparent receivers beside it:
+ * paste one from the restored wallet's Receive screen to check it is the same wallet.
+ */
+export const addressOwner = (ufvk: string, network: Network, address: string): Ownership =>
+  JSON.parse(wasm.address_owner(ufvk, network, address)) as Ownership;
+
 export interface ScanOptions {
   ufvk: string;
   network: Network;

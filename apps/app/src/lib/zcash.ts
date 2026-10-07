@@ -3,6 +3,7 @@
 
 import {
   addressAt,
+  addressOwner,
   GrpcWebSource,
   inspectAddress,
   loadZcashWasm,
@@ -10,6 +11,7 @@ import {
   type ArrivalRequest,
   type Found,
   type Inspection,
+  type Ownership,
   type WorkerReply,
 } from '@zecdoor/zcash';
 import { LIGHTWALLETD } from '../config';
@@ -45,6 +47,12 @@ export async function freshAddress(ufvk: string, index: number): Promise<string>
 export async function inspect(address: string): Promise<Inspection> {
   await ready();
   return inspectAddress(address.trim(), NET);
+}
+
+/** Whether an address (from Zodl's Receive screen, say) belongs to this browser's wallet. */
+export async function ownedBy(ufvk: string, address: string): Promise<Ownership> {
+  await ready();
+  return addressOwner(ufvk, NET, address.trim());
 }
 
 export const ADDRESS_PROBLEMS: Record<Inspection['reason'], string> = {

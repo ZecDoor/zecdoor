@@ -34,6 +34,13 @@ ZecDoor never spends. To spend, open the wallet in a full Zcash wallet app:
    Ironwood.
 2. Choose to restore a wallet, enter your 24 words, and enter the Wallet Birthday Height the page showed you.
 3. Let it sync. Your ZEC appears in the shielded balance.
+4. **Check the restore.** On ZecDoor's "What to do next" screen, paste a receiving address from the restored wallet (in
+   Zodl: Receive). Your browser checks, with the viewing key it kept, that the address belongs to the same wallet, and
+   tells you its address number. A wallet app shows addresses with Sapling and transparent parts next to the Orchard
+   one; only the Orchard part is checked, and it is enough. ZecDoor never asks for your words to do this.
+
+We tested the check against a real restore: the address zcash-devtool (built on the same Rust wallet libraries as Zodl's
+wallets) derived from our first mainnet move's 24 words is recognised as address number 0 of the wallet the browser made.
 
 ## Forgetting the wallet on this device
 
