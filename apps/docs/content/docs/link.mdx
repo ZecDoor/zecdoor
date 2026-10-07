@@ -1,0 +1,58 @@
+---
+title: Link to ZecDoor
+description: A plain link or a badge. No embed, no prefilled destination.
+---
+
+ZecDoor offers a link and a badge, nothing that runs inside your page. Every link opens ZecDoor at its one address,
+`zecdoor.0xo.in`, where the user connects their own wallet and chooses where their ZEC lands.
+
+## The link
+
+```text
+https://zecdoor.0xo.in
+```
+
+To show a holder what an address holds and whether moving it is worth it, link to the [wallet check](/check). It needs no
+wallet and only reads public data:
+
+```text
+https://zecdoor.0xo.in/app/#/check/<Solana address>
+```
+
+## The badge
+
+<p>
+  <img src="/docs/badge/zecdoor-light.svg" width="252" height="44" alt="Move Solana ZEC to shielded with ZecDoor" />{' '}
+  <img src="/docs/badge/zecdoor-dark.svg" width="252" height="44" alt="Move Solana ZEC to shielded with ZecDoor" />
+</p>
+
+Markdown:
+
+```md
+[![Move Solana ZEC to shielded with ZecDoor](https://zecdoor.0xo.in/docs/badge/zecdoor-light.svg)](https://zecdoor.0xo.in)
+```
+
+HTML, switching with the reader's light or dark setting:
+
+```html
+<a href="https://zecdoor.0xo.in">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://zecdoor.0xo.in/docs/badge/zecdoor-dark.svg" />
+    <img src="https://zecdoor.0xo.in/docs/badge/zecdoor-light.svg" width="252" height="44" alt="Move Solana ZEC to shielded with ZecDoor" />
+  </picture>
+</a>
+```
+
+The badges are plain SVG files with no script. Loading one is a request to our host, as with any image; we turn on no
+request logging of our own ([privacy](/legal/privacy)).
+
+## What we do not offer, and why
+
+- **No embed.** ZecDoor refuses to load inside another site's frame (`frame-ancestors 'none'` on every page). A wallet
+  screen inside someone else's page is how phishing works: the user could not see whose address bar they are in.
+- **No prefilled destination or amount.** No link can choose the Zcash address your ZEC goes to, or how much is moved.
+  The user picks both inside ZecDoor and sees them on the review screen before signing.
+- **No referral codes or tracking parameters.** ZecDoor reads none.
+
+Linking to ZecDoor does not make you a partner of ZecDoor, and ZecDoor is not endorsed by NEAR Intents, Phantom or the
+Zcash organisations it names.

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="252" height="44" viewBox="0 0 252 44" role="img" aria-label="Move Solana ZEC to shielded with ZecDoor">
+<title>Move Solana ZEC to shielded with ZecDoor</title>
+<rect x="0.5" y="0.5" width="251" height="43" rx="10" fill="#0C0D0F" stroke="#2A2B2E"/>
+<g transform="translate(12 10)" fill="none" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+<path d="M3.5 10.5 12 3.5l8.5 7V20.5h-17V10.5Z" stroke="#F0B43C"/>
+<path d="M8 16h8" stroke="#EEECE6"/>
+</g>
+<text x="44" y="19" font-family="Manrope, Inter, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#EEECE6">Move Solana ZEC to shielded</text>
+<text x="44" y="34" font-family="Manrope, Inter, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#A3A098">ZecDoor · one signature in Phantom</text>
+</svg>
