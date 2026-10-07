@@ -49,3 +49,6 @@ export function duration(ms: number): string {
 export const day = (t: number) => new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 
 export const height = (h: number) => h.toLocaleString('en-US');
+
+/** NEAR Intents' own estimate in a quote ("timeEstimate", seconds), as "2 min 15 s"; null when absent. */
+export const estimate = (seconds?: number | null): string | null => (seconds && seconds > 0 ? duration(seconds * 1000) : null);

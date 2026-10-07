@@ -39,7 +39,10 @@ export function MoveSteps() {
           </li>
         ))}
       </ol>
-      <p className="sub">NEAR Intents usually takes 3–9 minutes in total. Times are minutes:seconds after signing.</p>
+      <p className="sub">
+        Minutes:seconds after signing, on our first mainnet move. Each quote carries NEAR Intents’ own estimate. A move can take longer; if it
+        can’t complete, it is refunded at the quote’s deadline.
+      </p>
     </section>
   );
 }
@@ -59,13 +62,13 @@ export function FirstRun() {
           ['Arrived shielded', '0.00108335 ZEC'],
           [
             'Solana',
-            <a key="s" href={`https://solscan.io/tx/${B1.solana}`} target="_blank" rel="noreferrer">
+            <a key="s" href={`https://explorer.solana.com/tx/${B1.solana}`} target="_blank" rel="noreferrer">
               2ZfeRt…J9ZQLa
             </a>,
           ],
           [
             'Zcash',
-            <a key="z" href={`https://blockchair.com/zcash/transaction/${B1.zcash}`} target="_blank" rel="noreferrer">
+            <a key="z" href={`https://mainnet.zcashexplorer.app/transactions/${B1.zcash}`} target="_blank" rel="noreferrer">
               2fac74…f206d6
             </a>,
           ],

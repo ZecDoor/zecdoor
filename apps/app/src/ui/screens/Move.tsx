@@ -1,7 +1,7 @@
 import { quoteHash, verifyQuoteSignature } from '@zecdoor/solana';
 import { useEffect, useRef, useState } from 'react';
 import { NEAR_SUPPORT_URL, QUOTE_KEY, SLOW_AFTER_MS, STATUS_POLL_MS } from '../../config';
-import { clock, day, duration, height, short, sol, usdc, zec } from '../../lib/format';
+import { clock, day, duration, estimate, height, short, sol, usdc, zec } from '../../lib/format';
 import { checkArrival, refreshStatus, refundReason } from '../../lib/move';
 import { getMove, type MoveRecord } from '../../lib/store';
 import { CheckCircle, Panel, Pending, Rows, Shell, Spinner, StateCard } from '../parts';
@@ -10,8 +10,8 @@ import { Bullets, PanelRows, RecentPanel, RoutePanel } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
 
-export const solscan = (sig: string) => `https://solscan.io/tx/${sig}`;
-export const zcashTx = (txid: string) => `https://blockchair.com/zcash/transaction/${txid}`;
+export const solanaTx = (sig: string) => `https://explorer.solana.com/tx/${sig}`;
+export const zcashTx = (txid: string) => `https://mainnet.zcashexplorer.app/transactions/${txid}`;
 
 const ARRIVAL_POLL_MS = 20_000;
 
@@ -138,7 +138,7 @@ function Progress({ m, now, stale, scanAt, hasWallet }: { m: MoveRecord; now: nu
           <Panel title="Records so far">
             <PanelRows
               rows={[
-                ['Solana transaction', m.solanaSignature ? <a href={solscan(m.solanaSignature)} target="_blank" rel="noreferrer">{short(m.solanaSignature, 4, 4)}</a> : 'not yet'],
+                ['Solana transaction', m.solanaSignature ? <a href={solanaTx(m.solanaSignature)} target="_blank" rel="noreferrer">{short(m.solanaSignature, 4, 4)}</a> : 'not yet'],
                 ['Quote', `${short(quoteHash(m.quote), 4, 4)} · signed`],
                 ['Deposit address', short(m.depositAddress, 4, 4)],
                 ['Zcash transaction', m.zcashTxid ? <a href={zcashTx(m.zcashTxid)} target="_blank" rel="noreferrer">{short(m.zcashTxid, 4, 4)}</a> : 'not yet'],
@@ -170,7 +170,7 @@ function Progress({ m, now, stale, scanAt, hasWallet }: { m: MoveRecord; now: nu
               <PanelRows
                 rows={[
                   ['Arrives, at least', zec(BigInt(m.minAmountOut), 0)],
-                  ['Usually done by', '3–9 min'],
+                  ['NEAR Intents estimated', estimate(m.quote.quote.timeEstimate) ?? '—'],
                   ['If it can’t complete', `refund to ${short(m.owner, 4, 3)}`],
                 ]}
               />
@@ -186,13 +186,13 @@ function Progress({ m, now, stale, scanAt, hasWallet }: { m: MoveRecord; now: nu
       <div className="bar">
         <h1 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>Moving {sent(m)}</h1>
         <span className="badge" style={{ color: slow ? 'var(--warn)' : 'var(--info)' }}>
-          {slow ? 'Slower than usual' : 'In progress'}
+          {slow ? 'Longer than estimated' : 'In progress'}
         </span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         <span className="amount lg">{clock(now - m.createdAt)}</span>
         <span className="muted" style={{ fontSize: 15 }}>
-          elapsed · usually 3–9 minutes
+          elapsed{estimate(m.quote.quote.timeEstimate) ? ` · NEAR Intents estimated ${estimate(m.quote.quote.timeEstimate)}` : ''}
         </span>
       </div>
       <ol className="steps">
@@ -216,13 +216,13 @@ function Progress({ m, now, stale, scanAt, hasWallet }: { m: MoveRecord; now: nu
         </StateCard>
       ) : null}
       {slow && m.status === 'PENDING_DEPOSIT' ? (
-        <StateCard tone="warn" title="Deposit not seen yet" tag="After signing" action="Look on Solscan" onAction={() => m.solanaSignature && window.open(solscan(m.solanaSignature), '_blank', 'noopener')}>
+        <StateCard tone="warn" title="Deposit not seen yet" tag="After signing" action="Look on the Solana Explorer" onAction={() => m.solanaSignature && window.open(solanaTx(m.solanaSignature), '_blank', 'noopener')}>
           NEAR Intents has not seen your Solana transaction. If it failed on Solana, nothing left your wallet and this quote simply expires. If it went
           through, the move continues or is refunded.
         </StateCard>
       ) : null}
       {slow && converting ? (
-        <StateCard tone="info" title="Taking longer than usual" tag="After signing" action="Copy transfer details" onAction={() => void copyDetails(m)}>
+        <StateCard tone="info" title="Taking longer than estimated" tag="After signing" action="Copy transfer details" onAction={() => void copyDetails(m)}>
           Still converting after {duration(now - m.statusSince)}. This happens when the bridge is busy, and NEAR Intents can also hold transfers for
           review. Your ZEC will either arrive or be refunded to your Solana wallet. If it lasts, contact NEAR Intents at {NEAR_SUPPORT_URL.replace('https://', '')} with the transfer details.
         </StateCard>
@@ -335,7 +335,7 @@ function Proof({ m }: { m: MoveRecord }) {
             <b>Solana transaction</b>
             <span>Your {sent(m)} left your Solana wallet.</span>
             {m.solanaSignature ? (
-              <a className="id" href={solscan(m.solanaSignature)} target="_blank" rel="noreferrer">
+              <a className="id" href={solanaTx(m.solanaSignature)} target="_blank" rel="noreferrer">
                 {short(m.solanaSignature, 4, 4)}
               </a>
             ) : null}
@@ -454,7 +454,7 @@ function Refund({ m }: { m: MoveRecord }) {
           [
             'Refund transaction',
             m.refund?.txid ? (
-              <a className="mono" href={solscan(m.refund.txid)} target="_blank" rel="noreferrer">
+              <a className="mono" href={solanaTx(m.refund.txid)} target="_blank" rel="noreferrer">
                 {short(m.refund.txid, 4, 4)}
               </a>
             ) : (

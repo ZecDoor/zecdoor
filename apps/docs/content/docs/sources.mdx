@@ -56,8 +56,12 @@ counted every balance below the minimum together (87,307 of 134,074 accounts); i
 
 ## Timing [#timing]
 
-- **About 2½ to 9 minutes from quote to SUCCESS, typically about 3**, across 45 mainnet Solana ZEC → Zcash moves by other
-  apps, read from 1Click's status API in October 2026 (hands-on).
+- **NEAR Intents' own estimate.** Every 1Click quote carries `timeEstimate`. Solana ZEC → Zcash quotes we read on
+  7 October 2026 said 135 seconds (2 minutes 15 seconds); our first mainnet move's quote said the same.
+- **Our own runs.** Our first mainnet move arrived 2 minutes 13 seconds after signing ([testing](/testing)).
+- **It can take longer.** If a move can't complete, NEAR Intents refunds it to the sending wallet at the quote's deadline;
+  our deliberate short deposit was refunded after 31 minutes, at its deadline ([testing](/testing)).
+- We give no other typical or usual duration: these three are what we can support.
 
 ## Fees [#fees]
 

@@ -26,6 +26,20 @@ const SELF = path.relative(ROOT, import.meta.filename);
 
 export const BANNED = /\b(untraceable|anonymous(ly)?|anonymi[sz]\w*|hide|hides|hiding|hidden)\b/gi;
 
+// Durations we cannot support. We may state only measured times of our own runs (e.g. "2 min 13 s"), the bridge
+// quote's own estimate, and that a move which can't complete is refunded at the quote's deadline. Ranges, "usually",
+// "typically" and "a few minutes" claims about how long a move takes are refused.
+export const UNSUPPORTED_DURATION = new RegExp(
+  [
+    String.raw`\b\d+(?:[.,]\d+|½)?\s*(?:[–-]|to)\s*\d+(?:[.,]\d+|½)?\s*(?:min|mins|minutes)\b`,
+    String.raw`\b(?:usually|typically|normally|on average)\b[^.\n]{0,40}?\b(?:min|mins|minutes|seconds)\b`,
+    String.raw`\b(?:usually|typically)\s+(?:arrives|takes|done)\b`,
+    String.raw`\b(?:a few|within) minutes\b`,
+    String.raw`\b(?:arrives?|done|lands?|moves?|ready) in (?:a few )?minutes\b`,
+  ].join('|'),
+  'gi',
+);
+
 // Code tokens that contain "hidden" but are never shown to a reader.
 const CODE_TOKENS = [
   /aria-hidden/gi,
@@ -60,6 +74,7 @@ function scanText(file) {
     let clean = line;
     for (const t of CODE_TOKENS) clean = clean.replace(t, '');
     for (const m of clean.matchAll(BANNED)) hits.push(`${file}:${i + 1}: "${m[0]}" in: ${line.trim().slice(0, 140)}`);
+    for (const m of line.matchAll(UNSUPPORTED_DURATION)) hits.push(`${file}:${i + 1}: unsupported duration "${m[0]}" in: ${line.trim().slice(0, 140)}`);
   });
   return hits;
 }
@@ -88,6 +103,7 @@ async function scanImages(images) {
   for (const f of images) {
     const text = cache[hash(f)]?.text ?? '';
     for (const m of text.matchAll(BANNED)) hits.push(`${f} (text in image): "${m[0]}"`);
+    for (const m of text.replace(/\s+/g, ' ').matchAll(UNSUPPORTED_DURATION)) hits.push(`${f} (text in image): unsupported duration "${m[0]}"`);
     // OCR sometimes splits large letters ("an onymous"): check the long words with spaces removed.
     for (const m of text.replace(/\s+/g, '').matchAll(/untraceable|anonymous|anonymi[sz]/gi)) {
       if (!hits.some((h) => h.startsWith(f))) hits.push(`${f} (text in image, letters run together): "${m[0]}"`);
@@ -157,7 +173,7 @@ for (const f of textFiles) {
 if (!TEXT_ONLY) hits.push(...(await scanImages(imageFiles)));
 
 if (hits.length) {
-  console.error(`Copy check failed: ${hits.length} use(s) of a banned word.\n` + hits.join('\n'));
+  console.error(`Copy check failed: ${hits.length} use(s) of a banned word or an unsupported duration.\n` + hits.join('\n'));
   process.exit(1);
 }
 console.log(`Copy check passed: ${textFiles.length} text files${TEXT_ONLY ? '' : `, ${imageFiles.length} images`}.`);

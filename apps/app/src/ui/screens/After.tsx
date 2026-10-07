@@ -6,7 +6,7 @@ import { forgetWallet, getMove, type MoveRecord } from '../../lib/store';
 import { BackBar, Panel, Shell } from '../parts';
 import { CounterPanel, FaqPanel } from '../extras';
 import { PanelRows, RecentPanel } from '../rail';
-import { solscan, zcashTx } from './Move';
+import { solanaTx, zcashTx } from './Move';
 import { go } from '../router';
 import { useApp } from '../state';
 
@@ -48,7 +48,7 @@ export function After({ id }: { id: string }) {
             <Panel title="The proof">
               <PanelRows
                 rows={[
-                  ['Solana', m.solanaSignature ? <a href={solscan(m.solanaSignature)} target="_blank" rel="noreferrer">{short(m.solanaSignature, 4, 4)}</a> : '—'],
+                  ['Solana', m.solanaSignature ? <a href={solanaTx(m.solanaSignature)} target="_blank" rel="noreferrer">{short(m.solanaSignature, 4, 4)}</a> : '—'],
                   ['Zcash', m.zcashTxid ? <a href={zcashTx(m.zcashTxid)} target="_blank" rel="noreferrer">{short(m.zcashTxid, 4, 4)}</a> : '—'],
                   ['Quote', short(quoteHash(m.quote), 4, 4)],
                 ]}

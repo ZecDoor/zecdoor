@@ -64,9 +64,10 @@ Phantom shows one transaction and you approve it once. There is no message to si
 <Step>
 ### The page follows the move
 
-It reads the status from NEAR Intents every few seconds: deposit seen, converting, sent on Zcash. Across 45 mainnet
-moves made by other apps through NEAR Intents, which we timed from its status API, this took about 2½ to 9 minutes,
-typically about 3 ([sources](/sources#timing)). You can close the page; the move continues, and the page picks up where it
+It reads the status from NEAR Intents every few seconds: deposit seen, converting, sent on Zcash. NEAR Intents' quote
+gives its own estimate (135 seconds on the Solana ZEC quotes we read in October 2026), and our first mainnet move arrived
+2 minutes 13 seconds after signing. A move can take longer; if it can't complete, it is refunded at the quote's deadline
+([sources](/sources#timing)). You can close the page; the move continues, and the page picks up where it
 left off when you reopen it on the same device (for a wallet made here, that is also where it can find the note).
 </Step>
 <Step>

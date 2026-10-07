@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { APP_FEE_BPS, ZEC_MINT } from '@zecdoor/solana';
 import { MOVES_OPEN } from '../../config';
-import { day, short, sol, usd, zec } from '../../lib/format';
+import { day, estimate, short, sol, usd, zec } from '../../lib/format';
 import { dryQuote, type DryQuote } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
 import { movingCost } from '../../lib/economics';
@@ -90,7 +90,7 @@ export function Home() {
                     [<NetworkFeeLabel key="f" />, networkFee(lq.withdrawFee)],
                     [`Our fee (${APP_FEE_BPS.exit / 100}%)`, zec((bal * BigInt(APP_FEE_BPS.exit)) / 10_000n, 0)],
                     ['Solana fees and deposits', `≈ ${sol(solNeeded('exit'))}`],
-                    ['Usually arrives', '3–9 min'],
+                    ['NEAR Intents estimates', estimate(lq.timeEstimate) ?? '—'],
                   ]}
                 />
                 <p className="sub">Refreshes every 30 s. Nothing is signed until you review and sign.</p>
@@ -208,7 +208,7 @@ export function Home() {
           <span className="body">
             {small
               ? 'Swap a little SOL or USDC into ZEC and move everything, in one signature.'
-              : 'All of it, to a Zcash address only you control. Usually arrives in 3–9 minutes.'}
+              : 'All of it, to a Zcash address only you control.'}
           </span>
           <span className="btn inner">{loading ? 'Reading your balance…' : small ? 'Top up and shield' : `Move ${zec(bal!)}`}</span>
         </button>

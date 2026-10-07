@@ -32,17 +32,18 @@ ZEC arrived in the shielded pool 2 minutes 13 seconds after signing.
 
 | Step | Record |
 |---|---|
-| Starting balance (bought for the test) | 0.0003 ZEC, Solana [`3VPSu8…U5akP`](https://solscan.io/tx/3VPSu8UUq4MbzNvyrAybUiQMbcEGR66jmynSCFgThkHL6dcEUvo4cP9rXQzuYDyWsv4Vc7Zwg8SjtGcftQqU5akP) |
-| The move: swap SOL → 0.00103669 ZEC, then send all 0.00133669 ZEC | Solana [`2ZfeRt…J9ZQLa`](https://solscan.io/tx/2ZfeRtsivSk7UCrsTenJ5dL1GoArXyK2aCRH1RE8uFUR6XMEgjvVBLtc1JWnigb44FBTbauSvqc3xtBUmJJ9ZQLa), 747 bytes, no allowlist violations |
+| Starting balance (bought for the test) | 0.0003 ZEC, Solana [`3VPSu8…U5akP`](https://explorer.solana.com/tx/3VPSu8UUq4MbzNvyrAybUiQMbcEGR66jmynSCFgThkHL6dcEUvo4cP9rXQzuYDyWsv4Vc7Zwg8SjtGcftQqU5akP) |
+| The move: swap SOL → 0.00103669 ZEC, then send all 0.00133669 ZEC | Solana [`2ZfeRt…J9ZQLa`](https://explorer.solana.com/tx/2ZfeRtsivSk7UCrsTenJ5dL1GoArXyK2aCRH1RE8uFUR6XMEgjvVBLtc1JWnigb44FBTbauSvqc3xtBUmJJ9ZQLa), 747 bytes, no allowlist violations |
 | NEAR Intents | deposit `6HVDicNC2ureqoJHHyJ6PmRjE82pTAiJhPZVNQTWdTbe`, status **SUCCESS**, `amountOut` 0.00101335 ZEC |
-| Zcash | [`2fac74…f206d6`](https://blockchair.com/zcash/transaction/2fac74310c294c306f56bb9d60891af9d0f8f2ff9c4244f77e1939cf7df206d6), block 3,507,539, into the Ironwood pool |
+| Zcash | [`2fac74…f206d6`](https://mainnet.zcashexplorer.app/transactions/2fac74310c294c306f56bb9d60891af9d0f8f2ff9c4244f77e1939cf7df206d6), block 3,507,539, into the Ironwood pool |
 | Found by the browser | 0.00108335 ZEC, at or above the quote's minimum (0.00100320) |
 | Restored in Zodl's engine | `zcash-devtool` (librustzcash) restored the 24 words from birthday 3,507,524 and shows 0.00108335 ZEC |
 
 Two findings:
 
 - **Transaction ID byte order.** NEAR Intents' status reports the Zcash transaction ID in the same byte order as our
-  scanner and as block explorers: Blockchair finds `2fac74…06d6` in block 3,507,539 and nothing for the reversed bytes.
+  scanner and as block explorers: the Zcash Block Explorer (mainnet.zcashexplorer.app) finds `2fac74…06d6` in block
+  3,507,539 and nothing for the reversed bytes (checked 7 Oct 2026; first checked on Blockchair, 6 Oct).
   The app matches arrival by address and amount, so this needs no change.
 - **More arrives than `amountOut` says.** The note held 7,000 zat (0.00007 ZEC) more than the status's `amountOut`: the
   bridge charged 25,000 zat for the Zcash payout, not the 32,000 its quote shows. The quote's minimum is what we promise.
@@ -55,10 +56,10 @@ quote's deadline.
 
 | Step | Record |
 |---|---|
-| Starting balance (bought for the test) | 0.0003 ZEC, Solana [`3mxUQB…hzhmf`](https://solscan.io/tx/3mxUQB7epoY265fW1QfXyLkde5XkUTiVFyYxffksFPBq5FdPE2LPESydp3DoZuLd44w37wR8Fi1ZDs7uNS6hzhmf) |
-| Deposit of 0.0003 ZEC against a quote for 0.00136669 | Solana [`5BPG29…MSXTuhM`](https://solscan.io/tx/5BPG29y5mu52DigA2uGCLtXHG17a26njTx3vYhp52sFGHRWwKzKHpfG9y4drqWR6paVGGV5vxc8FJjjdmMSXTuhM), deposit `7hQaoUcuy1SWJj7s3TfFJ8vwPwmTmgUGK27VabuBY7JH` |
+| Starting balance (bought for the test) | 0.0003 ZEC, Solana [`3mxUQB…hzhmf`](https://explorer.solana.com/tx/3mxUQB7epoY265fW1QfXyLkde5XkUTiVFyYxffksFPBq5FdPE2LPESydp3DoZuLd44w37wR8Fi1ZDs7uNS6hzhmf) |
+| Deposit of 0.0003 ZEC against a quote for 0.00136669 | Solana [`5BPG29…MSXTuhM`](https://explorer.solana.com/tx/5BPG29y5mu52DigA2uGCLtXHG17a26njTx3vYhp52sFGHRWwKzKHpfG9y4drqWR6paVGGV5vxc8FJjjdmMSXTuhM), deposit `7hQaoUcuy1SWJj7s3TfFJ8vwPwmTmgUGK27VabuBY7JH` |
 | NEAR Intents | PENDING_DEPOSIT → INCOMPLETE_DEPOSIT (1 minute) → **REFUNDED** (31 minutes), `refundReason` PARTIAL_DEPOSIT |
-| Refund | Solana [`3kdVEQ…dt8mSXcP`](https://solscan.io/tx/3kdVEQS27gJTnHXzFvRrNWJaWdAH2aCZg9qr3CdKFLSxXM5yT8Mt1uQoh4wXhiCN6ux5djwjrJLjbRFadt8mSXcP): 0.0002924 ZEC back to the sending wallet (`refundFee` 763 zat) |
+| Refund | Solana [`3kdVEQ…dt8mSXcP`](https://explorer.solana.com/tx/3kdVEQS27gJTnHXzFvRrNWJaWdAH2aCZg9qr3CdKFLSxXM5yT8Mt1uQoh4wXhiCN6ux5djwjrJLjbRFadt8mSXcP): 0.0002924 ZEC back to the sending wallet (`refundFee` 763 zat) |
 
 **Finding: where the refund is reported.** NEAR Intents lists the refund transaction as a second entry in
 `originChainTxHashes`, after the deposit, and leaves `destinationChainTxHashes` empty. The app already takes the Solana

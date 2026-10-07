@@ -589,7 +589,7 @@ async function main() {
     const md = [
       `### ${SIG.slice(0, 8)}… (${kind}${status ? `, 1Click ${status.status}` : ''})`,
       '',
-      `[\`${SIG}\`](https://solscan.io/tx/${SIG})`,
+      `[\`${SIG}\`](https://explorer.solana.com/tx/${SIG})`,
       '',
       '| | |',
       '|---|---|',

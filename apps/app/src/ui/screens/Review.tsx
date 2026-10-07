@@ -1,7 +1,7 @@
 import { FEE_RECIPIENT } from '@zecdoor/solana';
 import { useCallback, useEffect, useState } from 'react';
 import { MOVES_OPEN, QUOTE_FRESH_MS, TERMS_URL } from '../../config';
-import { clock, short, sol, usdc, zec } from '../../lib/format';
+import { clock, estimate, short, sol, usdc, zec } from '../../lib/format';
 import { dryQuote, executeMove, MoveError, type DryQuote, type Stage } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
 import { BackBar, CheckCircle, Panel, Shell, Spinner, StateCard } from '../parts';
@@ -106,8 +106,8 @@ export function Review() {
     [`Our fee (${ourBps / 100}%)`, feeOf(ourBps)],
     ...(theirBps ? ([[`NEAR Intents fee (${theirBps / 100}%)`, feeOf(theirBps)]] as Array<[string, string]>) : []),
     ['Solana fees and deposits', `≈ ${sol(solCost)}`],
-    ['Usually arrives', draft.kind === 'exit' || draft.kind === 'topup' ? '3–9 min' : `about ${Math.max(1, Math.round((q?.timeEstimate ?? 180) / 60))}–9 min`],
-    ['If it can’t complete', `refund to ${short(owner.toBase58(), 4, 3)}`],
+    ['NEAR Intents estimates', estimate(q?.timeEstimate) ?? '—'],
+    ['If it can’t complete', `refund to ${short(owner.toBase58(), 4, 3)} at the quote’s deadline`],
   ];
   const at = stage ? ORDER.indexOf(stage) : -1;
 

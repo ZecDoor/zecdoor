@@ -324,7 +324,7 @@ test('a quote left open expires and can be renewed', async ({ page }) => {
   await expect(page.getByText(/^Quote valid /)).toBeVisible();
 });
 
-test('a slow bridge shows "taking longer than usual"', async ({ page }) => {
+test('a slow bridge shows "taking longer than estimated"', async ({ page }) => {
   await page.clock.install();
   await mock(page, { statuses: [status.processing()] });
   await page.goto('./#/destination');
@@ -335,7 +335,7 @@ test('a slow bridge shows "taking longer than usual"', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByText('Received by the bridge')).toBeVisible();
   await page.clock.fastForward('11:00');
-  await expect(page.getByText('Taking longer than usual')).toBeVisible(SLOW);
+  await expect(page.getByText('Taking longer than estimated')).toBeVisible(SLOW);
 });
 
 test('counter: placeholders until there are real moves', async ({ page }) => {
