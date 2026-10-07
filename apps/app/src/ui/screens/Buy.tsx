@@ -4,11 +4,14 @@ import { clock, parseUnits, sol, units, usd, usdc, zec } from '../../lib/format'
 import { dryQuote, MoveError, type DryQuote } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
 import { feeOk } from '../../lib/server';
-import { BackBar, Panel, Rows, Shell, StateCard } from '../parts';
-import { CounterPanel, FaqPanel } from '../extras';
-import { Bullets, networkFee, NetworkFeeLabel, PanelRows, RoutePanel } from '../rail';
+import { BackBar, Rows, Shell, StateCard } from '../parts';
+import { networkFee, NetworkFeeLabel } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
+import { useWide } from '../rail';
+import { DeskTabs, Field, Line, Pair, Strip, Tok } from '../desk';
+import { MOVES_OPEN } from '../../config';
+import { landsIn } from '../flow';
 
 const REFRESH_MS = 30_000;
 
@@ -20,6 +23,7 @@ export function Buy() {
   const [quote, setQuote] = useState<DryQuote | null>(null);
   const [problem, setProblem] = useState<{ title: string; body: string } | null>(null);
   const [now, setNow] = useState(Date.now());
+  const wide = useWide();
 
   const kind: MoveKind = symbol === 'SOL' ? 'buySol' : 'buyUsdc';
   const decimals = symbol === 'SOL' ? 9 : 6;
@@ -73,38 +77,88 @@ export function Buy() {
     go('/destination');
   };
 
+  if (wide) {
+    return (
+      <Shell nav="buy">
+        <DeskTabs at="buy" />
+        {!MOVES_OPEN ? (
+          <Strip>
+            <strong>Opening soon.</strong> Buys open once our own Phantom test moves pass. Live prices work now.
+          </Strip>
+        ) : null}
+        <Pair>
+          <Field
+            label={<label htmlFor="pay">You pay</label>}
+            right={`Balance ${balance === undefined ? '—' : symbol === 'SOL' ? sol(balance) : usdc(balance)}`}
+            input={
+              <input
+                id="pay"
+                className="amount-input"
+                inputMode="decimal"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                aria-invalid={amount === null || tooMuch}
+                autoComplete="off"
+              />
+            }
+            token={
+              <div className="toggle" style={{ flex: 'none', width: 148 }}>
+                <button type="button" aria-pressed={symbol === 'USDC'} onClick={() => setSymbol('USDC')}>
+                  USDC
+                </button>
+                <button type="button" aria-pressed={symbol === 'SOL'} onClick={() => setSymbol('SOL')}>
+                  SOL
+                </button>
+              </div>
+            }
+            foot={
+              <>
+                <span>{usdIn !== null ? `≈ ${usd(usdIn)}` : ' '}</span>
+                <span>{rate ? `1 ZEC ≈ ${rate.toFixed(symbol === 'SOL' ? 4 : 2)} ${symbol}` : ' '}</span>
+              </>
+            }
+          />
+          <Field
+            label="You receive at least"
+            right="shielded"
+            amount={q ? units(BigInt(q.minAmountOut), 8, 2) : '—'}
+            muted={!q}
+            token={<Tok kind="zcash" />}
+            foot={
+              <>
+                <span>
+                  Lands in <strong>{landsIn(app.draft, app.wallet).replace(' · fresh address', '')}</strong>
+                </span>
+                <span>{quote ? `refreshes in ${clock(REFRESH_MS - ((now - quote.at) % REFRESH_MS))}` : ''}</span>
+              </>
+            }
+          />
+        </Pair>
+        {tooMuch ? (
+          <Strip tone="warn">
+            <strong>More than you can spend.</strong>{' '}
+            {symbol === 'SOL' ? `Keep about ${sol(reserve)} for Solana fees. You can spend up to ${sol(spendable!)}.` : `You have ${usdc(balance!)}.`}
+          </Strip>
+        ) : problem ? (
+          <Strip tone="warn">
+            <strong>{problem.title}.</strong> {problem.body}
+          </Strip>
+        ) : fixedShare !== null && usdIn !== null && usdIn < 10 ? (
+          <Strip tone="warn">
+            <strong>Small order.</strong> The fixed bridge fee is {fixedShare.toFixed(1)}% of this order. Larger orders lose less to it.
+          </Strip>
+        ) : null}
+        <Line left={`Fee ${q ? (ours + theirs) / 100 : 0.5}% · bridge up to ${q?.withdrawFee ? zec(BigInt(q.withdrawFee), 0) : '0.00032 ZEC'}`} right="Exact amounts at review" />
+        <button type="button" className="btn" disabled={!q || tooMuch || blocked} onClick={next}>
+          Choose where it lands
+        </button>
+      </Shell>
+    );
+  }
+
   return (
     <Shell
-      nav="buy"
-      rail={
-        <>
-          <RoutePanel kind={kind} owner={owner?.toBase58() ?? null} dest="Your wallet" />
-          <Panel title="Fees">
-            <PanelRows
-              rows={[
-                ['ZecDoor fee', q ? `${(ours + theirs) / 100}%` : '0.5%'],
-                ['of which kept by NEAR Intents', q ? `${theirs / 100}%` : '0.25%'],
-                [<NetworkFeeLabel key="f" />, q ? networkFee(q.withdrawFee) : '—'],
-                ['Solana network fee', '≈ 0.00001 SOL'],
-                ...(kind === 'buyUsdc' ? ([['Deposit token account', '≈ 0.0015 SOL']] as Array<[string, string]>) : []),
-              ]}
-            />
-          </Panel>
-          <Panel title="Before you sign">
-            <Bullets
-              tone="ok"
-              items={[
-                'You see the least ZEC you will receive',
-                'If the price moves more than 1% before it completes, NEAR Intents refunds your Solana wallet',
-                'The minimum order is read from NEAR Intents before every quote',
-              ]}
-            />
-          </Panel>
-          <FaqPanel />
-        </>
-      }
-      left={<CounterPanel />}
-    >
+      nav="buy">
       <BackBar title="Buy shielded ZEC" back="/" />
 
       <div className="card tight">

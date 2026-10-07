@@ -4,9 +4,8 @@ import { sol, usdc, zec } from '../../lib/format';
 import { dryQuote, MoveError, planTopUp, type DryQuote, type TopUpPlan } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
 import { continueWith } from '../flow';
-import { BackBar, Panel, Shell, Spinner, StateCard } from '../parts';
-import { FaqPanel } from '../extras';
-import { Bullets, networkFee, NetworkFeeLabel, RouteMap } from '../rail';
+import { BackBar, Shell, Spinner, StateCard } from '../parts';
+import { networkFee, NetworkFeeLabel } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
 
@@ -34,7 +33,7 @@ export function TopUp() {
 
   if (geo?.topup === false) {
     return (
-      <Shell>
+      <Shell plain>
         <BackBar title="Top up and shield" back="/" />
         <StateCard tone="err" title="Not available in your region">
           The top-up uses Jupiter, which is not offered where you are. Moves of balances above the bridge minimum still work.
@@ -68,43 +67,7 @@ export function TopUp() {
   };
 
   return (
-    <Shell
-      rail={
-        <>
-          <Panel title="The route" cap="one transaction, two parts" full>
-            <RouteMap
-              stops={[
-                { icon: 'swap', t: '1 · Swap on Solana', s: `Jupiter, exact output, into your own ZEC account`, pub: 'Public: the swap and its amounts' },
-                { icon: 'wallet', t: '2 · Send', s: 'All of it to the deposit address', pub: 'Public: your transfer and its amount' },
-                { icon: 'bridge', t: '3 · NEAR Intents', s: 'Pays your Zcash address', pub: 'Public: which address you paid' },
-                { icon: 'lock', t: '4 · Shielded pool', s: 'Your wallet', prv: 'Private after arrival' },
-              ]}
-            />
-          </Panel>
-          <Panel title="What the transaction may do">
-            <p className="sub">Checked against our allowlist before your wallet sees it, then simulated on Solana:</p>
-            <Bullets
-              tone="ok"
-              items={[
-                'One swap whose output is your own ZEC account',
-                `Use at most the swap’s maximum input of your ${payWith === 'sol' ? 'SOL' : 'USDC'}`,
-                'Send exactly the quoted ZEC to the deposit address',
-              ]}
-            />
-            <p className="sub">Nothing else. No message to sign, no approval left behind.</p>
-          </Panel>
-          <Panel title="Why top up">
-            <p className="sub">
-              The bridge only moves {minimum ? zec(minimum) : 'about 0.00134 ZEC'} or more. Below that, bridged ZEC stays on Solana unless something adds to it.
-            </p>
-            <p className="sub">
-              If it can’t complete, NEAR Intents refunds Solana ZEC, including what the swap bought, to the wallet that sent it. Not the {payWith === 'sol' ? 'SOL' : 'USDC'} you spent.
-            </p>
-          </Panel>
-          <FaqPanel />
-        </>
-      }
-    >
+    <Shell plain>
       <BackBar title="Top up and shield" back="/" />
 
       <div className="card tight">

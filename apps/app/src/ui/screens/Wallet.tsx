@@ -6,10 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { height } from '../../lib/format';
 import { putWallet } from '../../lib/store';
 import { createWallet, freshAddress } from '../../lib/zcash';
-import { BackBar, Panel, Shell, Spinner, StateCard } from '../parts';
-import { FaqPanel, MoveSteps } from '../extras';
-import { Bullets, PanelRows } from '../rail';
-import { WALLET_APPS } from '../../config';
+import { BackBar, Shell, Spinner, StateCard } from '../parts';
 import { go } from '../router';
 import { useApp } from '../state';
 
@@ -40,28 +37,7 @@ export function WalletCreate() {
   };
 
   return (
-    <Shell
-      rail={
-        <>
-          <Panel title="What happens to the words">
-            <Bullets
-              tone="ok"
-              items={['Made in your browser, never sent anywhere', 'Never written to storage; gone when the check passes', 'Only a viewing key stays in this browser, to see the arrival']}
-            />
-          </Panel>
-          <Panel title="Why paper">
-            <p className="sub">Anyone with these words can spend the ZEC; without them nobody can recover it. Clipboards, screenshots and cloud notes can be read by other apps.</p>
-          </Panel>
-          <Panel title="To spend later" full>
-            <p className="sub">
-              Install <a href={WALLET_APPS.zodl} target="_blank" rel="noreferrer">Zodl</a> or <a href={WALLET_APPS.zkool} target="_blank" rel="noreferrer">Zkool</a>,
-              choose to restore a wallet, and enter the 24 words and the birthday height. ZecDoor never spends.
-            </p>
-          </Panel>
-          <FaqPanel />
-        </>
-      }
-    >
+    <Shell plain>
       <BackBar title="Your new shielded wallet" step="1 of 2" back={leave} />
       <p style={{ margin: 0, fontSize: 16, lineHeight: 1.55 }} className="muted">
         These 24 words are the wallet. Write them on paper, in order. Anyone with them can spend your ZEC; without them, nobody can recover it —
@@ -181,34 +157,7 @@ export function WalletVerify() {
   };
 
   return (
-    <Shell
-      rail={
-        <>
-          <Panel title="Your wallet" full>
-            <PanelRows
-              rows={[
-                ['Recovery words', '24, on your paper'],
-                ['Wallet birthday height', seed.current ? height(seed.current.birthday) : '—'],
-                ['Kept in this browser', 'viewing key only'],
-                ['Restore in', 'Zodl or Zkool'],
-              ]}
-            />
-          </Panel>
-          <Panel title="What stays here">
-            <p className="sub">Only a viewing key stays in this browser, to confirm the arrival. It can see payments to this wallet; it cannot spend them.</p>
-          </Panel>
-          <Panel title="If a check fails">
-            <p className="sub">Nothing is lost. Go back, show the words again and correct your paper. You can’t continue until all three are right.</p>
-          </Panel>
-          <FaqPanel />
-        </>
-      }
-      left={
-        <>
-          <MoveSteps />
-        </>
-      }
-    >
+    <Shell plain>
       <BackBar title="Check your backup" step="2 of 2" back="/wallet/new" />
       <p style={{ margin: 0, fontSize: 16, lineHeight: 1.55 }} className="muted">
         Pick the right word from your paper. Three checks, then you're ready.

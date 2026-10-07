@@ -1550,8 +1550,8 @@ dl.prows.plain dd {
 
 /* ---------- desktop: fill the window, scale on wide screens ----------
    From 1024 px the app is one column of top bar, workspace and footer at least as tall as the window.
-   On wide screens the whole layout is zoomed, so 1920×1080 and 2560×1440 lay out like about
-   1600×900 and 1700×960 instead of leaving small content in a large frame. Under zoom, viewport
+   On wide screens the whole layout is zoomed (1.2 at 1920, 1.35 at 2560, at most 1.5), so the card does
+   not look small in a large frame and text never becomes oversized. Under zoom, viewport
    units are multiplied too, hence the division. */
 :root {
   --z: 1;
@@ -1561,19 +1561,15 @@ dl.prows.plain dd {
     --z: 1.2;
   }
 }
-@media (min-width: 2100px) {
+@media (min-width: 2400px) {
   :root {
     --z: 1.35;
   }
 }
-@media (min-width: 2500px) {
-  :root {
-    --z: 1.5;
-  }
-}
+/* The cap: beyond this the card stays at 1.5×, so text never becomes oversized on 4K and wider. */
 @media (min-width: 3200px) {
   :root {
-    --z: 2;
+    --z: 1.5;
   }
 }
 @media (min-width: 1024px) {
@@ -1680,4 +1676,517 @@ dl.prows.plain dd {
 dl.prows.plain > div {
   display: grid;
   grid-template-columns: minmax(96px, 36%) minmax(0, 1fr);
+}
+
+/* ---------- desktop: one centred card (direction A) ----------
+   From 768 px every screen is the top bar, one 480 px column (usually a card) centred in the window,
+   and a slim footer. The phone layout below 768 px does not use any of this. */
+@media (min-width: 768px) {
+  .app.dapp {
+    min-height: calc(100dvh / var(--z));
+    display: flex;
+    flex-direction: column;
+  }
+}
+.dmain {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 32px 24px 40px;
+}
+.dhero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.dhero h1 {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+.dhero p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.dcard,
+.dcol {
+  width: 480px;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.dcard {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 20px;
+}
+.dpage {
+  width: 984px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.seg {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  background: var(--sunk);
+  border-radius: 12px;
+}
+.seg a {
+  min-height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+}
+.seg a[aria-current='page'] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.seg a:hover {
+  color: var(--text);
+}
+.dpair {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dpair-arrow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+.dfield {
+  background: var(--sunk);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dfield-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.dfield-row strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.dfield-row a,
+.dfield-row button.link {
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.dfield-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+}
+.dfield-amt {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.dfield-amt.muted {
+  color: var(--muted);
+}
+.dfield .amount-input {
+  font-size: 34px;
+  min-width: 0;
+  flex: 1;
+}
+.tok {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px 0 6px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-weight: 600;
+  font-size: 14px;
+}
+.tok-c {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--muted);
+}
+.tok-i {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--amber-bg);
+  color: var(--accent-text);
+}
+.tok-i.zcash {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.tok-i.usdc,
+.tok-i.sol {
+  background: var(--sunk);
+  color: var(--text);
+}
+.dline {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.dstrip {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.dstrip svg {
+  flex: none;
+  margin-top: 1px;
+}
+.dstrip.amber {
+  background: var(--amber-bg);
+}
+.dstrip.amber svg {
+  color: var(--accent-text);
+}
+.dstrip.warn {
+  background: var(--warn-bg);
+}
+.dstrip.warn svg {
+  color: var(--warn);
+}
+.dstrip strong {
+  font-weight: 700;
+}
+.dempty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 24px 12px 8px;
+}
+.dempty strong {
+  font-size: 18px;
+}
+.dempty > span:last-child {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 360px;
+}
+.dempty-i {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--sunk);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+}
+.dduo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.dduo .btn {
+  min-height: 48px;
+  font-size: 15px;
+  border-radius: 12px;
+}
+.dlinks {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 0 4px;
+  font-size: 13px;
+}
+.dlinks a,
+.dlinks summary {
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+}
+.dlinks details[open] summary {
+  margin-bottom: 10px;
+}
+.dlinks .qr {
+  width: 140px;
+}
+.dhead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dhead h1,
+.dhead h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  flex: 1;
+}
+.dhead .caption {
+  white-space: nowrap;
+}
+.dback {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 0 10px 0 6px;
+  margin-left: -6px;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.dback:hover {
+  color: var(--text);
+  background: var(--sunk);
+}
+.drows {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+.drows > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+.drows dt {
+  color: var(--muted);
+}
+.drows dd {
+  margin: 0;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.drows .strong dd {
+  font-weight: 700;
+}
+.dpub {
+  background: var(--sunk);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dpub-h {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.dpub-h a {
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+.dpub-g {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.dpub-g strong {
+  display: block;
+  color: var(--text);
+  font-weight: 600;
+}
+.dchecks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ok);
+}
+.dchecks .wait {
+  color: var(--muted);
+}
+.dcard .note,
+.dcard .state {
+  border-radius: 12px;
+}
+.dcard > .btn {
+  min-height: 52px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+}
+@media (min-width: 768px) {
+  .foot {
+    padding: 12px 32px;
+    font-size: 12px;
+  }
+}
+/* Inside the desktop card: tighter steps, checks and type, so progress and proof fit a laptop screen. */
+.dcard .dback {
+  margin-bottom: -10px;
+}
+.dcard .bar {
+  min-height: 36px;
+}
+.dcard .amount.lg {
+  font-size: 40px;
+}
+.dcard ol.steps li {
+  padding-bottom: 12px;
+}
+.dcard ol.steps .line {
+  min-height: 12px;
+}
+.dcard ol.steps .text b {
+  font-size: 15px;
+}
+.dcard ol.steps .text span {
+  font-size: 13px;
+}
+.dcard .checks {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  border-top: 1px solid var(--line);
+}
+.dcard .checks > div {
+  padding: 10px 0;
+}
+.dcard .checks b {
+  font-size: 14px;
+}
+.dcard .note {
+  font-size: 12.5px;
+  padding: 10px 12px;
+}
+.dcard .btn:disabled,
+.dcard .btn[aria-disabled='true'] {
+  opacity: 1;
+  background: var(--sunk);
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+.dcard .btn.ghost {
+  min-height: 48px;
+  font-size: 15px;
+  border-radius: 12px;
+}
+.dcard .card.plain {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+.dcard .prows > div {
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+.dcard .prows dt,
+.dcard .prows dd {
+  font-size: 13.5px;
+}
+.dcard .check-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 8px;
+  row-gap: 8px;
+}
+.dcard .check-form > label,
+.dcard .check-form > span {
+  grid-column: 1 / -1;
+}
+.dcard .check-form > label {
+  grid-row: 1;
+}
+.dcard .check-form > input {
+  grid-row: 2;
+  grid-column: 1;
+}
+.dcard .check-form > button {
+  grid-row: 2;
+  grid-column: 2;
+  width: auto;
+  min-height: 0;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-size: 15px;
+}
+.dcard .check-form > span {
+  grid-row: 3;
 }

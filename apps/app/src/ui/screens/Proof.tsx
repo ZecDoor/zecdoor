@@ -1,10 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { DOCS_URL } from '../../config';
 import { height, short, zec } from '../../lib/format';
 import { B1, checkQuote, checkSolana, checkZcash, type QuoteCheck, type SolanaCheck } from '../../lib/proof';
-import { CheckCircle, Panel, Pending, Shell, StateCard } from '../parts';
-import { FaqPanel } from '../extras';
-import { Bullets } from '../rail';
+import { CheckCircle, Pending, Shell, StateCard } from '../parts';
 import { solanaTx, zcashTx } from './Move';
 
 type Live<T> = { state: 'checking' } | { state: 'done'; value: T } | { state: 'failed'; message: string };
@@ -47,36 +44,8 @@ export function Proof() {
   const anyFailed = [quote, solana, zcash].some((x) => x.state === 'failed');
 
   return (
-    <Shell
-      rail={
-        <>
-          <Panel title="What this page checks, and with whom">
-            <Bullets
-              items={[
-                'NEAR Intents’ public status for the deposit address, and its signature on the quote, checked here with its public key.',
-                'The Solana transaction, read from a public Solana RPC.',
-                'The Zcash transaction’s block, read from lightwalletd at zec.rocks.',
-                'Nothing is sent to our server. Nothing to connect.',
-              ]}
-            />
-          </Panel>
-          <Panel title="Why the fourth check is recorded">
-            <p className="sub">
-              Finding the note needs the receiving wallet’s viewing key. Publishing it would show every payment that wallet ever receives, so we show the
-              recorded result instead. On your own move, the page runs this check with your key, in your browser.
-            </p>
-          </Panel>
-          <Panel title="The full record">
-            <p className="sub">Every mainnet transaction we made while testing, including a refund we caused on purpose.</p>
-            <a className="lnk" href={`${DOCS_URL}testing`}>
-              The testing page
-            </a>
-          </Panel>
-          <FaqPanel />
-        </>
-      }
-      wide
-    >
+    <Shell plain
+      wide>
       <div className="bar">
         <h1 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>Proof: our first mainnet move</h1>
         <span className="caption">{B1.date}</span>

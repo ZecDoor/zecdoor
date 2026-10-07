@@ -1,14 +1,10 @@
 import { useEffect, useState } from 'react';
 import { WALLET_APPS } from '../../config';
-import { height, short, zec } from '../../lib/format';
-import { quoteHash } from '@zecdoor/solana';
+import { height, zec } from '../../lib/format';
 import { forgetWallet, getMove, type MoveRecord } from '../../lib/store';
 import { ownedBy } from '../../lib/zcash';
 import type { Ownership } from '@zecdoor/zcash';
-import { BackBar, Panel, Shell, Tick } from '../parts';
-import { CounterPanel, FaqPanel } from '../extras';
-import { PanelRows, RecentPanel } from '../rail';
-import { solanaTx, zcashTx } from './Move';
+import { BackBar, Shell, Tick } from '../parts';
 import { go } from '../router';
 import { useApp } from '../state';
 
@@ -32,43 +28,7 @@ export function After({ id }: { id: string }) {
   };
 
   return (
-    <Shell
-      rail={
-        <>
-          {ours ? (
-            <Panel title="This wallet">
-              <PanelRows
-                rows={[
-                  ['Shielded, found by your browser', amount !== null ? zec(amount, 0) : '—'],
-                  ['Wallet birthday height', height(wallet!.birthday)],
-                  ['Next address', `#${wallet!.nextIndex + 1}`],
-                ]}
-              />
-            </Panel>
-          ) : null}
-          {m ? (
-            <Panel title="The proof">
-              <PanelRows
-                rows={[
-                  ['Solana', m.solanaSignature ? <a href={solanaTx(m.solanaSignature)} target="_blank" rel="noreferrer">{short(m.solanaSignature, 4, 4)}</a> : '—'],
-                  ['Zcash', m.zcashTxid ? <a href={zcashTx(m.zcashTxid)} target="_blank" rel="noreferrer">{short(m.zcashTxid, 4, 4)}</a> : '—'],
-                  ['Quote', short(quoteHash(m.quote), 4, 4)],
-                ]}
-              />
-            </Panel>
-          ) : null}
-          <Panel title="Why these steps">
-            <p className="sub">
-              Inside the shielded pool, amounts and addresses are encrypted. What can still link you is timing and exact amounts at the edges: when ZEC enters
-              and when it leaves.
-            </p>
-          </Panel>
-          <RecentPanel moves={app.moves} owner={m?.owner ?? null} />
-          <FaqPanel />
-        </>
-      }
-      left={<CounterPanel />}
-    >
+    <Shell plain>
       <BackBar title="Your ZEC is home. Now:" back={`/move/${id}`} />
 
       <div className="card accent tight">

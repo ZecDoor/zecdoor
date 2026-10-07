@@ -4,11 +4,12 @@ import { MOVES_OPEN, QUOTE_FRESH_MS, TERMS_URL } from '../../config';
 import { clock, estimate, short, sol, usdc, zec } from '../../lib/format';
 import { dryQuote, executeMove, MoveError, type DryQuote, type Stage } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
-import { BackBar, CheckCircle, Panel, Shell, Spinner, StateCard } from '../parts';
-import { FaqPanel, MoveSteps } from '../extras';
-import { Bullets, networkFee, NetworkFeeLabel, PanelRows, PublicPanel } from '../rail';
+import { BackBar, CheckCircle, Shell, Spinner, StateCard } from '../parts';
+import { networkFee, NetworkFeeLabel } from '../rail';
 import { go } from '../router';
 import { useApp } from '../state';
+import { useWide } from '../rail';
+import { PublicStrip } from '../desk';
 
 const stageText = (s: Stage, wallet: string): string =>
   ({
@@ -29,6 +30,7 @@ export function Review() {
   const [now, setNow] = useState(Date.now());
   const [stage, setStage] = useState<Stage | null>(null);
   const [error, setError] = useState<MoveError | null>(null);
+  const wide = useWide();
 
   const load = useCallback(() => {
     if (!draft?.dest || !owner) return;
@@ -111,44 +113,92 @@ export function Review() {
   ];
   const at = stage ? ORDER.indexOf(stage) : -1;
 
-  return (
-    <Shell
-      rail={
-        <>
-          {stage === 'signing' || stage === 'sending' ? (
-            <Panel title={`What ${walletName} will show`} full>
-              <PanelRows
-                plain
-                rows={[
-                  ['Sends', `−${sendLabel}`],
-                  ['To', 'the NEAR Intents deposit address in the quote'],
-                  ...(draft.kind === 'topup' ? ([['Also', 'a Jupiter swap into your own ZEC account, first']] as Array<[string, string]>) : []),
-                  ...(draft.kind !== 'buySol' ? ([['Also creates', 'that address’s token account (≈ 0.0015 SOL)']] as Array<[string, string]>) : []),
-                  ['Network fee', '≈ 0.00001 SOL'],
-                ]}
-              />
-              <p className="sub">If {walletName} shows anything else, cancel. It never needs a message signature or your recovery phrase.</p>
-            </Panel>
-          ) : null}
-          <Panel title="Fees and timing" cap="all shown before signing">
-            {dry ? <PanelRows rows={rows.slice(1)} /> : <p className="sub">Getting a signed quote from NEAR Intents…</p>}
-          </Panel>
-          <Panel title="What you will sign">
-            <p className="sub">
-              One Solana transaction. Before {walletName} sees it, this page checks that it only sends {sendLabel} from your wallet to the deposit
-              address in NEAR Intents’ signed quote{draft.kind === 'topup' ? ', after a Jupiter swap into your own account' : ''}, and simulates it on Solana.
+  if (wide) {
+    const receive = q ? zec(BigInt(q.minAmountOut), 0) : '—';
+    const deskRows: Array<[string, React.ReactNode, boolean?]> = [
+      ['You send', sendLabel],
+      ...(draft.topUp
+        ? ([['of which swapped into ZEC', `up to ${draft.topUp.payWith === 'sol' ? sol(draft.topUp.maxPay) : usdc(draft.topUp.maxPay)}`]] as Array<[string, string]>)
+        : []),
+      ['You receive at least', receive, true],
+      [`Our fee (${ourBps / 100}%)`, dry ? feeOf(ourBps) : '—'],
+      ...(theirBps ? ([[`NEAR Intents fee (${theirBps / 100}%)`, feeOf(theirBps)]] as Array<[string, string]>) : []),
+      ['Bridge payout fee', networkFee(q?.withdrawFee)],
+      ['Solana fees and deposit', `≈ ${sol(solCost)}`],
+      ['Lands in', rows[0]![1]],
+      ['NEAR Intents estimates', estimate(q?.timeEstimate) ?? '—'],
+      ['If it can’t complete', 'refunded at the quote’s deadline'],
+    ];
+    return (
+      <Shell nav={draft.kind === 'buyUsdc' || draft.kind === 'buySol' ? 'buy' : 'move'}>
+        <div className="dhead">
+          <button type="button" className="dback" aria-label="Back" onClick={() => history.back()}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="m15 6-6 6 6 6" />
+            </svg>
+          </button>
+          <h1>Review your {draft.kind === 'buyUsdc' || draft.kind === 'buySol' ? 'buy' : 'move'}</h1>
+          {dry && !expired ? <span className="caption">Quote valid {clock(left)}</span> : null}
+        </div>
+        {!dry && !error ? <Spinner label="Getting a signed quote from NEAR Intents…" /> : null}
+        <dl className="drows">
+          {deskRows.map(([k, v, strong]) => (
+            <div key={k} className={strong ? 'strong' : undefined}>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
+        <PublicStrip />
+        <div className="dchecks" aria-label="Checks before your wallet sees it">
+          <span className={dry ? undefined : 'wait'}>{dry ? '✓' : '·'} Quote signed by NEAR Intents</span>
+          <span className="wait">When you sign: instructions checked against our allowlist, then simulated</span>
+        </div>
+        {expired ? (
+          <StateCard tone="info" title="Quote expired" tag="Before signing" action="Get a new quote" onAction={load}>
+            Prices moved while this screen was open. Nothing was sent.
+          </StateCard>
+        ) : null}
+        {noSol && !error ? (
+          <StateCard tone="warn" title="Not enough SOL for fees" tag="Before signing" action="Check again" onAction={() => void app.refreshBalances()}>
+            You need about {sol(needSol)} for this move. Add SOL in Phantom, then come back.
+          </StateCard>
+        ) : null}
+        {error ? <ErrorCard error={error} onRetry={load} /> : null}
+        {MOVES_OPEN ? (
+          <>
+            {stage ? (
+              <ol className="tl" aria-label="Before your wallet sees it">
+                {ORDER.slice(0, 4).map((s2, i) => (
+                  <li key={s2}>
+                    <span className={`n ${i < at ? 'ok' : i === at ? 'now' : ''}`}>{i < at ? '✓' : i + 1}</span>
+                    <span>
+                      <span className="h">{stageText(s2, walletName).replace('…', '')}</span>
+                      {s2 === 'signing' && at === i ? <span className="d">{walletName} shows one transaction. Approve it there. Nothing has been sent yet.</span> : null}
+                    </span>
+                    <span className="r">{i < at ? 'done' : ''}</span>
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+            <button type="button" className="btn" disabled={!dry || expired || busy || noSol} onClick={() => void sign()}>
+              {stage ? stageText(stage, walletName) : `Sign in ${walletName === 'your wallet' ? 'your wallet' : walletName}`}
+            </button>
+            <p className="muted center" style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5 }}>
+              One transaction. No message signature. By signing you accept the <a href={TERMS_URL}>Terms</a>.
             </p>
-            <Bullets
-              tone="ok"
-              items={[dry ? 'Quote signature checked' : 'Quote signature: checked when the quote arrives', 'Instruction allowlist checked', 'Simulation runs when you sign', 'No message signature, ever']}
-            />
-          </Panel>
-          <PublicPanel owner={owner.toBase58()} recipient={dest.address} full />
-          <FaqPanel />
-        </>
-      }
-      left={<MoveSteps />}
-    >
+          </>
+        ) : (
+          <button type="button" className="btn" disabled>
+            Opening soon
+          </button>
+        )}
+      </Shell>
+    );
+  }
+
+  return (
+    <Shell>
       <BackBar title="Review" back={() => history.back()} step={dry && !expired ? `Quote valid ${clock(left)}` : undefined} />
 
       <div className="card" style={{ padding: 0, gap: 0, overflow: 'hidden' }}>

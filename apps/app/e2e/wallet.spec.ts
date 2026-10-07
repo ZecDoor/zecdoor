@@ -8,7 +8,7 @@ const toReview = async (page: Page) => {
   await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
   await page.getByLabel('Zcash address').fill(TEST_UA);
   await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('button', { name: /Move it to shielded/ }).click();
+  await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
   await expect(page.getByRole('heading', { name: 'Review' })).toBeVisible();
 };
 

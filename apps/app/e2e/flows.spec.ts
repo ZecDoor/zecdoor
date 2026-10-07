@@ -64,6 +64,7 @@ test.describe('connect', () => {
   test('outside Phantom it offers the Phantom deeplink', async ({ page }) => {
     await mock(page, { phantom: false });
     await page.goto('./');
+    if (test.info().project.name === 'desktop') await page.getByText('On a phone? Open in Phantom').click();
     const link = page.getByRole('link', { name: /Open (this page )?in Phantom/ }).first();
     await expect(link).toHaveAttribute('href', /^https:\/\/phantom\.com\/ul\/browse\/http/);
   });
@@ -72,7 +73,7 @@ test.describe('connect', () => {
 test('exit into a new wallet made here: backup, sign, progress, proof, after', async ({ page }) => {
   const m = await mock(page, { statuses: [status.pending(), status.processing(), status.processing(), status.success()] });
   await page.goto('./');
-  await page.getByRole('button', { name: /Move it to shielded/ }).click();
+  await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
   const words = await makeWallet(page);
 
   await expect(page.getByText(/Signed by NEAR Intents · checked|Quote signed by NEAR Intents/).filter({ visible: true }).first()).toBeVisible();
@@ -120,7 +121,15 @@ test.describe('moves closed (production until the mainnet test runs pass)', () =
     const m = await mock(page, { movesClosed: true });
     await page.goto('./');
     await expect(page.getByText('Opening soon').first()).toBeVisible();
-    await page.getByRole('button', { name: /Move it to shielded/ }).click();
+    if (test.info().project.name === 'desktop') {
+      // The single card says so in the card and closes its one button; the live quote still shows.
+      await expect(page.getByRole('button', { name: 'Opening soon' })).toBeDisabled();
+      await expect(page.getByText(/NEAR Intents est\./)).toBeVisible();
+      expect(await m.signed()).toHaveLength(0);
+      expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+      return;
+    }
+    await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
     await makeWallet(page);
     await expect(page.getByText(/Signed by NEAR Intents · checked|Quote signed by NEAR Intents/).filter({ visible: true }).first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Opening soon' })).toBeDisabled();
@@ -139,7 +148,7 @@ test.describe('moves closed (production until the mainnet test runs pass)', () =
     await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
     await page.getByLabel('Zcash address').fill(TEST_UA);
     await page.getByRole('button', { name: 'Continue' }).click();
-    await expect(page.locator('.amount', { hasText: '25.00 USDC' })).toBeVisible();
+    await expect(page.getByText('25.00 USDC').filter({ visible: true }).first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Opening soon' })).toBeDisabled();
     await expect(page.getByRole('button', { name: 'Sign in Phantom' })).toHaveCount(0);
     expect(await m.signed()).toHaveLength(0);
@@ -149,22 +158,23 @@ test.describe('moves closed (production until the mainnet test runs pass)', () =
 test('second move from the same browser wallet uses the next address', async ({ page }) => {
   await mock(page);
   await page.goto('./');
-  await page.getByRole('button', { name: /Move it to shielded/ }).click();
+  await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
   await makeWallet(page);
-  const first = await page.locator('dl.rows dd').first().innerText();
+  const dest = () => (test.info().project.name === 'desktop' ? page.locator('dl.drows > div', { hasText: 'Lands in' }).locator('dd') : page.locator('dl.rows dd').first());
+  const first = await dest().innerText();
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByText('Note found by your browser')).toBeVisible(SLOW);
   await page.goto('./#/');
-  await page.getByRole('button', { name: /Move it to shielded/ }).click();
+  await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
   await expect(page.getByText(/Signed by NEAR Intents · checked|Quote signed by NEAR Intents/).filter({ visible: true }).first()).toBeVisible();
-  const second = await page.locator('dl.rows dd').first().innerText();
+  const second = await dest().innerText();
   expect(second).not.toEqual(first);
 });
 
 test('exit to a pasted address: validation, review, proof without a viewing key', async ({ page }) => {
   const m = await mock(page);
   await page.goto('./');
-  await page.getByRole('button', { name: 'Change' }).click();
+  await page.getByText('Change', { exact: true }).filter({ visible: true }).first().click();
   await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
   const input = page.getByLabel('Zcash address');
   await input.fill('t1J5WT7CwfJy7WJaMkYweYT2JUnSebbVRz4');
@@ -177,7 +187,7 @@ test('exit to a pasted address: validation, review, proof without a viewing key'
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByText(/My wallet · u1c5…/).first()).toBeVisible();
 
-  await page.getByRole('button', { name: /Move it to shielded/ }).click();
+  await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
   await expect(page.getByText(/your wallet$/).filter({ visible: true }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByText('Check it in your wallet')).toBeVisible(SLOW);
@@ -214,13 +224,16 @@ test('buy shielded ZEC with USDC', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /Buy shielded ZEC/ }).first().click();
   await page.getByLabel('You pay').fill('25');
-  await expect(page.getByText('NEAR Intents fee')).toBeVisible();
-  await expect(page.locator('dl.rows')).toContainText('0.25%');
+  if (test.info().project.name === 'desktop') await expect(page.getByText(/^Fee 0\.5% · bridge up to/)).toBeVisible();
+  else {
+    await expect(page.getByText('NEAR Intents fee')).toBeVisible();
+    await expect(page.locator('dl.rows')).toContainText('0.25%');
+  }
   await page.getByRole('button', { name: 'Choose where it lands' }).click();
   await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
   await page.getByLabel('Zcash address').fill(TEST_UA);
   await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.locator('.amount', { hasText: '25.00 USDC' })).toBeVisible();
+  await expect(page.getByText('25.00 USDC').filter({ visible: true }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByText('Check it in your wallet')).toBeVisible(SLOW);
   await expectAllowed(m, 'buyUsdc');
@@ -255,7 +268,7 @@ test('refund: shows the reason and that the funds are back', async ({ page }) =>
   await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
   await page.getByLabel('Zcash address').fill(TEST_UA);
   await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('button', { name: /Move it to shielded/ }).click();
+  await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByRole('heading', { name: 'Refunded' })).toBeVisible(SLOW);
   await expect(page.getByText('The price moved past the quote’s limit').first()).toBeVisible();
@@ -268,25 +281,26 @@ test('cancelling in Phantom sends nothing and keeps no record', async ({ page })
   await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
   await page.getByLabel('Zcash address').fill(TEST_UA);
   await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('button', { name: /Move it to shielded/ }).click();
+  await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByText('You cancelled in Phantom. Nothing was sent.')).toBeVisible();
   await page.goto('./#/');
-  await expect(page.getByText(/^None yet/).filter({ visible: true }).first()).toBeVisible();
+  // The phone lists recent moves on its main screen; the desktop keeps them for the Activity page.
+  if (test.info().project.name !== 'desktop') await expect(page.getByText(/^None yet/).filter({ visible: true }).first()).toBeVisible();
 });
 
 test('the bridge is paused: no moves offered', async ({ page }) => {
   await mock(page, { health: { ok: false, paused: true, message: 'NEAR Intents reports an incident.' } });
   await page.goto('./');
   await expect(page.getByText('The bridge is paused')).toBeVisible();
-  await expect(page.getByRole('button', { name: /Move it to shielded/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /Move it to shielded|Review move/ })).toBeDisabled();
 });
 
 test('a failed fee self-test pauses that kind of move', async ({ page }) => {
   await mock(page, { health: { ok: true, paused: false, fees: { exit: true, buyUsdc: false, buySol: true } } as never });
   await page.goto('./#/buy');
   await page.getByLabel('You pay').fill('25');
-  await expect(page.getByText('NEAR Intents fee')).toBeVisible();
+  await expect(page.getByText(/NEAR Intents fee|^Fee 0\.5%/).first()).toBeVisible();
   await expect(page.getByRole('button', { name: 'Choose where it lands' })).toBeDisabled();
   await page.getByRole('button', { name: 'SOL', exact: true }).click();
   await page.getByLabel('You pay').fill('0.2');
@@ -297,7 +311,7 @@ test('not available in the region', async ({ page }) => {
   await mock(page, { geo: { allowed: false, topup: false, country: 'IR' } });
   await page.goto('./');
   await expect(page.getByText('Not available in your region')).toBeVisible();
-  await expect(page.getByRole('button', { name: /Move it to shielded/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /Move it to shielded|Review move/ })).toBeDisabled();
 });
 
 test('top-up not offered where Jupiter is restricted (D6)', async ({ page }) => {
@@ -313,7 +327,7 @@ test('not enough SOL for fees blocks signing', async ({ page }) => {
   await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
   await page.getByLabel('Zcash address').fill(TEST_UA);
   await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('button', { name: /Move it to shielded/ }).click();
+  await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
   await expect(page.getByText('Not enough SOL for fees')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Sign in Phantom' })).toBeDisabled();
 });
@@ -325,7 +339,7 @@ test('a quote left open expires and can be renewed', async ({ page }) => {
   await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
   await page.getByLabel('Zcash address').fill(TEST_UA);
   await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('button', { name: /Move it to shielded/ }).click();
+  await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
   await expect(page.getByText(/^Quote valid /)).toBeVisible();
   await page.clock.fastForward('10:05');
   await expect(page.getByText('Quote expired')).toBeVisible();
@@ -341,7 +355,7 @@ test('a slow bridge shows "taking longer than estimated"', async ({ page }) => {
   await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
   await page.getByLabel('Zcash address').fill(TEST_UA);
   await page.getByRole('button', { name: 'Continue' }).click();
-  await page.getByRole('button', { name: /Move it to shielded/ }).click();
+  await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByText('Received by the bridge')).toBeVisible();
   await page.clock.fastForward('11:00');

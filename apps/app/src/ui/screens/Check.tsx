@@ -7,10 +7,10 @@ import { dryQuote, exitMinimum, type DryQuote } from '../../lib/move';
 import { readBalances, solNeeded, type Balances } from '../../lib/solana';
 import { movingCost } from '../../lib/economics';
 import { feeOk, isSanctioned } from '../../lib/server';
-import { Logo, Panel, Shell, StateCard, Tick } from '../parts';
-import { FaqPanel, FeesPanel } from '../extras';
-import { Bullets, networkFee, NetworkFeeLabel, PanelRows } from '../rail';
+import { Logo, Shell, StateCard, Tick } from '../parts';
+import { networkFee, NetworkFeeLabel, PanelRows } from '../rail';
 import { go } from '../router';
+import { DeskTabs } from '../desk';
 import { useApp } from '../state';
 
 /** A Solana address, or null. Only the shape is checked: any account can hold ZEC. */
@@ -94,30 +94,7 @@ export function Check({ address }: { address?: string }) {
 
   return (
     <Shell
-      nav="check"
-      rail={
-        <>
-          <Panel title="How this check works">
-            <Bullets
-              items={[
-                'Your browser reads the address’s ZEC, SOL and USDC from public Solana RPCs. Our server never sees the address.',
-                'The bridge minimum and the quote come from NEAR Intents, asked with a throwaway address, not this one.',
-                'The address stays in the link after the #, which browsers don’t send to any server. Nothing is stored.',
-                'No wallet is connected and nothing can be signed from this page.',
-              ]}
-            />
-          </Panel>
-          <Panel title="What ZecDoor reads">
-            <p className="sub">
-              The address’s associated ZEC token account, the standard one wallets receive into. ZEC held in any other token account of the same address is not counted and
-              not moved.
-            </p>
-          </Panel>
-          <FeesPanel minimum={result?.minimum ?? null} />
-          <FaqPanel />
-        </>
-      }
-    >
+      nav="check">
       <div className="bar ph">
         <a className="brand" href="#/" style={{ color: 'inherit', textDecoration: 'none' }}>
           <Logo />
@@ -125,14 +102,18 @@ export function Check({ address }: { address?: string }) {
         </a>
       </div>
 
-      <h1 style={{ margin: 0, fontSize: 28, lineHeight: 1.1, letterSpacing: '-0.03em', fontWeight: 600 }}>Check any Solana wallet</h1>
-      <p className="muted" style={{ margin: 0, fontSize: 15, lineHeight: 1.55 }}>
+      <div className="dk">
+        <DeskTabs at="check" />
+      </div>
+      <h1 className="ph" style={{ margin: 0, fontSize: 28, lineHeight: 1.1, letterSpacing: '-0.03em', fontWeight: 600 }}>Check any Solana wallet</h1>
+      <p className="muted ph" style={{ margin: 0, fontSize: 15, lineHeight: 1.55 }}>
         Paste a Solana address to see the ZEC it holds on Solana, and whether moving it to a shielded Zcash wallet is worth it. No wallet to connect.
       </p>
 
-      <form className="field" onSubmit={submit}>
+      <form className="field check-form" onSubmit={submit}>
         <label htmlFor="sol-addr" className="label">
-          Solana address
+          <span className="ph">Solana address</span>
+          <span className="dk">Any Solana address, no wallet needed</span>
         </label>
         <input
           id="sol-addr"

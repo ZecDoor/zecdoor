@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { APP_URL, DOMAIN, MOVES_OPEN } from '../../config';
 import { isMobile, phantomBrowseLink } from '../../lib/phantom';
-import { Logo, Panel, Qr, Shell, Shield, StateCard, Tick } from '../parts';
-import { Bullets, RoutePanel } from '../rail';
-import { CounterPanel, FaqPanel, FeesPanel, FirstRun, MoveSteps } from '../extras';
+import { Logo, Qr, Shell, Shield, StateCard, Tick } from '../parts';
 import { useApp } from '../state';
+import { useWide } from '../rail';
+import { DeskTabs, Field, Line, Pair, Strip, Tok } from '../desk';
 import { openPicker } from '../wallet-ui';
 
 export function Connect() {
   const { wallet$, connect } = useApp();
+  const wide = useWide();
   const [error, setError] = useState<string | null>(null);
   const link = phantomBrowseLink(APP_URL);
   const supported = wallet$.options.filter((o) => o.supported);
@@ -25,42 +26,78 @@ export function Connect() {
     }
   };
 
-  return (
-    <Shell
-      left={
-        <>
-          <MoveSteps />
-          <FirstRun />
-        </>
-      }
-      rail={
-        <>
-          <RoutePanel owner={null} />
-          <Panel title="On a phone?">
-            <p className="sub">Scan to open this page inside Phantom’s browser, where it connects directly.</p>
+  if (wide) {
+    const connectButton = supported.length ? (
+      <button type="button" className="btn" onClick={() => void onConnect()} disabled={wallet$.connecting}>
+        {wallet$.connecting ? `Waiting for ${direct?.name ?? 'your wallet'}…` : direct ? `Connect ${direct.name}` : 'Connect wallet'}
+      </button>
+    ) : (
+      <a className="btn" href="https://phantom.com/download" target="_blank" rel="noreferrer">
+        Get Phantom
+      </a>
+    );
+    return (
+      <Shell
+        nav="move"
+        hero={
+          <>
+            <h1>Bring your ZEC home.</h1>
+            <p>The ZEC you hold on Solana, into a shielded Zcash wallet you control. One signature in Phantom.</p>
+          </>
+        }
+      >
+        <DeskTabs at="move" />
+        {!MOVES_OPEN ? (
+          <Strip>
+            <strong>Opening soon.</strong> Moves and buys open once our own Phantom test moves pass. Connect now to see your balance and a live quote.
+          </Strip>
+        ) : null}
+        {error ? (
+          <StateCard tone="err" title="Not connected">
+            {error}
+          </StateCard>
+        ) : null}
+        <Pair>
+          <Field
+            label="You move"
+            right="Connect to read your balance"
+            amount="—"
+            muted
+            token={<Tok kind="solana" />}
+            foot={
+              <>
+                <span> </span>
+                <span>All of it, in one signature</span>
+              </>
+            }
+          />
+          <Field
+            label="You receive at least"
+            right="shielded"
+            amount="—"
+            muted
+            token={<Tok kind="zcash" />}
+            foot={<span>Lands in a Zcash address only you control</span>}
+          />
+        </Pair>
+        <Line left="Fee 0.25% · bridge up to 0.00032 ZEC" right="Refunded if it can’t complete" />
+        {connectButton}
+        <div className="dlinks">
+          <details>
+            <summary>On a phone? Open in Phantom</summary>
             <Qr text={link} label="QR code that opens ZecDoor in Phantom" />
-          </Panel>
-          <Panel title="What you will need">
-            <Bullets
-              items={[
-                'ZEC on Solana, or USDC or SOL to buy with',
-                'About 0.0015 SOL for Solana fees and the deposit account',
-                'A Zcash wallet, or make one here with a checked backup',
-              ]}
-            />
-          </Panel>
-          <Panel title="Just looking?">
-            <p className="sub">Check what any Solana address holds and what a move would cost, without connecting a wallet.</p>
-            <a className="lnk" href="#/check">
-              Check a wallet
+            <a href={link} style={{ display: 'block', marginTop: 8, color: 'var(--accent-text)', fontWeight: 600 }}>
+              Open this page in Phantom
             </a>
-          </Panel>
-          <CounterPanel />
-          <FeesPanel minimum={null} />
-          <FaqPanel />
-        </>
-      }
-    >
+          </details>
+          <a href="#/check">Just looking? Check a wallet</a>
+        </div>
+      </Shell>
+    );
+  }
+
+  return (
+    <Shell>
       <div className="connect-hero">
         <div className="brand ph" style={{ minHeight: 44 }}>
           <Logo />

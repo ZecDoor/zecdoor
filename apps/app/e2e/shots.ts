@@ -15,7 +15,7 @@ export async function own(page: Page) {
 /** A move into a new wallet made here, to the after screen; returns the 24 words (test only). */
 async function intoNewWallet(page: Page): Promise<string[]> {
   await page.goto('./');
-  await page.getByRole('button', { name: /Move it to shielded/ }).click();
+  await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
   await expect(page.getByRole('heading', { name: 'Your new shielded wallet' })).toBeVisible();
   await page.getByRole('button', { name: /Tap to show/ }).click();
   const words = (await page.locator('ol.words li').allInnerTexts()).map((t) => t.replace(/^\d+\s*/, '').trim());
@@ -59,15 +59,16 @@ export const shots: Shot[] = [
     go: async (p) => {
       await own(p);
       await p.getByRole('button', { name: 'Continue' }).click();
-      await p.getByRole('button', { name: /Move it to shielded/ }).click();
+      await p.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
       await p.getByRole('button', { name: 'Sign in Phantom' }).click();
       await expect(p.getByRole('button', { name: /Confirm in Phantom/ })).toBeVisible();
     },
   },
-  { name: 'home', go: async (p) => void (await p.goto('./'), await expect(p.getByText('Move 0.0874 ZEC')).toBeVisible()) },
+  { name: 'home', go: async (p) => void (await p.goto('./'), await expect(p.getByRole('button', { name: /Move 0\.0874 ZEC|Review move/ })).toBeVisible()) },
+  { name: 'home-soon', scenario: { movesClosed: true }, go: async (p) => void (await p.goto('./'), await expect(p.getByText('Opening soon').first()).toBeVisible()) },
   { name: 'home-below-minimum', scenario: { zec: 60_000n }, go: async (p) => void (await p.goto('./'), await expect(p.getByText(/Below the bridge minimum/)).toBeVisible()) },
   { name: 'home-dust', scenario: { zec: 20_000n }, go: async (p) => void (await p.goto('./'), await expect(p.getByText('Worth less than moving it costs')).toBeVisible()) },
-  { name: 'home-no-zec', scenario: { zec: 0n }, go: async (p) => void (await p.goto('./'), await expect(p.getByText('You have no ZEC on Solana.', { exact: false }).first()).toBeVisible()) },
+  { name: 'home-no-zec', scenario: { zec: 0n }, go: async (p) => void (await p.goto('./'), await expect(p.getByText(/You have no ZEC on Solana\.|No ZEC on Solana in this wallet/).first()).toBeVisible()) },
   { name: 'home-paused', scenario: { health: { ok: false, paused: true, message: 'NEAR Intents reports an incident.' } }, go: async (p) => void (await p.goto('./'), await expect(p.getByText('The bridge is paused')).toBeVisible()) },
   { name: 'destination', go: own },
   {
@@ -83,7 +84,7 @@ export const shots: Shot[] = [
     name: 'wallet-create',
     go: async (p) => {
       await p.goto('./');
-      await p.getByRole('button', { name: /Move it to shielded/ }).click();
+      await p.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
       await expect(p.getByRole('button', { name: /Tap to show/ })).toBeVisible();
     },
   },
@@ -91,7 +92,7 @@ export const shots: Shot[] = [
     name: 'wallet-verify',
     go: async (p) => {
       await p.goto('./');
-      await p.getByRole('button', { name: /Move it to shielded/ }).click();
+      await p.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
       await p.getByRole('button', { name: /Tap to show/ }).click();
       await p.getByRole('checkbox').check();
       await p.getByRole('button', { name: 'Check my backup' }).click();
@@ -105,7 +106,7 @@ export const shots: Shot[] = [
     go: async (p) => {
       await own(p);
       await p.getByRole('button', { name: 'Continue' }).click();
-      await p.getByRole('button', { name: /Move it to shielded/ }).click();
+      await p.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
       await expect(p.getByText(/Signed by NEAR Intents · checked|Quote signed by NEAR Intents/).filter({ visible: true }).first()).toBeVisible();
     },
   },
@@ -115,7 +116,7 @@ export const shots: Shot[] = [
     go: async (p) => {
       await own(p);
       await p.getByRole('button', { name: 'Continue' }).click();
-      await p.getByRole('button', { name: /Move it to shielded/ }).click();
+      await p.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
       await expect(p.getByText('Not enough SOL for fees')).toBeVisible();
     },
   },
@@ -126,7 +127,7 @@ export const shots: Shot[] = [
     go: async (p) => {
       await own(p);
       await p.getByRole('button', { name: 'Continue' }).click();
-      await p.getByRole('button', { name: /Move it to shielded/ }).click();
+      await p.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
       await p.getByRole('button', { name: 'Sign in Phantom' }).click();
       await expect(p.getByText('NEAR Intents saw your deposit')).toBeVisible();
       await p.clock.runFor(72_000); // a realistic elapsed time for the picture (1:12, as in the design)
@@ -139,7 +140,7 @@ export const shots: Shot[] = [
     go: async (p) => {
       await own(p);
       await p.getByRole('button', { name: 'Continue' }).click();
-      await p.getByRole('button', { name: /Move it to shielded/ }).click();
+      await p.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
       await p.getByRole('button', { name: 'Sign in Phantom' }).click();
       await expect(p.getByText('NEAR Intents saw your deposit')).toBeVisible();
       await p.clock.fastForward('11:00');
@@ -152,7 +153,7 @@ export const shots: Shot[] = [
     scenario: { statuses: [status.pending(), status.processing(), ...Array(40).fill(status.processing()), status.success()] },
     go: async (p) => {
       await p.goto('./');
-      await p.getByRole('button', { name: /Move it to shielded/ }).click();
+      await p.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
       await p.getByRole('button', { name: /Tap to show/ }).click();
       const words = (await p.locator('ol.words li').allInnerTexts()).map((t) => t.replace(/^\d+\s*/, '').trim());
       await p.getByRole('checkbox').check();
@@ -177,7 +178,7 @@ export const shots: Shot[] = [
     go: async (p) => {
       await own(p);
       await p.getByRole('button', { name: 'Continue' }).click();
-      await p.getByRole('button', { name: /Move it to shielded/ }).click();
+      await p.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
       await p.getByRole('button', { name: 'Sign in Phantom' }).click();
       await expect(p.getByText('is back in your wallet on Solana')).toBeVisible({ timeout: 25_000 });
     },
@@ -187,7 +188,7 @@ export const shots: Shot[] = [
     go: async (p) => {
       await own(p);
       await p.getByRole('button', { name: 'Continue' }).click();
-      await p.getByRole('button', { name: /Move it to shielded/ }).click();
+      await p.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
       await p.getByRole('button', { name: 'Sign in Phantom' }).click();
       await p.getByRole('button', { name: 'What to do next' }).click({ timeout: 25_000 });
       await expect(p.getByText('2 · To keep it private', { exact: false })).toBeVisible();

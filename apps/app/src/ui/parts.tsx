@@ -65,34 +65,38 @@ export function BackBar({ title, step, back }: { title: string; step?: string; b
 type NavKey = 'move' | 'buy' | 'check' | 'counter';
 
 /**
- * Every screen: on a phone, one column exactly as before. From 768 px a top bar holds the brand,
- * navigation and wallet; the screen's own column stays on the left and `rail` (context panels)
- * fills the rest. Pieces marked `ph` show only on phones, `dk` only from 768 px.
+ * Every screen. On a phone (below 768 px): one column, exactly the original phone layout. From 768 px
+ * (direction A): the top bar, then one 480 px column centred in the window — a card by default, or a
+ * plain column (`plain`) for screens built from cards of their own — and a slim footer. `hero` sits
+ * above the card. The old `rail` and `left` context panels are no longer shown anywhere.
  */
-export function Shell({ children, rail, left, nav = 'move', wide }: { children: ReactNode; rail?: ReactNode; left?: ReactNode; nav?: NavKey; wide?: boolean }) {
-  // The rail and the extras are not rendered at all on phones, so the phone page is exactly what it was.
+export function Shell({ children, rail, nav = 'move', wide, hero, plain }: { children: ReactNode; rail?: ReactNode; left?: ReactNode; nav?: NavKey; wide?: boolean; hero?: ReactNode; plain?: boolean }) {
   const desk = useWide();
+  if (desk)
+    return (
+      <div className="app dapp">
+        <TopBar nav={nav} />
+        <main className="dmain">
+          {hero ? <div className="dhero">{hero}</div> : null}
+          <div className={plain ? 'dcol' : 'dcard'}>{children}</div>
+        </main>
+        <Footer />
+        <WalletPicker />
+      </div>
+    );
   return (
     <div className="app">
       <TopBar nav={nav} />
       <main className={`ws${rail ? '' : ' solo'}`}>
-        <div className={`act${wide ? ' gap20' : ''}`}>
-          {children}
-          {desk && left ? <div className="act-extra">{left}</div> : null}
-        </div>
-        {desk && rail ? (
-          <aside className="rail" aria-label="Details">
-            {rail}
-          </aside>
-        ) : null}
+        <div className={`act${wide ? ' gap20' : ''}`}>{children}</div>
       </main>
-      {desk ? <Footer /> : null}
       <WalletPicker />
     </div>
   );
 }
 
 function TopBar({ nav }: { nav: NavKey }) {
+  const app = nav === 'move' || nav === 'buy' || nav === 'check';
   return (
     <header className="topbar">
       <a className="brand" href="#/">
@@ -100,17 +104,11 @@ function TopBar({ nav }: { nav: NavKey }) {
         ZecDoor
       </a>
       <nav aria-label="Main">
-        <a href="#/" aria-current={nav === 'move' ? 'page' : undefined}>
-          Move
-        </a>
-        <a href="#/buy" aria-current={nav === 'buy' ? 'page' : undefined}>
-          Buy
-        </a>
-        <a href="#/check" aria-current={nav === 'check' ? 'page' : undefined}>
-          Check a wallet
+        <a href="#/" aria-current={app ? 'page' : undefined}>
+          App
         </a>
         <a href="#/counter" aria-current={nav === 'counter' ? 'page' : undefined}>
-          Counter
+          Stats
         </a>
         <a href={DOCS_URL}>Docs</a>
       </nav>
@@ -124,19 +122,6 @@ function TopBar({ nav }: { nav: NavKey }) {
       </span>
       <WalletButton />
     </header>
-  );
-}
-
-/** A context panel in the rail. */
-export function Panel({ title, cap, full, children }: { title: string; cap?: ReactNode; full?: boolean; children: ReactNode }) {
-  return (
-    <section className={`panel${full ? ' full' : ''}`}>
-      <h2>
-        <span>{title}</span>
-        {typeof cap === 'string' ? <span className="cap">{cap}</span> : cap}
-      </h2>
-      {children}
-    </section>
   );
 }
 
