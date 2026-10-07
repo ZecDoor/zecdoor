@@ -11,6 +11,7 @@ import { Logo, Shell, StateCard, Tick } from '../parts';
 import { networkFee, NetworkFeeLabel, PanelRows } from '../rail';
 import { go } from '../router';
 import { DeskTabs } from '../desk';
+import { useWide } from '../rail';
 import { useApp } from '../state';
 
 /** A Solana address, or null. Only the shape is checked: any account can hold ZEC. */
@@ -175,6 +176,7 @@ function Verdict({ owner, r, prices, paused, topupAllowed, share, copied }: {
   share: () => Promise<void>;
   copied: boolean;
 }) {
+  const wide = useWide();
   const { bal, minimum, quote } = r;
   const zat = bal.zec;
   const asUsd = (v: bigint) => (prices.zec ? usd(Math.max((Number(v) / 1e8) * prices.zec, 0.01)) : null);
@@ -205,7 +207,8 @@ function Verdict({ owner, r, prices, paused, topupAllowed, share, copied }: {
           };
 
   const rows: Array<[React.ReactNode, React.ReactNode]> = [
-    ['Address', <span key="a" className="mono">{short(owner.toBase58(), 6, 6)}</span>],
+    // The desktop shows the address in the field right above the result.
+    ...(wide ? [] : ([['Address', <span key="a" className="mono">{short(owner.toBase58(), 6, 6)}</span>]] as Array<[React.ReactNode, React.ReactNode]>)),
     ['ZEC on Solana', none ? '0' : `${zec(zat)}${asUsd(zat) ? ` · about ${asUsd(zat)}` : ''}`],
     ['Bridge minimum', zec(minimum)],
     ['Clears the minimum', none ? '—' : ready ? 'Yes' : `No, ${zec(need, 0)} short`],
@@ -252,32 +255,40 @@ function Verdict({ owner, r, prices, paused, topupAllowed, share, copied }: {
         </StateCard>
       ) : null}
 
-      {r.sanctioned ? null : none ? (
-        <a className="btn" href="#/buy">
-          Buy shielded ZEC with USDC or SOL
-        </a>
-      ) : (
-        <a className={dust ? 'btn ghost' : 'btn'} href="#/">
-          {dust ? 'Open ZecDoor anyway' : ready ? 'Move it with ZecDoor' : 'Top up and shield with ZecDoor'}
-        </a>
-      )}
-      {!MOVES_OPEN && !r.sanctioned ? (
-        <p className="muted" style={{ margin: 0, fontSize: 14 }}>
-          Moves and buys open once our own mainnet test moves have passed. You can connect and see live quotes now.
-        </p>
-      ) : null}
-
-      <button type="button" className="btn ghost" onClick={() => void share()}>
-        {copied ? (
-          <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
-            <Tick size={16} /> Link copied
-          </span>
+      <div className="check-actions">
+        {r.sanctioned ? null : none ? (
+          <a className="btn" href="#/buy">
+            Buy shielded ZEC with USDC or SOL
+          </a>
         ) : (
-          'Copy a link to this result'
+          <a className={dust ? 'btn ghost' : 'btn'} href="#/">
+            {dust ? 'Open ZecDoor anyway' : ready ? 'Move it with ZecDoor' : 'Top up and shield with ZecDoor'}
+          </a>
         )}
-      </button>
-      <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+        {!MOVES_OPEN && !r.sanctioned ? (
+          <p className="muted ph" style={{ margin: 0, fontSize: 14 }}>
+            Moves and buys open once our own mainnet test moves have passed. You can connect and see live quotes now.
+          </p>
+        ) : null}
+
+        <button type="button" className="btn ghost" onClick={() => void share()}>
+          {copied ? (
+            <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center' }}>
+              <Tick size={16} /> Link copied
+            </span>
+          ) : (
+            <>
+              <span className="ph">Copy a link to this result</span>
+              <span className="dk">Copy link</span>
+            </>
+          )}
+        </button>
+      </div>
+      <p className="muted ph" style={{ margin: 0, fontSize: 13 }}>
         The link names this address, so anyone you send it to sees the same result. It is read fresh each time it opens.
+      </p>
+      <p className="dfine dk">
+        {!MOVES_OPEN && !r.sanctioned ? 'Moves open soon; live quotes work now. ' : ''}The link names this address and is read fresh each time.
       </p>
     </>
   );

@@ -362,7 +362,8 @@ test('a slow bridge shows "taking longer than estimated"', async ({ page }) => {
   await expect(page.getByText('Taking longer than estimated')).toBeVisible(SLOW);
 });
 
-test('counter: placeholders until there are real moves', async ({ page }) => {
+test('counter: placeholders until there are real moves (phone; the desktop Stats page is in pages.spec)', async ({ page }) => {
+  test.skip(test.info().project.name === 'desktop', 'desktop shows the Stats page');
   await mock(page);
   await page.goto('./#/counter');
   await expect(page.getByText('Fills in from launch day. No numbers until there are real ones.')).toBeVisible();

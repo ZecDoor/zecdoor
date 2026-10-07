@@ -28,7 +28,7 @@ export function After({ id }: { id: string }) {
   };
 
   return (
-    <Shell plain>
+    <Shell>
       <BackBar title="Your ZEC is home. Now:" back={`/move/${id}`} />
 
       <div className="card accent tight">

@@ -6,7 +6,7 @@ import { DOCS_URL } from '../config';
 export type Mode = 'move' | 'buy' | 'check';
 
 /** Move, Buy and Check a wallet: three modes of the same card, each its own address. */
-export function DeskTabs({ at }: { at: Mode }) {
+export function DeskTabs({ at, heading = true }: { at: Mode; heading?: boolean }) {
   const tabs: Array<[Mode, string, string]> = [
     ['move', 'Move', '#/'],
     ['buy', 'Buy', '#/buy'],
@@ -15,7 +15,7 @@ export function DeskTabs({ at }: { at: Mode }) {
   const titles: Record<Mode, string> = { move: 'Move ZEC from Solana to shielded', buy: 'Buy shielded ZEC', check: 'Check any Solana wallet' };
   return (
     <>
-      <h1 className="sr-only">{titles[at]}</h1>
+      {heading ? <h1 className="sr-only">{titles[at]}</h1> : null}
       <nav className="seg" aria-label="Mode">
       {tabs.map(([k, label, href]) => (
         <a key={k} href={href} aria-current={at === k ? 'page' : undefined}>
@@ -141,15 +141,15 @@ export function PublicStrip() {
       <div className="dpub-g">
         <span>
           <strong>Solana</strong>
-          Your wallet and the amount
+          Your wallet, the amount
         </span>
         <span>
           <strong>NEAR Intents</strong>
-          That your wallet paid this Zcash address
+          Your wallet paid this address
         </span>
         <span>
           <strong>Zcash</strong>
-          The amount entering the pool; after that, private
+          The amount in; then private
         </span>
       </div>
     </div>

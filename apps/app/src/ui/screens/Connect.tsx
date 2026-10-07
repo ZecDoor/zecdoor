@@ -46,7 +46,7 @@ export function Connect() {
           </>
         }
       >
-        <DeskTabs at="move" />
+        <DeskTabs at="move" heading={false} />
         {!MOVES_OPEN ? (
           <Strip>
             <strong>Opening soon.</strong> Moves and buys open once our own Phantom test moves pass. Connect now to see your balance and a live quote.

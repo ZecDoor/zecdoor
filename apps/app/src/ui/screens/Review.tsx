@@ -121,13 +121,19 @@ export function Review() {
         ? ([['of which swapped into ZEC', `up to ${draft.topUp.payWith === 'sol' ? sol(draft.topUp.maxPay) : usdc(draft.topUp.maxPay)}`]] as Array<[string, string]>)
         : []),
       ['You receive at least', receive, true],
-      [`Our fee (${ourBps / 100}%)`, dry ? feeOf(ourBps) : '—'],
-      ...(theirBps ? ([[`NEAR Intents fee (${theirBps / 100}%)`, feeOf(theirBps)]] as Array<[string, string]>) : []),
-      ['Bridge payout fee', networkFee(q?.withdrawFee)],
+      [
+        `Fees (${(ourBps + theirBps) / 100}% + bridge)`,
+        dry ? (
+          <>
+            {feeOf(ourBps + theirBps)} + {networkFee(q?.withdrawFee)}
+          </>
+        ) : (
+          '—'
+        ),
+      ],
       ['Solana fees and deposit', `≈ ${sol(solCost)}`],
       ['Lands in', rows[0]![1]],
       ['NEAR Intents estimates', estimate(q?.timeEstimate) ?? '—'],
-      ['If it can’t complete', 'refunded at the quote’s deadline'],
     ];
     return (
       <Shell nav={draft.kind === 'buyUsdc' || draft.kind === 'buySol' ? 'buy' : 'move'}>
@@ -152,7 +158,7 @@ export function Review() {
         <PublicStrip />
         <div className="dchecks" aria-label="Checks before your wallet sees it">
           <span className={dry ? undefined : 'wait'}>{dry ? '✓' : '·'} Quote signed by NEAR Intents</span>
-          <span className="wait">When you sign: instructions checked against our allowlist, then simulated</span>
+          <span className="wait">allowlist and simulation when you sign</span>
         </div>
         {expired ? (
           <StateCard tone="info" title="Quote expired" tag="Before signing" action="Get a new quote" onAction={load}>
@@ -185,7 +191,8 @@ export function Review() {
               {stage ? stageText(stage, walletName) : `Sign in ${walletName === 'your wallet' ? 'your wallet' : walletName}`}
             </button>
             <p className="muted center" style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5 }}>
-              One transaction. No message signature. By signing you accept the <a href={TERMS_URL}>Terms</a>.
+              One transaction, no message signature. Refunded at the quote’s deadline if it can’t complete. By signing you accept the{' '}
+              <a href={TERMS_URL}>Terms</a>.
             </p>
           </>
         ) : (

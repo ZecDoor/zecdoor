@@ -9,8 +9,8 @@ import './styles.css';
 // @solana/web3.js and spl-token expect Node's Buffer.
 (globalThis as unknown as { Buffer: typeof Buffer }).Buffer ??= Buffer;
 
-const { AppProvider } = await import('./ui/state');
-const { App } = await import('./ui/App');
+// Both chunks in parallel: one round trip fewer before the first paint.
+const [{ AppProvider }, { App }] = await Promise.all([import('./ui/state'), import('./ui/App')]);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -33,7 +33,7 @@ export function TopUp() {
 
   if (geo?.topup === false) {
     return (
-      <Shell plain>
+      <Shell>
         <BackBar title="Top up and shield" back="/" />
         <StateCard tone="err" title="Not available in your region">
           The top-up uses Jupiter, which is not offered where you are. Moves of balances above the bridge minimum still work.
@@ -67,7 +67,7 @@ export function TopUp() {
   };
 
   return (
-    <Shell plain>
+    <Shell>
       <BackBar title="Top up and shield" back="/" />
 
       <div className="card tight">

@@ -32,6 +32,37 @@ async function intoNewWallet(page: Page): Promise<string[]> {
   return words;
 }
 
+/** Example moves of every status, written into this test browser's own store (as the app would keep them). */
+async function seedMoves(page: Page) {
+  await page.goto('./#/activity');
+  await page.evaluate(async () => {
+    const now = Date.now();
+    const base = { owner: '3hz4td165byB8njyWaXmrxG2zZsX2pJrGWprEpdbzit5', minAmountOut: '0', quote: {}, zcashFrom: null, updatedAt: now, statusSince: now };
+    const rows = [
+      { ...base, depositAddress: 'Dep1111111111111111111111111111111111111111', kind: 'exit', createdAt: now - 72_000, amountIn: '8740000', amountOut: '8599288', recipient: 'u1qzexample7g4e', recipientIndex: 3, status: 'PROCESSING' },
+      { ...base, depositAddress: 'Dep2222222222222222222222222222222222222222', kind: 'topup', createdAt: now - 86_400_000, completedAt: now - 86_400_000 + 133_000, amountIn: '133669', amountOut: '101335', recipient: 'u1m8examplekx0p', recipientIndex: 2, status: 'SUCCESS', arrival: { height: 3507539, txid: 'ab', value: 108335, pool: 'ironwood', foundAt: now } },
+      { ...base, depositAddress: 'Dep3333333333333333333333333333333333333333', kind: 'buyUsdc', createdAt: now - 3 * 86_400_000, completedAt: now - 3 * 86_400_000 + 160_000, amountIn: '25000000', amountOut: '1880000', paid: { amount: '25000000', symbol: 'USDC' }, recipient: 'u1w0example3hyx', recipientIndex: null, status: 'SUCCESS' },
+      { ...base, depositAddress: 'Dep4444444444444444444444444444444444444444', kind: 'exit', createdAt: now - 4 * 86_400_000, amountIn: '3000000', amountOut: '2900000', recipient: 'u1llexample9sfe', recipientIndex: 1, status: 'REFUNDED', refund: { reason: 'MIN_AMOUNT_OUT_NOT_MET' } },
+      { ...base, depositAddress: 'Dep5555555555555555555555555555555555555555', kind: 'exit', createdAt: now - 5 * 86_400_000, amountIn: '1500000', amountOut: '1450000', recipient: 'u1llexample9sfe', recipientIndex: 1, status: 'FAILED' },
+    ];
+    const db = await new Promise<IDBDatabase>((resolve) => {
+      const r = indexedDB.open('zecdoor', 1);
+      r.onupgradeneeded = () => {
+        r.result.createObjectStore('kv');
+        r.result.createObjectStore('moves', { keyPath: 'depositAddress' });
+      };
+      r.onsuccess = () => resolve(r.result);
+    });
+    await new Promise<void>((resolve) => {
+      const tx = db.transaction('moves', 'readwrite');
+      for (const m of rows) tx.objectStore('moves').put(m);
+      tx.oncomplete = () => resolve();
+    });
+    db.close();
+  });
+  await page.reload();
+}
+
 export type Shot = { name: string; scenario?: Scenario; clock?: boolean; go: (page: Page) => Promise<void> };
 
 export const shots: Shot[] = [
@@ -194,7 +225,10 @@ export const shots: Shot[] = [
       await expect(p.getByText('2 · To keep it private', { exact: false })).toBeVisible();
     },
   },
-  { name: 'counter', go: async (p) => void (await p.goto('./#/counter'), await expect(p.getByText('Fills in from launch day', { exact: false })).toBeVisible()) },
+  { name: 'activity-empty', go: async (p) => void (await p.goto('./#/activity'), await expect(p.getByText('No moves in this browser yet')).toBeVisible()) },
+  { name: 'activity', go: async (p) => void (await seedMoves(p), await expect(p.getByText('Failed', { exact: true }).first()).toBeVisible()) },
+  { name: 'stats-before', go: async (p) => void (await p.goto('./#/stats'), await expect(p.getByText(/Counting starts with the first public move|Fills in from launch day/)).toBeVisible()) },
+  { name: 'counter', go: async (p) => void (await p.goto('./#/counter'), await expect(p.getByText(/Fills in from launch day|Counting starts with the first public move/).first()).toBeVisible()) },
   {
     name: 'after-restore-check',
     scenario: { statuses: [status.processing(), status.success()] },

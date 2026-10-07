@@ -45,6 +45,8 @@ interface AppState {
   wallet: BrowserWallet | null;
   reloadWallet(): Promise<void>;
   moves: MoveRecord[];
+  /** False until this browser's move list has been read once. */
+  movesReady: boolean;
   reloadMoves(): Promise<void>;
   health: Health | null;
   geo: Geo | null;
@@ -88,6 +90,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [minimum, setMinimum] = useState<bigint | null>(null);
   const [wallet, setWallet] = useState<BrowserWallet | null>(null);
   const [moves, setMoves] = useState<MoveRecord[]>([]);
+  const [movesReady, setMovesReady] = useState(false);
   const [health, setHealth] = useState<Health | null>(null);
   const [geo, setGeo] = useState<Geo | null>(null);
   const [prices, setPrices] = useState<Prices>({});
@@ -145,7 +148,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [owner]);
 
   const reloadWallet = useCallback(async () => setWallet((await getWallet()) ?? null), []);
-  const reloadMoves = useCallback(async () => setMoves(await listMoves()), []);
+  const reloadMoves = useCallback(async () => {
+    setMoves(await listMoves());
+    setMovesReady(true);
+  }, []);
 
   useEffect(() => {
     void reloadWallet();
@@ -185,6 +191,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       wallet,
       reloadWallet,
       moves,
+      movesReady,
       reloadMoves,
       health,
       geo,
@@ -193,7 +200,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setDraft,
       seed,
     }),
-    [wallet$, owner, connect, disconnect, signAndSend, notice, clearNotice, balances, balanceError, refreshBalances, minimum, wallet, reloadWallet, moves, reloadMoves, health, geo, prices, draft],
+    [wallet$, owner, connect, disconnect, signAndSend, notice, clearNotice, balances, balanceError, refreshBalances, minimum, wallet, reloadWallet, moves, movesReady, reloadMoves, health, geo, prices, draft],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

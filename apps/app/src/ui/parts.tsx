@@ -62,7 +62,7 @@ export function BackBar({ title, step, back }: { title: string; step?: string; b
   );
 }
 
-type NavKey = 'move' | 'buy' | 'check' | 'counter';
+type NavKey = 'move' | 'buy' | 'check' | 'counter' | 'activity' | 'stats';
 
 /**
  * Every screen. On a phone (below 768 px): one column, exactly the original phone layout. From 768 px
@@ -70,7 +70,7 @@ type NavKey = 'move' | 'buy' | 'check' | 'counter';
  * plain column (`plain`) for screens built from cards of their own — and a slim footer. `hero` sits
  * above the card. The old `rail` and `left` context panels are no longer shown anywhere.
  */
-export function Shell({ children, rail, nav = 'move', wide, hero, plain }: { children: ReactNode; rail?: ReactNode; left?: ReactNode; nav?: NavKey; wide?: boolean; hero?: ReactNode; plain?: boolean }) {
+export function Shell({ children, rail, nav = 'move', wide, hero, plain, page }: { children: ReactNode; rail?: ReactNode; left?: ReactNode; nav?: NavKey; wide?: boolean; hero?: ReactNode; plain?: boolean; page?: boolean }) {
   const desk = useWide();
   if (desk)
     return (
@@ -78,7 +78,7 @@ export function Shell({ children, rail, nav = 'move', wide, hero, plain }: { chi
         <TopBar nav={nav} />
         <main className="dmain">
           {hero ? <div className="dhero">{hero}</div> : null}
-          <div className={plain ? 'dcol' : 'dcard'}>{children}</div>
+          <div className={page ? 'dpage' : plain ? 'dcol' : 'dcard'}>{children}</div>
         </main>
         <Footer />
         <WalletPicker />
@@ -107,7 +107,10 @@ function TopBar({ nav }: { nav: NavKey }) {
         <a href="#/" aria-current={app ? 'page' : undefined}>
           App
         </a>
-        <a href="#/counter" aria-current={nav === 'counter' ? 'page' : undefined}>
+        <a href="#/activity" aria-current={nav === 'activity' ? 'page' : undefined}>
+          Activity
+        </a>
+        <a href="#/stats" aria-current={nav === 'stats' || nav === 'counter' ? 'page' : undefined}>
           Stats
         </a>
         <a href={DOCS_URL}>Docs</a>

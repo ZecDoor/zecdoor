@@ -25,7 +25,7 @@ export function Counter() {
   const max = live ? Math.max(1, ...c!.days.map((d) => d.exits + d.buys)) : 1;
 
   return (
-    <Shell plain
+    <Shell
       nav="counter"
       wide>
       <div className="bar">

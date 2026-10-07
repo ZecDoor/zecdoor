@@ -44,7 +44,7 @@ export function Proof() {
   const anyFailed = [quote, solana, zcash].some((x) => x.state === 'failed');
 
   return (
-    <Shell plain
+    <Shell
       wide>
       <div className="bar">
         <h1 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>Proof: our first mainnet move</h1>

@@ -47,7 +47,7 @@ export function Destination() {
   };
 
   return (
-    <Shell plain>
+    <Shell>
       <BackBar title="Where should it land?" back="/" />
 
       <button type="button" className="option" aria-pressed={!own} onClick={() => setOwn(false)}>

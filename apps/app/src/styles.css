@@ -2190,3 +2190,401 @@ dl.prows.plain > div {
 .dcard .check-form > span {
   grid-row: 3;
 }
+
+/* ---------- desktop pages: Activity and Stats, on the card's grid (984 = two 480 columns and a 24 gutter) ---------- */
+.dmain:has(> .dpage) {
+  justify-content: flex-start;
+  padding-top: 40px;
+}
+.dpage-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.dpage-head h1 {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+.dpage-head p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.dlink,
+.dpanel-f a,
+.dfine a,
+.dtable a {
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 13.5px;
+}
+.dlink:hover,
+.dpanel-f a:hover,
+.dfine a:hover,
+.dtable a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.pills {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--sunk);
+  border-radius: 12px;
+}
+.pills button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pills button[aria-pressed='true'] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+.pills .mono {
+  font-weight: 500;
+  color: var(--muted);
+  margin-left: 2px;
+}
+.dtable-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  overflow-x: auto;
+}
+.dtable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.dtable th {
+  text-align: left;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  padding: 14px 12px;
+}
+.dtable td {
+  padding: 14px 12px;
+  border-top: 1px solid var(--line);
+  vertical-align: top;
+}
+.dtable th:first-child,
+.dtable td:first-child {
+  padding-left: 20px;
+}
+.dtable th:last-child,
+.dtable td:last-child {
+  padding-right: 20px;
+}
+.dtable td > * {
+  display: block;
+}
+.dtable .r {
+  text-align: right;
+}
+.dtable .num {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.dtable .sub {
+  margin-top: 3px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+  max-width: 240px;
+}
+.dtable td.mono {
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.dtable .none {
+  text-align: center;
+  color: var(--muted);
+  padding: 28px;
+}
+.schip {
+  display: inline-flex !important;
+  align-items: center;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.schip.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.schip.info {
+  background: color-mix(in oklab, var(--info) 12%, var(--surface));
+  color: var(--info);
+}
+.schip.warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+.schip.err {
+  background: var(--err-bg);
+  color: var(--err);
+}
+.dfine {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.dempty-card {
+  align-self: center;
+  margin-top: 32px;
+}
+.dempty-card .dfine {
+  text-align: center;
+}
+.dgrid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+.dpanel {
+  width: auto;
+  padding: 24px;
+  gap: 18px;
+}
+.dpanel-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.dpanel-h h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+.dpanel-f {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.dlead {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.dbig {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.dbig > div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 4px;
+}
+.dbig dd {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.dbig dt {
+  font-size: 13px;
+  color: var(--muted);
+}
+.dbars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dbars-plot {
+  height: 88px;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.dbars-plot span {
+  flex: 1;
+  background: var(--accent);
+  border-radius: 4px 4px 0 0;
+}
+.dsmall {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
+.dsmall dt {
+  color: var(--muted);
+}
+.dsmall dd {
+  margin: 2px 0 0;
+  font-family: var(--mono);
+}
+.dstarts {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+}
+.dstarts strong {
+  font-size: 20px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.dstarts > span:first-of-type {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.dstarts ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+.dstarts li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+.dstarts li span:last-child {
+  color: var(--muted);
+  font-size: 13px;
+}
+.dtier {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dtier-h {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+.dtier-h strong {
+  font-weight: 600;
+}
+.dtier-h .mono {
+  font-size: 13px;
+}
+.dtier-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--sunk);
+  overflow: hidden;
+}
+.dtier-bar span {
+  display: block;
+  height: 100%;
+}
+.dtier-bar .a {
+  background: var(--accent);
+}
+.dtier-bar .b {
+  background: var(--accent-text);
+}
+.dtier-bar .c {
+  background: var(--muted);
+}
+.check-actions {
+  display: contents;
+}
+.dcard .check-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 8px;
+}
+.dcard .check-actions > .btn {
+  min-height: 48px;
+  font-size: 15px;
+  border-radius: 12px;
+}
+.dcard .check-actions:not(:has(a.btn)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+/* Short windows (a 1280×720 laptop): less air around the card, never smaller text. */
+@media (min-width: 768px) and (max-height: 940px) {
+  .dmain {
+    padding-top: 16px;
+    padding-bottom: 16px;
+    gap: 16px;
+  }
+  .dcard {
+    gap: 12px;
+  }
+  .dhero h1 {
+    font-size: 28px;
+  }
+}
+.dcard .prows > div {
+  align-items: center;
+}
+/* Secondary screens inside the one card: their own boxes become sunk panels, so nothing is boxed twice. */
+.dcard .card {
+  border-color: transparent;
+  background: var(--sunk);
+  padding: 16px;
+}
+.dcard .card.accent {
+  background: var(--amber-bg);
+}
+.dcard .card.plain {
+  background: transparent;
+}
+.dcard .option {
+  padding: 16px;
+  border-radius: 14px;
+}
+.dcard .bar-title {
+  min-height: 36px;
+}
+.dcard .words {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px 8px;
+}
+.dcard .words li {
+  font-size: 14px;
+  min-height: 26px;
+}
+.dcard dl.rows {
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+}
+.dcard dl.rows > div {
+  padding: 9px 0;
+}
+.dcard .textlink {
+  min-height: 32px;
+}

@@ -37,7 +37,7 @@ export function WalletCreate() {
   };
 
   return (
-    <Shell plain>
+    <Shell>
       <BackBar title="Your new shielded wallet" step="1 of 2" back={leave} />
       <p style={{ margin: 0, fontSize: 16, lineHeight: 1.55 }} className="muted">
         These 24 words are the wallet. Write them on paper, in order. Anyone with them can spend your ZEC; without them, nobody can recover it —
@@ -157,7 +157,7 @@ export function WalletVerify() {
   };
 
   return (
-    <Shell plain>
+    <Shell>
       <BackBar title="Check your backup" step="2 of 2" back="/wallet/new" />
       <p style={{ margin: 0, fontSize: 16, lineHeight: 1.55 }} className="muted">
         Pick the right word from your paper. Three checks, then you're ready.
