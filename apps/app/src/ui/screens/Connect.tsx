@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { APP_URL, MOVES_OPEN } from '../../config';
+import { APP_URL, DOMAIN, MOVES_OPEN } from '../../config';
 import { isMobile, phantomBrowseLink } from '../../lib/phantom';
 import { Qr, Shell, StateCard } from '../parts';
 import { useApp } from '../state';
@@ -94,6 +94,10 @@ export function Connect() {
         </details>
         <a href="#/check">Just looking? Check a wallet</a>
       </div>
+      <p className="domain-note">
+        Check the address bar: we only live at <strong className="mono">{DOMAIN}</strong>. We never ask for your seed phrase or a
+        message signature.
+      </p>
     </Shell>
   );
 }

@@ -1,0 +1,109 @@
+---
+title: Threat model
+description: For each step of a move, what could go wrong, what in ZecDoor's code stops it, and what it does not stop.
+---
+
+Each row names the mechanism and its file ([where to check](#where-to-check)); the last column is the limit. The move itself is public ([what stays public](/what-is-public)); what you do with the ZEC after it arrives is private.
+
+## 1. Open the page
+
+| What could go wrong | What stops it | What it does not stop |
+|---|---|---|
+| A phishing copy on another domain | Our one domain is named in the top bar on wide screens and on the connect card on phones (`parts.tsx`, `Connect.tsx`). HSTS, `frame-ancestors 'none'` and a CSP whose `connect-src` lists every service the app can reach (`_headers`) | A lookalike domain serving a modified copy. Only your address bar check catches it |
+| Our server or its Cloudflare account is compromised and serves a changed app | `build.json` names the commit; `verify-live.mjs` rebuilds the app and compares every file's SHA-256 with the live site | Nobody runs that check on each page load. It covers `/app` only, not the landing or docs (they hold no wallet) |
+| A compromised dependency | Locked versions (`pnpm-lock.yaml`, `Cargo.lock`); the allowlist tests block every build (`build-site.sh`) | Code running in the page could bypass the in-page checks. The CSP limits where it can send data, not what it does |
+
+## 2. Connect Phantom
+
+| What could go wrong | What stops it | What it does not stop |
+|---|---|---|
+| A message signature or blanket signing | `wallet.ts` only calls connect, disconnect and `signAndSendTransaction`: never `signMessage`, `signTransaction` or `signAllTransactions` | A compromised Phantom: we trust it to show and sign what it was given |
+| Phantom switches account between review and signing | `signAndSend` refuses if the connected account is not the one the transaction was built for | — |
+
+## 3. Choose the destination, or make a wallet
+
+| What could go wrong | What stops it | What it does not stop |
+|---|---|---|
+| A transparent, TEX, Sapling-only, Sprout or testnet address, or a unified address with no Orchard receiver | `inspect_address` (`address.rs`) refuses all of these; only a mainnet unified address with an Orchard receiver passes | A valid shielded address that is not yours: a typo that still decodes, or clipboard malware swapping it |
+| Reusing a pasted address | A SHA-256 of each pasted address is kept in this browser, and reuse is warned about (`store.ts`) | Reuse from another device or browser |
+| A weak seed | 32 bytes from the operating system's randomness, 24 BIP 39 words (`keys.rs`) | A compromised device or browser extension reading the page |
+| The seed leaks or is lost | Words shown once, blurred until tapped, no copy button; a three-word backup check; only the viewing key is stored (`Wallet.tsx`). Rust wipes the seed bytes after deriving the key | The phrase passes through JavaScript, which cannot wipe memory. The check tests three words of 24. Paper can be lost or read |
+| The stored viewing key is read | It cannot spend; "Forget this wallet" removes it | Anyone with your browser profile can see the wallet's incoming payments |
+
+## 4. Get a quote
+
+| What could go wrong | What stops it | What it does not stop |
+|---|---|---|
+| A tampered or forged quote | `checkQuote` (`oneclick.ts`) verifies NEAR Intents' ed25519 signature with the key pinned in `constants.ts`, then compares recipient, refund address, assets, amount, deadline and types with what was sent | NEAR Intents itself, or its signing key, being compromised: a validly signed quote is trusted |
+| Higher fees than shown | `appFees` is not signed, so it is checked separately: our fee row must be present and the total may not exceed what we requested. A fee self-test on the server pauses a move kind whose fee rows differ from what we disclose (`fees.ts`) | — |
+| The price moved after review | A quote whose minimum output is more than 1% below the one you reviewed is not signed (`move.ts`) | Movement within that 1%, or within the quote's slippage tolerance |
+
+## 5. Build, check and sign
+
+| What could go wrong | What stops it | What it does not stop |
+|---|---|---|
+| A transaction, or a Jupiter route, that sends anything else | The [instruction allowlist](/security#the-instruction-allowlist) (`allowlist.ts`) refuses anything but the quoted amount to the quoted deposit address, plus, for a top-up, one Jupiter exact-output swap into your own ZEC account | — |
+| The RPC lies | The allowlist runs locally on the compiled transaction. Simulation (`simulate.ts`) must succeed and show the deposit receiving exactly `amountIn`; if it cannot run, nothing is offered for signing | Simulation comes from the RPC. For a top-up, the address lookup tables the allowlist decodes with are also read from the RPC and trusted; Phantom's own preview is then the remaining check |
+| Phantom changes the transaction | A copy of exactly what was handed over is kept in this browser to compare with what landed (`builtTx`) | Phantom may add its own guard instructions; ZecDoor does not compare automatically |
+
+## 6. NEAR Intents pays out
+
+| What could go wrong | What stops it | What it does not stop |
+|---|---|---|
+| The bridge is paused or has an incident | The server reads NEAR Intents' status page and pauses moves on a recent incident touching 1Click, Solana or Zcash, with a manual override (`health.ts`) | If the status page cannot be read, moves are not paused on that basis. An incident NEAR does not post |
+| The move cannot complete | Refunds go to your own Solana wallet (`refundTo` is the signer; `refundType` origin chain) at the quote's deadline | Holds, freezes or rejections by NEAR Intents. ZecDoor cannot release them ([risks](/risks)) |
+| Bridged ZEC loses its backing | Nothing in ZecDoor | Bridge insolvency or a bridge key compromise ([risks](/risks)) |
+
+## 7. Proof of arrival
+
+| What could go wrong | What stops it | What it does not stop |
+|---|---|---|
+| lightwalletd lies | For a wallet made here, the browser trial-decrypts compact blocks with the viewing key (`scan.rs`) and accepts only a note at this move's address index worth at least the quote's minimum (`wallet.ts`) | The browser does not check block headers or proof of work. A lying server could withhold the payment or show one that is not on chain. Cross-check the Zcash transaction on a block explorer ([proof](/proof)) |
+| A different payment is taken for this move | A fresh address per move | Matching is on address index and amount; whether the txid equals NEAR's is recorded, not required |
+
+## 8. After arrival
+
+| What could go wrong | What stops it | What it does not stop |
+|---|---|---|
+| Links back to the move | Nothing ZecDoor does after arrival is on chain; it never builds, signs or sends a Zcash transaction (`lib.rs`) | The public links described in [what stays public](/what-is-public), and habits such as moving the same amount straight out |
+| Spending | Done in Zodl or Zkool with your 24 words; the restore check confirms the address belongs to the same wallet without asking for words (`After.tsx`) | Bugs in those wallets |
+
+## Throughout: sanctions and region
+
+| What could go wrong | What stops it | What it does not stop |
+|---|---|---|
+| A sanctioned wallet | The browser downloads the OFAC SDN Solana list from our server and checks the wallet itself, so the address is not sent to us (`server.ts`, `sanctions.ts`) | Addresses not on the list |
+| A blocked country or region | Cloudflare's country for the request, against 1Click's prohibited list; top-up also against Jupiter's (`geo.ts`) | VPNs. Unknown and Tor locations are allowed. Whether Cloudflare resolves the named Ukrainian regions is unverified |
+
+## Self-review
+
+Known weaknesses and open items, stated plainly:
+
+- **No independent audit.** The checks are covered by public tests ([testing](/testing)), not by an external review.
+- **Moves are not open yet.** The switch in `config.ts` stays closed until our mainnet test runs pass.
+- **Trust in NEAR Intents and Phantom.** A validly signed quote is trusted, including its deposit address. Phantom signs
+  and sends; we cannot see what it does after the handover.
+- **Our server's checks fail open.** If our server does not answer, the pause, fee, region and sanctions checks are
+  skipped and the move can go ahead (`move.ts`, `server.ts`). Those checks are not guarantees.
+- **The app is served by the same Worker.** A compromised deployment could serve different code. `verify-live.mjs` can
+  detect it, but only when someone runs it.
+- **Third parties see your IP.** NEAR Intents, the public Solana RPCs, Jupiter (top-up only) and the lightwalletd server
+  each see your IP address and what you ask about. None are ours.
+- **The WebAssembly file may not rebuild byte for byte.** It depends on Rust and clang versions; the versions are
+  pinned, but on Linux the system clang is used, so the `.wasm` file alone may differ (README, "Verify the build").
+- **Partial trust in the RPC and lightwalletd** (steps 5 and 7), and **the 24 words pass through JavaScript** (step 3).
+- **To be counted, a finished move's deposit address is sent to our server**, which reads its status from NEAR Intents
+  and keeps only totals and a salted hash for duplicate checks ([counter](/counter)).
+
+## Report a problem
+
+See [security](/security#reporting-a-problem). Please report privately first.
+
+## Where to check
+
+- App: `apps/app/src/lib/` (`move.ts`, `wallet.ts`, `server.ts`, `rpc.ts`, `store.ts`, `zcash.ts`), `apps/app/src/config.ts`,
+  `apps/app/src/ui/parts.tsx`, `apps/app/src/ui/screens/` (`Connect.tsx`, `Destination.tsx`, `Wallet.tsx`, `After.tsx`)
+- Solana: `packages/solana/src/` (`oneclick.ts`, `constants.ts`, `fees.ts`, `allowlist.ts`, `move.ts`, `build.ts`, `simulate.ts`)
+- Zcash: `packages/zcash/src/` (`wallet.ts`, `lightwalletd.ts`), `crates/zecdoor-wasm/src/` (`lib.rs`, `keys.rs`, `address.rs`, `scan.rs`, `owner.rs`)
+- Server: `apps/server/src/` (`health.ts`, `geo.ts`, `sanctions.ts`, `counter.ts`)
+- Build and deploy: `deploy/site/_headers`, `scripts/build-site.sh`, `scripts/verify-live.mjs`

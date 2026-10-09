@@ -2747,3 +2747,20 @@ dl.prows.plain > div {
     display: none;
   }
 }
+
+/* Phones have no domain pill in the top bar, so the connect card names the domain instead. */
+.domain-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.domain-note strong {
+  color: var(--text);
+  font-weight: 600;
+}
+@media (min-width: 1024px) {
+  .domain-note {
+    display: none;
+  }
+}
