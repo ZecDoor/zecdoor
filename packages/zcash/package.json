@@ -10,7 +10,8 @@
   },
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:pack": "node scripts/pack-test.mjs"
   },
   "dependencies": {
     "zecdoor-wasm": "link:../../crates/zecdoor-wasm/pkg"

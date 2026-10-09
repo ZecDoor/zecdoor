@@ -132,7 +132,9 @@ await new GrpcWebSource(MAINNET_GRPC_WEB).transactionHeight('2fac74310c294c306f5
 In the [ZecDoor repository](https://github.com/ZecDoor/zecdoor): the derived Orchard receivers match the official ZIP 316
 test vectors byte for byte; on a local regtest network, a payment to one of its addresses is found by the scanner and
 the 24 words restored in zcash-devtool show the same balance; and on mainnet it found ZecDoor's first move
-([proof](https://zecdoor.0xo.in/app/#/proof)).
+([proof](https://zecdoor.0xo.in/app/#/proof)). Before each release, `pnpm test:pack` builds and packs
+this package, installs the tarball into an empty folder and runs the API from there; `find-payments.mjs`, run that way
+against the test wallet's viewing key, finds that move's 0.00108335 ZEC in block 3,507,539.
 
 Built from `crates/zecdoor-wasm` with `zcash_client_backend` 0.24, `zcash_keys` 0.16 and `orchard` 0.15.
 
