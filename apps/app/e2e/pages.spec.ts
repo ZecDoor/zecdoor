@@ -4,7 +4,6 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { mock, status, TEST_UA } from './mock';
 
-test.beforeEach(({}, info) => test.skip(info.project.name !== 'desktop', 'desktop pages'));
 
 test('stats before any move: only the counting-starts state, plus the dated holder tiers', async ({ page }) => {
   await mock(page);

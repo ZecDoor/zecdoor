@@ -13,6 +13,14 @@ export default defineConfig({
   projects: [
     { name: 'phone', use: { ...devices['Pixel 7'], browserName: 'chromium' } },
     { name: 'desktop', use: { viewport: { width: 1440, height: 900 }, browserName: 'chromium' } },
+    // Other engines, run on demand: BROWSERS=1 npx playwright test --project firefox --project webkit --project mobile-safari
+    ...(process.env.BROWSERS
+      ? [
+          { name: 'firefox', use: { viewport: { width: 1440, height: 900 }, browserName: 'firefox' as const } },
+          { name: 'webkit', use: { viewport: { width: 1440, height: 900 }, browserName: 'webkit' as const } },
+          { name: 'mobile-safari', use: { ...devices['iPhone 14'], browserName: 'webkit' as const } },
+        ]
+      : []),
   ],
   webServer: {
     command: 'npx vite --mode e2e --port 5174 --strictPort',

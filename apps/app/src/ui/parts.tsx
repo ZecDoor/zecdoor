@@ -2,7 +2,6 @@ import qrcode from 'qrcode-generator';
 import { useId, useState, type ReactNode } from 'react';
 import { DOCS_URL, DOMAIN } from '../config';
 import { Footer } from './extras';
-import { useWide } from './rail';
 import { WalletButton, WalletPicker } from './wallet-ui';
 import { go } from './router';
 
@@ -65,31 +64,19 @@ export function BackBar({ title, step, back }: { title: string; step?: string; b
 type NavKey = 'move' | 'buy' | 'check' | 'counter' | 'activity' | 'stats';
 
 /**
- * Every screen. On a phone (below 768 px): one column, exactly the original phone layout. From 768 px
- * (direction A): the top bar, then one 480 px column centred in the window — a card by default, or a
- * plain column (`plain`) for screens built from cards of their own — and a slim footer. `hero` sits
- * above the card. The old `rail` and `left` context panels are no longer shown anywhere.
+ * Every screen, on every size: the top bar, then one 480 px column centred in the window — a card by default,
+ * or a plain column (`plain`), or a wide page (`page`, Activity and Stats) — and a slim footer. `hero` sits above
+ * the card. On a phone the column fills the width; from 1700 px the whole layout scales up (styles.css).
  */
-export function Shell({ children, rail, nav = 'move', wide, hero, plain, page }: { children: ReactNode; rail?: ReactNode; left?: ReactNode; nav?: NavKey; wide?: boolean; hero?: ReactNode; plain?: boolean; page?: boolean }) {
-  const desk = useWide();
-  if (desk)
-    return (
-      <div className="app dapp">
-        <TopBar nav={nav} />
-        <main className="dmain">
-          {hero ? <div className="dhero">{hero}</div> : null}
-          <div className={page ? 'dpage' : plain ? 'dcol' : 'dcard'}>{children}</div>
-        </main>
-        <Footer />
-        <WalletPicker />
-      </div>
-    );
+export function Shell({ children, nav = 'move', hero, plain, page }: { children: ReactNode; nav?: NavKey; wide?: boolean; hero?: ReactNode; plain?: boolean; page?: boolean }) {
   return (
-    <div className="app">
+    <div className="app dapp">
       <TopBar nav={nav} />
-      <main className={`ws${rail ? '' : ' solo'}`}>
-        <div className={`act${wide ? ' gap20' : ''}`}>{children}</div>
+      <main className="dmain">
+        {hero ? <div className="dhero">{hero}</div> : null}
+        <div className={page ? 'dpage' : plain ? 'dcol' : 'dcard'}>{children}</div>
       </main>
+      <Footer />
       <WalletPicker />
     </div>
   );

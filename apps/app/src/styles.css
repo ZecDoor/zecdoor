@@ -1773,10 +1773,10 @@ dl.prows.plain > div {
   gap: 6px;
 }
 .dpair-arrow {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  margin: -19px 0;
   width: 32px;
   height: 32px;
   box-sizing: border-box;
@@ -2587,4 +2587,163 @@ dl.prows.plain > div {
 }
 .dcard .textlink {
   min-height: 32px;
+}
+
+/* ---------- phone (below 768 px): the same card, tabs and pages, fitted to the width ---------- */
+@media (max-width: 767px) {
+  .topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 10px 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar .brand {
+    color: var(--text);
+    font-size: 16px;
+  }
+  .topbar .grow {
+    flex: 1;
+  }
+  .topbar nav {
+    order: 3;
+    width: 100%;
+    display: flex;
+    gap: 2px;
+    margin: 0 -8px;
+    overflow-x: auto;
+  }
+  .topbar nav a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 0 10px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    border-bottom: 2px solid transparent;
+  }
+  .topbar nav a[aria-current='page'] {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+  .domain {
+    display: none;
+  }
+  .dmain {
+    justify-content: flex-start;
+    padding: 16px 16px 24px;
+    gap: 16px;
+  }
+  .dhero {
+    align-items: flex-start;
+    text-align: left;
+  }
+  .dhero h1 {
+    font-size: 30px;
+  }
+  .dhero p {
+    font-size: 15px;
+  }
+  .dcard {
+    padding: 16px;
+    gap: 14px;
+  }
+  .dfield-amt,
+  .dfield .amount-input {
+    font-size: 28px;
+  }
+  .dpub-g {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .dlinks {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .dline {
+    flex-direction: column;
+    gap: 2px;
+  }
+  .dduo,
+  .dcard .check-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dpage-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .pills {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .pills button {
+    white-space: nowrap;
+  }
+  .dgrid2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dbig {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Activity: each move is a block, not a table row. */
+  .dtable thead {
+    display: none;
+  }
+  .dtable,
+  .dtable tbody,
+  .dtable tr,
+  .dtable td {
+    display: block;
+    width: auto;
+  }
+  .dtable tr {
+    padding: 14px 16px;
+    border-top: 1px solid var(--line);
+  }
+  .dtable tr:first-child {
+    border-top: 0;
+  }
+  .dtable td,
+  .dtable th:first-child,
+  .dtable td:first-child,
+  .dtable td:last-child {
+    padding: 4px 0;
+    border: 0;
+  }
+  .dtable .r {
+    text-align: left;
+  }
+  .dtable .sub {
+    max-width: none;
+  }
+  .foot {
+    padding: 14px 16px 22px;
+    font-size: 12px;
+  }
+}
+@media (max-width: 767px) {
+  .tok-c {
+    display: none;
+  }
+  .dfield-amt {
+    font-size: 26px;
+  }
+  .dhead h1 {
+    font-size: 17px;
+    white-space: nowrap;
+  }
+  .dhead .caption {
+    font-size: 11px;
+  }
+}
+@media (max-width: 767px) {
+  .foot > span:first-child {
+    width: 100%;
+  }
+  .foot .grow {
+    display: none;
+  }
 }

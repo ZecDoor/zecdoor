@@ -4,11 +4,9 @@ import { clock, parseUnits, sol, units, usd, usdc, zec } from '../../lib/format'
 import { dryQuote, MoveError, type DryQuote } from '../../lib/move';
 import { solNeeded } from '../../lib/solana';
 import { feeOk } from '../../lib/server';
-import { BackBar, Rows, Shell, StateCard } from '../parts';
-import { networkFee, NetworkFeeLabel } from '../rail';
+import { Shell } from '../parts';
 import { go } from '../router';
 import { useApp } from '../state';
-import { useWide } from '../rail';
 import { DeskTabs, Field, Line, Pair, Strip, Tok } from '../desk';
 import { MOVES_OPEN } from '../../config';
 import { landsIn } from '../flow';
@@ -23,7 +21,6 @@ export function Buy() {
   const [quote, setQuote] = useState<DryQuote | null>(null);
   const [problem, setProblem] = useState<{ title: string; body: string } | null>(null);
   const [now, setNow] = useState(Date.now());
-  const wide = useWide();
 
   const kind: MoveKind = symbol === 'SOL' ? 'buySol' : 'buyUsdc';
   const decimals = symbol === 'SOL' ? 9 : 6;
@@ -77,156 +74,77 @@ export function Buy() {
     go('/destination');
   };
 
-  if (wide) {
-    return (
-      <Shell nav="buy">
-        <DeskTabs at="buy" />
-        {!MOVES_OPEN ? (
-          <Strip>
-            <strong>Opening soon.</strong> Buys open once our own Phantom test moves pass. Live prices work now.
-          </Strip>
-        ) : null}
-        <Pair>
-          <Field
-            label={<label htmlFor="pay">You pay</label>}
-            right={`Balance ${balance === undefined ? '—' : symbol === 'SOL' ? sol(balance) : usdc(balance)}`}
-            input={
-              <input
-                id="pay"
-                className="amount-input"
-                inputMode="decimal"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                aria-invalid={amount === null || tooMuch}
-                autoComplete="off"
-              />
-            }
-            token={
-              <div className="toggle" style={{ flex: 'none', width: 148 }}>
-                <button type="button" aria-pressed={symbol === 'USDC'} onClick={() => setSymbol('USDC')}>
-                  USDC
-                </button>
-                <button type="button" aria-pressed={symbol === 'SOL'} onClick={() => setSymbol('SOL')}>
-                  SOL
-                </button>
-              </div>
-            }
-            foot={
-              <>
-                <span>{usdIn !== null ? `≈ ${usd(usdIn)}` : ' '}</span>
-                <span>{rate ? `1 ZEC ≈ ${rate.toFixed(symbol === 'SOL' ? 4 : 2)} ${symbol}` : ' '}</span>
-              </>
-            }
-          />
-          <Field
-            label="You receive at least"
-            right="shielded"
-            amount={q ? units(BigInt(q.minAmountOut), 8, 2) : '—'}
-            muted={!q}
-            token={<Tok kind="zcash" />}
-            foot={
-              <>
-                <span>
-                  Lands in <strong>{landsIn(app.draft, app.wallet).replace(' · fresh address', '')}</strong>
-                </span>
-                <span>{quote ? `refreshes in ${clock(REFRESH_MS - ((now - quote.at) % REFRESH_MS))}` : ''}</span>
-              </>
-            }
-          />
-        </Pair>
-        {tooMuch ? (
-          <Strip tone="warn">
-            <strong>More than you can spend.</strong>{' '}
-            {symbol === 'SOL' ? `Keep about ${sol(reserve)} for Solana fees. You can spend up to ${sol(spendable!)}.` : `You have ${usdc(balance!)}.`}
-          </Strip>
-        ) : problem ? (
-          <Strip tone="warn">
-            <strong>{problem.title}.</strong> {problem.body}
-          </Strip>
-        ) : fixedShare !== null && usdIn !== null && usdIn < 10 ? (
-          <Strip tone="warn">
-            <strong>Small order.</strong> The fixed bridge fee is {fixedShare.toFixed(1)}% of this order. Larger orders lose less to it.
-          </Strip>
-        ) : null}
-        <Line left={`Fee ${q ? (ours + theirs) / 100 : 0.5}% · bridge up to ${q?.withdrawFee ? zec(BigInt(q.withdrawFee), 0) : '0.00032 ZEC'}`} right="Exact amounts at review" />
-        <button type="button" className="btn" disabled={!q || tooMuch || blocked} onClick={next}>
-          Choose where it lands
-        </button>
-      </Shell>
-    );
-  }
-
   return (
-    <Shell
-      nav="buy">
-      <BackBar title="Buy shielded ZEC" back="/" />
-
-      <div className="card tight">
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-          <label htmlFor="pay" className="label">
-            You pay
-          </label>
-          <span className="label">Balance {balance === undefined ? '—' : symbol === 'SOL' ? sol(balance) : usdc(balance)}</span>
-        </div>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <input
-            id="pay"
-            className="amount-input"
-            inputMode="decimal"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            aria-invalid={amount === null || tooMuch}
-            autoComplete="off"
-          />
-          <div className="toggle" style={{ flex: 'none', width: 168 }}>
-            <button type="button" aria-pressed={symbol === 'USDC'} onClick={() => setSymbol('USDC')}>
-              USDC
-            </button>
-            <button type="button" aria-pressed={symbol === 'SOL'} onClick={() => setSymbol('SOL')}>
-              SOL
-            </button>
-          </div>
-        </div>
-        <div className="rule" style={{ margin: '6px 0' }} />
-        <span className="label">You receive at least</span>
-        <span className="amount md">{q ? zec(BigInt(q.minAmountOut)) : '—'}</span>
-        <span className="label">
-          Shielded, in Ironwood{quote ? ` · price refreshes in ${clock(REFRESH_MS - ((now - quote.at) % REFRESH_MS))}` : ''}
-        </span>
-      </div>
-
+    <Shell nav="buy">
+      <DeskTabs at="buy" />
+      {!MOVES_OPEN ? (
+        <Strip>
+          <strong>Opening soon.</strong> Buys open once our own Phantom test moves pass. Live prices work now.
+        </Strip>
+      ) : null}
+      <Pair>
+        <Field
+          label={<label htmlFor="pay">You pay</label>}
+          right={`Balance ${balance === undefined ? '—' : symbol === 'SOL' ? sol(balance) : usdc(balance)}`}
+          input={
+            <input
+              id="pay"
+              className="amount-input"
+              inputMode="decimal"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              aria-invalid={amount === null || tooMuch}
+              autoComplete="off"
+            />
+          }
+          token={
+            <div className="toggle" style={{ flex: 'none', width: 148 }}>
+              <button type="button" aria-pressed={symbol === 'USDC'} onClick={() => setSymbol('USDC')}>
+                USDC
+              </button>
+              <button type="button" aria-pressed={symbol === 'SOL'} onClick={() => setSymbol('SOL')}>
+                SOL
+              </button>
+            </div>
+          }
+          foot={
+            <>
+              <span>{usdIn !== null ? `≈ ${usd(usdIn)}` : ' '}</span>
+              <span>{rate ? `1 ZEC ≈ ${rate.toFixed(symbol === 'SOL' ? 4 : 2)} ${symbol}` : ' '}</span>
+            </>
+          }
+        />
+        <Field
+          label="You receive at least"
+          right="shielded"
+          amount={q ? units(BigInt(q.minAmountOut), 8, 2) : '—'}
+          muted={!q}
+          token={<Tok kind="zcash" />}
+          foot={
+            <>
+              <span>
+                Lands in <strong>{landsIn(app.draft, app.wallet).replace(' · fresh address', '')}</strong>
+              </span>
+              <span>{quote ? `refreshes in ${clock(REFRESH_MS - ((now - quote.at) % REFRESH_MS))}` : ''}</span>
+            </>
+          }
+        />
+      </Pair>
       {tooMuch ? (
-        <StateCard tone="warn" title={`More than you can spend`}>
-          {symbol === 'SOL'
-            ? `Keep about ${sol(reserve)} for Solana fees. You can spend up to ${sol(spendable!)}.`
-            : `You have ${usdc(balance!)}.`}
-        </StateCard>
+        <Strip tone="warn">
+          <strong>More than you can spend.</strong>{' '}
+          {symbol === 'SOL' ? `Keep about ${sol(reserve)} for Solana fees. You can spend up to ${sol(spendable!)}.` : `You have ${usdc(balance!)}.`}
+        </Strip>
+      ) : problem ? (
+        <Strip tone="warn">
+          <strong>{problem.title}.</strong> {problem.body}
+        </Strip>
+      ) : fixedShare !== null && usdIn !== null && usdIn < 10 ? (
+        <Strip tone="warn">
+          <strong>Small order.</strong> The fixed bridge fee is {fixedShare.toFixed(1)}% of this order. Larger orders lose less to it.
+        </Strip>
       ) : null}
-      {problem ? (
-        <StateCard tone="warn" title={problem.title}>
-          {problem.body}
-        </StateCard>
-      ) : null}
-
-      <Rows
-        rows={[
-          ['Rate', rate ? `1 ZEC ≈ ${rate.toFixed(symbol === 'SOL' ? 4 : 2)} ${symbol}` : '—'],
-          [<NetworkFeeLabel key="f" />, q ? networkFee(q.withdrawFee) : '—'],
-          ['NEAR Intents fee', q ? `${theirs / 100}%` : '—'],
-          ['Our fee', q ? `${ours / 100}%` : '—'],
-          ['Value in', usdIn !== null ? usd(usdIn) : '—'],
-        ]}
-      />
-
-      {fixedShare !== null && usdIn !== null && usdIn < 10 ? (
-        <div className="note warn">
-          <strong>Small order</strong>
-          <span>The fixed bridge fee is {fixedShare.toFixed(1)}% of this order. Larger orders lose less to it.</span>
-        </div>
-      ) : (
-        <div className="note">Under $10, the fixed bridge fee is a large share of the order. We show the share before you sign.</div>
-      )}
-
+      <Line left={`Fee ${q ? (ours + theirs) / 100 : 0.5}% · bridge up to ${q?.withdrawFee ? zec(BigInt(q.withdrawFee), 0) : '0.00032 ZEC'}`} right="Exact amounts at review" />
       <button type="button" className="btn" disabled={!q || tooMuch || blocked} onClick={next}>
         Choose where it lands
       </button>

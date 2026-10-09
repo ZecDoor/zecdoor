@@ -1,6 +1,6 @@
 // Desktop pieces for the single-card layout (768 px and wider). The phone layout never renders these.
 
-import type { ReactNode } from 'react';
+import { Children, type ReactNode } from 'react';
 import { DOCS_URL } from '../config';
 
 export type Mode = 'move' | 'buy' | 'check';
@@ -79,14 +79,16 @@ export function Field({ label, right, amount, muted, token, foot, input }: {
 
 /** Two fields joined by the arrow between them. */
 export function Pair({ children }: { children: ReactNode }) {
+  const [from, to] = Children.toArray(children);
   return (
     <div className="dpair">
-      {children}
+      {from}
       <span className="dpair-arrow" aria-hidden="true">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M12 5v14M6 13l6 6 6-6" />
         </svg>
       </span>
+      {to}
     </div>
   );
 }
@@ -159,7 +161,7 @@ export function PublicStrip() {
 /** A back control for screens that replace the card's contents. */
 export function DeskBack({ href = '#/', label = 'Back' }: { href?: string; label?: string }) {
   return (
-    <a className="dback dk" href={href} aria-label={label}>
+    <a className="dback" href={href} aria-label={label}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
         <path d="m15 6-6 6 6 6" />
       </svg>

@@ -64,7 +64,7 @@ test.describe('connect', () => {
   test('outside Phantom it offers the Phantom deeplink', async ({ page }) => {
     await mock(page, { phantom: false });
     await page.goto('./');
-    if (test.info().project.name === 'desktop') await page.getByText('On a phone? Open in Phantom').click();
+    if (!(await page.getByRole('link', { name: /Open (this page )?in Phantom/ }).first().isVisible())) await page.getByText('On a phone? Open in Phantom').click();
     const link = page.getByRole('link', { name: /Open (this page )?in Phantom/ }).first();
     await expect(link).toHaveAttribute('href', /^https:\/\/phantom\.com\/ul\/browse\/http/);
   });
@@ -121,21 +121,10 @@ test.describe('moves closed (production until the mainnet test runs pass)', () =
     const m = await mock(page, { movesClosed: true });
     await page.goto('./');
     await expect(page.getByText('Opening soon').first()).toBeVisible();
-    if (test.info().project.name === 'desktop') {
-      // The single card says so in the card and closes its one button; the live quote still shows.
-      await expect(page.getByRole('button', { name: 'Opening soon' })).toBeDisabled();
-      await expect(page.getByText(/NEAR Intents est\./)).toBeVisible();
-      expect(await m.signed()).toHaveLength(0);
-      expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-      return;
-    }
-    await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
-    await makeWallet(page);
-    await expect(page.getByText(/Signed by NEAR Intents · checked|Quote signed by NEAR Intents/).filter({ visible: true }).first()).toBeVisible();
+    // The card says so and closes its one button; the live quote still shows, and only dry quotes are asked for.
     await expect(page.getByRole('button', { name: 'Opening soon' })).toBeDisabled();
-    await expect(page.getByRole('button', { name: 'Sign in Phantom' })).toHaveCount(0);
+    await expect(page.getByText(/NEAR Intents est\./)).toBeVisible();
     expect(await m.signed()).toHaveLength(0);
-    // Only dry quotes (no deposit address) were ever requested.
     expect(m.quotes.every((q) => (q as QuoteResponse).quoteRequest.dry === true)).toBe(true);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   });
@@ -160,7 +149,7 @@ test('second move from the same browser wallet uses the next address', async ({ 
   await page.goto('./');
   await page.getByRole('button', { name: /Move it to shielded|Review move/ }).click();
   await makeWallet(page);
-  const dest = () => (test.info().project.name === 'desktop' ? page.locator('dl.drows > div', { hasText: 'Lands in' }).locator('dd') : page.locator('dl.rows dd').first());
+  const dest = () => (true ? page.locator('dl.drows > div', { hasText: 'Lands in' }).locator('dd') : page.locator('dl.rows dd').first());
   const first = await dest().innerText();
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByText('Note found by your browser')).toBeVisible(SLOW);
@@ -224,11 +213,7 @@ test('buy shielded ZEC with USDC', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: /Buy shielded ZEC/ }).first().click();
   await page.getByLabel('You pay').fill('25');
-  if (test.info().project.name === 'desktop') await expect(page.getByText(/^Fee 0\.5% · bridge up to/)).toBeVisible();
-  else {
-    await expect(page.getByText('NEAR Intents fee')).toBeVisible();
-    await expect(page.locator('dl.rows')).toContainText('0.25%');
-  }
+  await expect(page.getByText(/^Fee 0\.5% · bridge up to/)).toBeVisible();
   await page.getByRole('button', { name: 'Choose where it lands' }).click();
   await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
   await page.getByLabel('Zcash address').fill(TEST_UA);
@@ -285,8 +270,9 @@ test('cancelling in Phantom sends nothing and keeps no record', async ({ page })
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByText('You cancelled in Phantom. Nothing was sent.')).toBeVisible();
   await page.goto('./#/');
-  // The phone lists recent moves on its main screen; the desktop keeps them for the Activity page.
-  if (test.info().project.name !== 'desktop') await expect(page.getByText(/^None yet/).filter({ visible: true }).first()).toBeVisible();
+  // Nothing was sent, so Activity has nothing to list.
+  await page.goto('./#/activity');
+  await expect(page.getByText('No moves in this browser yet')).toBeVisible();
 });
 
 test('the bridge is paused: no moves offered', async ({ page }) => {
@@ -362,13 +348,6 @@ test('a slow bridge shows "taking longer than estimated"', async ({ page }) => {
   await expect(page.getByText('Taking longer than estimated')).toBeVisible(SLOW);
 });
 
-test('counter: placeholders until there are real moves (phone; the desktop Stats page is in pages.spec)', async ({ page }) => {
-  test.skip(test.info().project.name === 'desktop', 'desktop shows the Stats page');
-  await mock(page);
-  await page.goto('./#/counter');
-  await expect(page.getByText('Fills in from launch day. No numbers until there are real ones.')).toBeVisible();
-  await expect(page.locator('.stats .v').first()).toHaveText('—');
-});
 
 test.describe('accessibility', () => {
   for (const [name, url] of [

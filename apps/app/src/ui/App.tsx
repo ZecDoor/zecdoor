@@ -3,7 +3,6 @@ import { Buy } from './screens/Buy';
 import { Activity } from './screens/Activity';
 import { Check } from './screens/Check';
 import { Connect } from './screens/Connect';
-import { Counter } from './screens/Counter';
 import { Destination } from './screens/Destination';
 import { Home } from './screens/Home';
 import { MoveScreen } from './screens/Move';
@@ -12,19 +11,16 @@ import { Review } from './screens/Review';
 import { TopUp } from './screens/TopUp';
 import { WalletCreate, WalletVerify } from './screens/Wallet';
 import { Stats } from './screens/Stats';
-import { useWide } from './rail';
 import { useRoute } from './router';
 import { useApp } from './state';
 
 export function App() {
   const route = useRoute();
   const { owner } = useApp();
-  const wide = useWide();
   const [a, b] = route;
 
   // Pages that work without a connected wallet.
-  // Desktop: the Stats page. Phone: the counter screen as it was, until the phone round.
-  if (a === 'stats' || a === 'counter') return wide ? <Stats /> : <Counter />;
+  if (a === 'stats' || a === 'counter') return <Stats />;
   if (a === 'activity') return <Activity />;
   if (a === 'check') return <Check address={b} />;
   if (a === 'proof') return <Proof />;
