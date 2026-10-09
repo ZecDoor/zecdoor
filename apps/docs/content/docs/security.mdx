@@ -51,6 +51,19 @@ own scripts and the WebAssembly Zcash code, nothing else.
 ZecDoor never asks you to sign a message. A site that does, claiming to be ZecDoor, is not ZecDoor. We only live at our
 one domain, **zecdoor.0xo.in**, also shown on the connect screen. Any other domain is not ZecDoor.
 
+## Dependencies
+
+`pnpm audit` on 10 October 2026 reported one high and four moderate advisories, all in packages that
+`@solana/web3.js` and `@solana/spl-token` pull in. None of the affected code runs in the app:
+
+| Package | Advisory | Why it does not reach you |
+|---|---|---|
+| `bigint-buffer` 1.1.5 (high, no fix released) | Buffer overflow in the native `toBigIntLE` | The browser build uses the package's plain JavaScript fallback; the native add-on cannot load in a browser |
+| `uuid` 8.3.2 | Missing bounds check in v3, v5 and v6 when a buffer is passed | Only v4 IDs are made, without a buffer |
+| `stream-json` 1.9.1 (three advisories) | Slow or unsafe parsing of hostile JSON streams | Used by the RPC library's Node.js streaming code, which is not in the app bundle |
+
+A sixth advisory, in `sharp` (used when building the docs), is fixed by pinning 0.35.5.
+
 ## Reporting a problem
 
 <SecurityContact />

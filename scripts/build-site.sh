@@ -73,6 +73,8 @@ if [[ -f "$OUT/.well-known/security.txt" ]]; then
   sed -i.bak "s/\[DOMAIN\]/$VITE_DOMAIN/g" "$OUT/.well-known/security.txt" && rm -f "$OUT/.well-known/security.txt.bak"
 fi
 # Which commit this site was built from, so anyone can check out the same code and compare.
+# Canonical links, share tags and images, the designed 404 page, sitemap.xml (not on preview builds).
+node "$ROOT/scripts/seo/finish-site.mjs" "$OUT" "$VITE_DOMAIN" $([[ "${PREVIEW:-}" == "1" ]] && echo --preview)
 printf '{"commit":"%s","dirty":%s,"builtAt":"%s","node":"%s","moves":"%s","preview":%s}\n' "$(git -C "$ROOT" rev-parse HEAD)" \
   "$([[ -n "$(git -C "$ROOT" status --porcelain)" ]] && echo true || echo false)" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(node --version)" \
   "$([[ "${VITE_MOVES_OPEN:-}" == "1" ]] && echo open || echo closed)" "$([[ "${PREVIEW:-}" == "1" ]] && echo true || echo false)" > "$OUT/build.json"

@@ -1,0 +1,150 @@
+/* The designed 404 page (deploy/site/404.html). A file, not inline: /app/* has a CSP without inline styles. */
+@font-face {
+  font-family: 'Manrope';
+  src: url('/fonts/manrope-latin-wght.woff2') format('woff2');
+  font-weight: 200 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-latin-400.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+:root {
+  --bg: #f6f4ee;
+  --surface: #ffffff;
+  --line: #dedacf;
+  --text: #17160f;
+  --muted: #5c5950;
+  --accent: #e5a42a;
+  --accent-ink: #1b1405;
+  --accent-text: #8a5a00;
+  --sunk: #efece4;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0c0d0f;
+    --surface: #15171a;
+    --line: #2a2d33;
+    --text: #eeece6;
+    --muted: #a6a39b;
+    --accent: #f0b43c;
+    --accent-ink: #1b1405;
+    --accent-text: #f0b43c;
+    --sunk: #101215;
+    color-scheme: dark;
+  }
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--line);
+}
+header a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 17px;
+}
+main {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 48px 16px;
+}
+.card {
+  width: 100%;
+  max-width: 460px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 28px;
+}
+.code {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  font-size: 13px;
+  color: var(--accent-text);
+  letter-spacing: 0.04em;
+}
+h1 {
+  margin: 10px 0 8px;
+  font-size: 26px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
+.mono {
+  font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  color: var(--text);
+  font-size: 14px;
+}
+.primary {
+  display: block;
+  margin-top: 22px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+.primary:focus-visible,
+nav a:focus-visible,
+header a:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+nav a {
+  padding: 11px 14px;
+  border-radius: 12px;
+  background: var(--sunk);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+nav a span {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 12.5px;
+}
+footer {
+  padding: 18px 24px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
