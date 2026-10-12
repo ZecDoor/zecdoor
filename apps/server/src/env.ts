@@ -14,6 +14,10 @@ export interface Env {
   /** Our own Orchard-capable UA and Solana wallet, named only in the fee self-test's dry quotes. */
   FEE_TEST_RECIPIENT: string;
   FEE_TEST_REFUND: string;
+  /** TEMPORARY: "1" only in the preview env, to accept device diagnostics (src/diag.ts). */
+  DIAG?: string;
+  /** TEMPORARY: secret needed to read the preview's diagnostics. */
+  DIAG_KEY?: string;
   /** Static files (landing, app, docs) when deployed with Workers Static Assets. */
   ASSETS?: { fetch(r: Request): Promise<Response> };
 }

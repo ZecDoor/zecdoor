@@ -5,6 +5,7 @@ import { feeSelfTest, OneClickClient } from '@zecdoor/solana';
 import { count, counter } from './counter';
 import { json, type Env } from './env';
 import { decide } from './geo';
+import { diagGet, diagPost } from './diag';
 import { health } from './health';
 import { refreshSanctions, sanctions } from './sanctions';
 
@@ -47,6 +48,9 @@ export async function handle(req: Request, env: Env, fetchImpl: typeof fetch = f
       const r = await count(env, fetchImpl, body);
       return json(r, { status: r.reason === 'bad_request' ? 400 : 200 });
     }
+    // TEMPORARY device diagnostics: only where DIAG=1 (the preview env); production answers 404.
+    if (env.DIAG === '1' && req.method === 'POST' && path === '/api/diag') return await diagPost(req, env);
+    if (env.DIAG === '1' && req.method === 'GET' && path === '/api/diag') return await diagGet(url, env);
     return json({ error: 'not_found' }, { status: 404 });
   } catch {
     return json({ error: 'unavailable' }, { status: 503 });

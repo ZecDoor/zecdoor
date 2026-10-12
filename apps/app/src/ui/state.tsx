@@ -7,6 +7,7 @@ import type { WalletSnapshot } from '../lib/wallet';
 import { geo as fetchGeo, health as fetchHealth, type Geo, type Health } from '../lib/server';
 import { readBalances, type Balances } from '../lib/solana';
 import { getWallet, type BrowserWallet, type MoveRecord, listMoves } from '../lib/store';
+import { a6, diag } from '../lib/diag';
 
 /** What the user is about to do, built up across screens. Lives in memory only. */
 export interface Draft {
@@ -97,7 +98,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [health, setHealth] = useState<Health | null>(null);
   const [geo, setGeo] = useState<Geo | null>(null);
   const [prices, setPrices] = useState<Prices>({});
-  const [draft, setDraft] = useState<Draft | null>(null);
+  const [draft, setDraftRaw] = useState<Draft | null>(null);
+  // TEMPORARY diagnostics: every write to the draft, with what it carries (never a full address).
+  const setDraft = useCallback((d: Draft | null) => {
+    diag('draft', { kind: d?.kind ?? null, amt: d ? d.amount > 0n : null, dest: d?.dest?.kind ?? null, d6: a6(d?.dest?.address) });
+    setDraftRaw(d);
+  }, []);
   const [notice, setNotice] = useState<Notice | null>(null);
   const seed = useRef<AppState['seed']['current']>(null);
   const destInput = useRef<AppState['destInput']['current']>(null);
@@ -126,6 +132,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // is not a different account: the move being prepared, and the destination chosen for it, are kept.
   const last = useRef<string | null>(null);
   useEffect(() => {
+    diag('address', { to: a6(address), last: a6(last.current) });
     if (!address) return;
     const prev = last.current;
     last.current = address;

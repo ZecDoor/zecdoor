@@ -8,6 +8,7 @@ import { walletWithoutSigner, type WalletState } from '@solana/kit-plugin-wallet
 import type { VersionedTransaction } from '@solana/web3.js';
 import { getPhantom, type PhantomSolana } from './phantom';
 import { WalletError } from './wallet-error';
+import { a6, diag } from './diag';
 
 /** Wallets we have tested end to end on mainnet. Others are listed but cannot be picked. */
 export const SUPPORTED = new Set(['Phantom']);
@@ -75,6 +76,8 @@ function notify() {
     next.options.map((o) => `${o.name}:${o.legacy}`).join() === snapshot.options.map((o) => `${o.name}:${o.legacy}`).join();
   if (same) return;
   snapshot = next;
+  const st = client.wallet.getState();
+  diag('wallet', { ready: next.ready, connecting: next.connecting, conn: a6(next.connected?.address), via: next.connected?.name ?? null, kit: st.status, kitConn: a6(st.connected?.account.address), legacy: a6(legacyOwner) });
   listeners.forEach((l) => l());
 }
 
@@ -82,11 +85,13 @@ function attachLegacy(p: PhantomSolana) {
   if (legacy) return;
   legacy = p;
   p.on('accountChanged', (pk?: unknown) => {
+    diag('legacy-accountChanged', { pk: a6(pk ? String(pk) : null), legacy: a6(legacyOwner) });
     if (!legacyOwner) return;
     legacyOwner = pk ? String(pk) : null;
     notify();
   });
   p.on('disconnect', () => {
+    diag('legacy-disconnect', { legacy: a6(legacyOwner) });
     legacyOwner = null;
     notify();
   });

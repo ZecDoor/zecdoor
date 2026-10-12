@@ -10,12 +10,16 @@ import { Shell, StateCard } from '../parts';
 import { go } from '../router';
 import { useApp } from '../state';
 import { feeOk } from '../../lib/server';
+import { a6, diag } from '../../lib/diag';
 
 const QUOTE_REFRESH_MS = 30_000;
 
 export function Home() {
   const app = useApp();
   const { owner, balances, balanceError, minimum, wallet, draft, health, geo, prices, notice } = app;
+  // TEMPORARY diagnostics: what "Lands in" shows, each time it changes.
+  const landsKind = draft?.dest?.kind ?? (wallet ? 'browser-wallet' : 'new');
+  useEffect(() => diag('lands-in', { kind: landsKind, d6: a6(draft?.dest?.address), draftKind: draft?.kind ?? null }), [landsKind, draft?.dest?.address, draft?.kind]);
   const [busy, setBusy] = useState(false);
 
   const blocked = geo?.allowed === false;

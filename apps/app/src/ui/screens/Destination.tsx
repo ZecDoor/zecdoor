@@ -5,6 +5,7 @@ import { continueWith } from '../flow';
 import { BackBar, Shell, Tick } from '../parts';
 import { go } from '../router';
 import { useApp } from '../state';
+import { a6, diag } from '../../lib/diag';
 
 export function Destination() {
   const app = useApp();
@@ -15,6 +16,14 @@ export function Destination() {
   useEffect(() => {
     app.destInput.current = { own, addr };
   }, [app.destInput, own, addr]);
+  // TEMPORARY diagnostics
+  useEffect(() => {
+    diag('dest-open', { own, a: a6(addr), draftKind: draft?.kind ?? null, amt: draft ? draft.amount > 0n : null, dest: draft?.dest?.kind ?? null, kept: !!kept });
+    return () => diag('dest-close');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => diag('dest-own', { own }), [own]);
+  useEffect(() => diag('dest-input', { a: a6(addr.trim()), len: addr.trim().length }), [addr]);
   const [check, setCheck] = useState<{ ok: boolean; message: string; reused: boolean } | null>(null);
 
   useEffect(() => {
@@ -24,6 +33,7 @@ export function Destination() {
     void (async () => {
       const r = await inspect(a);
       const reused = r.ok ? await wasAddressUsed(a) : false;
+      if (live) diag('dest-check', { ok: r.ok, a: a6(a) });
       if (live) setCheck({ ok: r.ok, message: r.ok ? 'Shielded address · can receive in Ironwood' : ADDRESS_PROBLEMS[r.reason], reused });
     })();
     return () => {
@@ -33,6 +43,7 @@ export function Destination() {
 
   const canGo = !own || !!check?.ok;
   const next = async () => {
+    diag('dest-continue', { own, canGo, a: a6(addr.trim()), amt: draft ? draft.amount > 0n : null, draftKind: draft?.kind ?? null });
     if (!canGo) return;
     app.destInput.current = null;
     // Without an amount yet (opened from Home's "Change"), remember the choice and go back.
