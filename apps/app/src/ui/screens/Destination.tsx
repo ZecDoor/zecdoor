@@ -9,8 +9,12 @@ import { useApp } from '../state';
 export function Destination() {
   const app = useApp();
   const { draft, wallet } = app;
-  const [own, setOwn] = useState(draft?.dest?.kind === 'own');
-  const [addr, setAddr] = useState(draft?.dest?.kind === 'own' ? draft.dest.address : '');
+  const kept = app.destInput.current;
+  const [own, setOwn] = useState(kept?.own ?? draft?.dest?.kind === 'own');
+  const [addr, setAddr] = useState(kept?.addr ?? (draft?.dest?.kind === 'own' ? draft.dest.address : ''));
+  useEffect(() => {
+    app.destInput.current = { own, addr };
+  }, [app.destInput, own, addr]);
   const [check, setCheck] = useState<{ ok: boolean; message: string; reused: boolean } | null>(null);
 
   useEffect(() => {
@@ -30,6 +34,7 @@ export function Destination() {
   const canGo = !own || !!check?.ok;
   const next = async () => {
     if (!canGo) return;
+    app.destInput.current = null;
     // Without an amount yet (opened from Home's "Change"), remember the choice and go back.
     if (own) {
       const dest = { kind: 'own' as const, address: addr.trim(), index: null };

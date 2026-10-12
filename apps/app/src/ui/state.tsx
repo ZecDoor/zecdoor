@@ -53,6 +53,9 @@ interface AppState {
   prices: Prices;
   draft: Draft | null;
   setDraft(d: Draft | null): void;
+  /** What the destination screen holds while it is open (which option, the pasted text). Memory only, never stored;
+   *  it outlives the screen so a brief loss of connection, which swaps in the connect screen, does not lose a paste. */
+  destInput: React.MutableRefObject<{ own: boolean; addr: string } | null>;
   /** The 24 words between the backup screen and the check. Never stored. */
   seed: React.MutableRefObject<{ mnemonic: string; ufvk: string; birthday: number } | null>;
 }
@@ -97,6 +100,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
   const seed = useRef<AppState['seed']['current']>(null);
+  const destInput = useRef<AppState['destInput']['current']>(null);
   const draftRef = useRef<Draft | null>(null);
   draftRef.current = draft;
 
@@ -117,22 +121,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const address = wallet$.connected?.address ?? null;
   const owner = useMemo(() => (address ? new PublicKey(address) : null), [address]);
 
-  // A different account means different balances, and nothing prepared for the old one may be signed.
+  // A different account means different balances, and nothing prepared for the old one may be signed. A connection
+  // that drops and comes back with the same account (Phantom's in-app browser can do this when the page loses focus)
+  // is not a different account: the move being prepared, and the destination chosen for it, are kept.
   const last = useRef<string | null>(null);
   useEffect(() => {
+    if (!address) return;
     const prev = last.current;
     last.current = address;
     if (prev === address) return;
     setBalances(null);
     setMinimum(null);
-    if (prev && address && draftRef.current) setNotice({ from: prev, to: address });
-    setDraft(null);
+    if (prev && draftRef.current) setNotice({ from: prev, to: address });
+    if (prev) {
+      setDraft(null);
+      destInput.current = null;
+    }
   }, [address]);
 
   const connect = useCallback(async (name: string) => (await loadWallet()).connectWallet(name), []);
   const disconnect = useCallback(async () => {
     await (await loadWallet()).disconnectWallet();
     setDraft(null);
+    destInput.current = null;
   }, []);
   const signAndSend = useCallback<AppState['signAndSend']>(async (tx, expected) => (await loadWallet()).signAndSend(tx, expected), []);
   const clearNotice = useCallback(() => setNotice(null), []);
@@ -198,6 +209,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       prices,
       draft,
       setDraft,
+      destInput,
       seed,
     }),
     [wallet$, owner, connect, disconnect, signAndSend, notice, clearNotice, balances, balanceError, refreshBalances, minimum, wallet, reloadWallet, moves, movesReady, reloadMoves, health, geo, prices, draft],

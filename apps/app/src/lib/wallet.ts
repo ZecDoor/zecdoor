@@ -107,6 +107,18 @@ function trySilentLegacy() {
 
 // Phantom injects its provider shortly after load on some platforms.
 if (typeof window !== 'undefined') {
+  // Test builds only: the connection drops to no account for a moment and comes back with the same account, as Phantom's
+  // in-app browser can do around a paste or when the page regains focus.
+  if (import.meta.env.MODE === 'e2e')
+    (window as unknown as { __zdFlap(): void }).__zdFlap = () => {
+      const was = snapshot;
+      snapshot = { ...snapshot, connected: null };
+      listeners.forEach((l) => l());
+      setTimeout(() => {
+        snapshot = was;
+        listeners.forEach((l) => l());
+      }, 80);
+    };
   client.wallet.subscribe(notify);
   const p = getPhantom();
   if (p) attachLegacy(p);

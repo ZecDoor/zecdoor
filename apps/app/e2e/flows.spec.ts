@@ -368,3 +368,56 @@ test.describe('accessibility', () => {
     });
   }
 });
+
+// The destination chosen with Change must reach the move, the top-up and the buy, even if the wallet's connection
+// briefly drops and comes back (Phantom's in-app browser can do this when the page loses focus, e.g. around a paste).
+async function chooseOwn(page: Page) {
+  await page.getByText('Change', { exact: true }).filter({ visible: true }).first().click();
+  await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
+  await page.getByLabel('Zcash address').fill(TEST_UA);
+  await expect(page.getByText(/Shielded address/)).toBeVisible();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByText(/My wallet · u1c5…gu8m/).filter({ visible: true }).first()).toBeVisible();
+  await page.evaluate(() => (window as unknown as { __zdFlap(): void }).__zdFlap());
+  await page.waitForTimeout(400);
+  await expect(page.getByText(/My wallet · u1c5…gu8m/).filter({ visible: true }).first()).toBeVisible();
+}
+const toReview = async (page: Page) => {
+  await expect(page.getByText('Your new shielded wallet')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Sign in Phantom' })).toBeVisible();
+  await expect(page.getByText(/your wallet/).filter({ visible: true }).first()).toBeVisible();
+};
+
+test('Change → my wallet reaches the top-up review', async ({ page }) => {
+  await mock(page, { zec: 37_814n });
+  await page.goto('./');
+  await chooseOwn(page);
+  await page.getByRole('button', { name: /Top up and shield/ }).click();
+  await expect(page.getByText('Your one signature does both')).toBeVisible();
+  await page.getByRole('button', { name: 'Review' }).click();
+  await toReview(page);
+});
+
+test('Change → my wallet reaches the move review', async ({ page }) => {
+  await mock(page);
+  await page.goto('./');
+  await chooseOwn(page);
+  await page.getByRole('button', { name: /Move 0\.0874 ZEC|Review move/ }).click();
+  await toReview(page);
+});
+
+test('Choose where it lands → my wallet reaches the buy review, through a reconnect', async ({ page }) => {
+  await mock(page, { zec: 0n });
+  await page.goto('./#/buy');
+  await page.getByLabel('You pay').fill('25');
+  await expect(page.getByText(/^Fee 0\.5% · bridge up to/)).toBeVisible();
+  await page.getByRole('button', { name: 'Choose where it lands' }).click();
+  await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
+  await page.getByLabel('Zcash address').fill(TEST_UA);
+  await page.evaluate(() => (window as unknown as { __zdFlap(): void }).__zdFlap());
+  await page.waitForTimeout(400);
+  await expect(page.getByText(/Shielded address/)).toBeVisible();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await toReview(page);
+  await expect(page.getByText('25.00 USDC').filter({ visible: true }).first()).toBeVisible();
+});
