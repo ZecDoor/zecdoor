@@ -21,8 +21,45 @@ Run them: `pnpm test`, `pnpm test:live`, `pnpm --filter @zecdoor/app e2e`.
 Every mainnet transaction we make while testing is listed here with its Solana signature, Zcash transaction and NEAR
 Intents status. They run through the app's own code, driven in a browser on mainnet with a test wallet
 ([`scripts/mainnet/app-run.ts`](https://github.com/ZecDoor/zecdoor/blob/main/scripts/mainnet/app-run.ts)); before
-signing, each transaction is re-checked against the allowlist from outside the page. Moves and buys open to everyone once
-these runs have passed.
+signing, each transaction is re-checked against the allowlist from outside the page. The phone runs below were signed by
+hand in the Phantom app. Moves and buys opened to everyone on 12 October 2026, after these runs passed.
+
+### Phone runs, signed in Phantom (12 Oct 2026)
+
+Three moves signed by hand in the Phantom app on an iPhone (iOS 18.7), in Phantom's in-app browser, with the test wallet
+`3QFJ…i67T` and the preview build `3cbfffa` (the same code that opened on this site). Each one landed into a fresh address
+of a shielded test wallet; its viewing key found the note, and NEAR Intents reported **SUCCESS** with nothing refunded.
+Times are from the Solana transaction's block to the Zcash block holding the payout.
+
+| | Top-up (below the minimum) | Move | Buy with USDC |
+|---|---|---|---|
+| Sent | 0.0002924 ZEC held + a Jupiter swap of 0.01218736 SOL → 0.00104429 ZEC; all 0.00133669 ZEC sent, one transaction | 0.00137991 ZEC (bought in Phantom's own swap just before) | 2.097 USDC |
+| Solana | [`4zSTXg…7XszNM`](https://explorer.solana.com/tx/4zSTXgFgoMcksrmScCtyMGr3ph4HtVDkeK7czDoebKjgg2pSG9uRMH6tXjUXxHd81pvGuQTZ5Xv3AtUk1x7XszNM) | [`TnySH8…TnvR2G`](https://explorer.solana.com/tx/TnySH8HbV3RRKBRHWLfFDMsdzctBo3MgCHemVZSArCaZHb3CAH7MLXE4Dr1Z3YKXiWDXJ51Lv8B2rJN5yTnvR2G) | [`4X7q8u…BxnAZ7`](https://explorer.solana.com/tx/4X7q8u7u8XVykcMW6PL1hdH2eoCrVhWr8cH1BwJ2Yq4ixcdW1AsDhjcBHoxwQUnTyxWqHP3P1xegKWe3TCBxnAZ7) |
+| NEAR Intents | deposit `toAaVF…4hnSc`, **SUCCESS**, `amountOut` 0.00101335 ZEC | deposit `4qP7sd…JgTB3As`, **SUCCESS**, `amountOut` 0.00105646 ZEC | deposit `9aaS12…eQz5zMHG`, **SUCCESS**, `amountOut` 0.00129969 ZEC |
+| Zcash | [`62aaf5…71a4`](https://mainnet.zcashexplorer.app/transactions/62aaf5659c061979d0c7c850fc88103a36704af3687fb3e51cf63e3bb68871a4), block 3,515,260 | [`67bf6f…4b70`](https://mainnet.zcashexplorer.app/transactions/67bf6fece5ae1c2ef715e60ae0151497dc0a5f6b998c47a8cbe202806a214b70), block 3,515,279 | [`51958c…a83d`](https://mainnet.zcashexplorer.app/transactions/51958c7306d61dccc29afc6ba7090b8a43cdd194cd20a11539d59dc897f8a83d), block 3,515,294 |
+| Note found with the viewing key | 0.00108335 ZEC (minimum 0.00100320), address index 2 | 0.00112646 ZEC (minimum 0.00104589), index 1 | 0.00136969 ZEC (minimum 0.00128596), index 3 |
+| Signing to the Zcash block | 4 min 51 s | 3 min 25 s | 5 min 54 s |
+| Size as landed (limit 1,232 bytes) | 1,051 bytes (968 as we built it) | 522 bytes (439) | 522 bytes (439) |
+
+The USDC for the buy came from swaps inside the test wallet in Phantom, outside ZecDoor. Each record was rebuilt from the
+chain with [`scripts/mainnet/inspect-landed.ts`](https://github.com/ZecDoor/zecdoor/blob/main/scripts/mainnet/inspect-landed.ts):
+NEAR Intents' signature on each quote is valid, and every instruction we built landed unchanged.
+
+What the phone runs found:
+
+- **Phantom adds two instructions.** On every run Phantom added two Lighthouse assertions (`AssertAccountInfoMulti` and
+  `AssertTokenAccountMulti`), wallet guards that cost 83 bytes. It changed nothing we built. Our allowlist runs before
+  Phantom sees the transaction, so it checks only what ZecDoor built; the largest move, a top-up, still fits with 181
+  bytes to spare.
+- **A reload lost the chosen destination.** Before these runs, on the same phone, choosing "Use my Zcash wallet" and
+  pasting an address did not stick: "Lands in" went back to "New shielded wallet". Temporary diagnostics on the preview
+  showed why: Phantom's in-app browser reloaded the whole page when the app moved to its home screen with a `#/` link,
+  which cleared everything held in memory. The app now moves between screens with `history.pushState`, never a page-level
+  link, and a test reproduces the reload (`3cbfffa`). Nothing was signed while the bug was there.
+- **A fee row counted the swap.** The review's "Solana fees and deposit" row included the SOL being swapped in a top-up
+  (about 0.0154 SOL instead of about 0.0030). Fixed before the runs (`8a5a869`), with a test.
+- **More arrives than `amountOut` says,** as in B1: each note held 7,000 zat more, because the bridge charged 25,000 zat
+  for the Zcash payout, not the 32,000 its quote shows.
 
 ### B1: top up and shield, one transaction (5 Oct 2026)
 
