@@ -199,9 +199,12 @@ test('top-up and shield a balance below the minimum, in one transaction', async 
   await page.getByRole('button', { name: /Top up and shield/ }).click();
   await expect(page.getByText('Your one signature does both')).toBeVisible();
   await expect(page.getByText(/Send all 0\.00133669 ZEC/)).toBeVisible();
+  // Solana's own costs, without the SOL being swapped (that has its own row); review must show the same figure.
+  const solFees = (await page.getByText('Solana fees and deposits').locator('xpath=following-sibling::*[1]').innerText()).trim();
   await page.getByRole('button', { name: 'Review' }).click();
   await makeWallet(page);
   await expect(page.getByText(/swapped into ZEC/)).toBeVisible();
+  await expect(page.getByText(solFees, { exact: true }).filter({ visible: true }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Sign in Phantom' }).click();
   await expect(page.getByText('Note found by your browser')).toBeVisible(SLOW);
   const tx = await expectAllowed(m, 'topup', { maxWrapLamports: 11_177_144n });

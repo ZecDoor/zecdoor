@@ -69,6 +69,8 @@ export function Review() {
     hasZecAccount: balances?.hasZecAccount ?? true,
   });
   const needSol = draft.kind === 'buySol' ? solCost + draft.amount : solCost;
+  // What Solana itself costs: for a top-up paid in SOL, solCost also holds the SOL being swapped, shown on its own row.
+  const solFees = solCost - (draft.topUp?.payWith === 'sol' ? draft.topUp.maxPay : 0n);
   const noSol = !!balances && balances.sol < needSol;
   const busy = stage !== null;
 
@@ -105,7 +107,7 @@ export function Review() {
     [<NetworkFeeLabel key="f" />, networkFee(q?.withdrawFee)],
     [`Our fee (${ourBps / 100}%)`, feeOf(ourBps)],
     ...(theirBps ? ([[`NEAR Intents fee (${theirBps / 100}%)`, feeOf(theirBps)]] as Array<[string, string]>) : []),
-    ['Solana fees and deposits', `≈ ${sol(solCost)}`],
+    ['Solana fees and deposits', `≈ ${sol(solFees)}`],
     ['NEAR Intents estimates', estimate(q?.timeEstimate) ?? '—'],
     ['If it can’t complete', `refund to ${short(owner.toBase58(), 4, 3)} at the quote’s deadline`],
   ];
@@ -128,7 +130,7 @@ export function Review() {
         '—'
       ),
     ],
-    ['Solana fees and deposit', `≈ ${sol(solCost)}`],
+    ['Solana fees and deposit', `≈ ${sol(solFees)}`],
     ['Lands in', rows[0]![1]],
     ['NEAR Intents estimates', estimate(q?.timeEstimate) ?? '—'],
   ];
