@@ -11,11 +11,13 @@ import { Review } from './screens/Review';
 import { TopUp } from './screens/TopUp';
 import { WalletCreate, WalletVerify } from './screens/Wallet';
 import { Stats } from './screens/Stats';
-import { useRoute } from './router';
+import { useEffect } from 'react';
+import { routeLinks, useRoute } from './router';
 import { useApp } from './state';
 
 export function App() {
   const route = useRoute();
+  useEffect(routeLinks, []);
   const { owner } = useApp();
   const [a, b] = route;
 

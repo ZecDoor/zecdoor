@@ -421,3 +421,45 @@ test('Choose where it lands → my wallet reaches the buy review, through a reco
   await toReview(page);
   await expect(page.getByText('25.00 USDC').filter({ visible: true }).first()).toBeVisible();
 });
+
+// Seen on an iPhone in Phantom's in-app browser (device diagnostics, 12 Oct 2026): a fragment navigation to "#/" reloads
+// the page, which loses everything held in memory. Modelled here: any browser-level ("trusted") hashchange to "#/"
+// reloads. In-app navigation must therefore never be a fragment navigation.
+test('the destination survives a browser that reloads on fragment navigation (Phantom on iOS)', async ({ page }) => {
+  await mock(page, { zec: 37_814n });
+  await page.addInitScript(() => {
+    addEventListener('hashchange', (e) => {
+      if (e.isTrusted && new URL((e as HashChangeEvent).newURL).hash === '#/') location.reload();
+    });
+  });
+  await page.goto('./');
+  let loads = 0;
+  page.on('load', () => loads++);
+  await page.getByText('Change', { exact: true }).filter({ visible: true }).first().click();
+  await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
+  await page.getByLabel('Zcash address').fill(TEST_UA);
+  await expect(page.getByText(/Shielded address/)).toBeVisible();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.waitForTimeout(800);
+  expect(loads).toBe(0);
+  await expect(page.getByText(/My wallet · u1c5…gu8m/).filter({ visible: true }).first()).toBeVisible();
+  await page.getByRole('button', { name: /Top up and shield/ }).click();
+  await page.getByRole('button', { name: 'Review' }).click();
+  await toReview(page);
+  expect(loads).toBe(0);
+});
+
+test('the browser back button still works with in-app navigation', async ({ page }) => {
+  await mock(page);
+  await page.goto('./');
+  await page.getByText('Change', { exact: true }).filter({ visible: true }).first().click();
+  await expect(page.getByRole('button', { name: /Use my Zcash wallet/ })).toBeVisible();
+  await page.goBack();
+  await expect(page.getByText('Change', { exact: true }).filter({ visible: true }).first()).toBeVisible();
+  await page.goForward();
+  await expect(page.getByRole('button', { name: /Use my Zcash wallet/ })).toBeVisible();
+  await page.getByRole('link', { name: 'Proof', exact: true }).filter({ visible: true }).first().click();
+  await expect(page).toHaveURL(/#\/proof$/);
+  await page.goBack();
+  await expect(page.getByRole('button', { name: /Use my Zcash wallet/ })).toBeVisible();
+});
