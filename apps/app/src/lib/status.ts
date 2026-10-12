@@ -28,6 +28,9 @@ export function applyStatus(m: MoveRecord, s: StatusResponse, now = Date.now()):
       ...(refundTx ? { txid: refundTx } : {}),
     };
   }
+  // The amount paid out is the status's own, not the quote's estimate: on a USDC buy signed in Phantom (12 Oct 2026)
+  // the quote said 0.00129895 ZEC and NEAR Intents paid 0.00129969.
+  if (s.status === 'SUCCESS' && d?.amountOut) next.paidOut = d.amountOut;
   if (s.status === 'SUCCESS' && m.recipientIndex === null && !next.completedAt) next.completedAt = now;
   return next;
 }

@@ -202,7 +202,7 @@ async function copyDetails(m: MoveRecord) {
 function Proof({ m }: { m: MoveRecord }) {
   const [copied, setCopied] = useState(false);
   const sigOk = verifyQuoteSignature(m.quote, QUOTE_KEY);
-  const value = m.arrival ? BigInt(m.arrival.value) : BigInt(m.amountOut);
+  const value = m.arrival ? BigInt(m.arrival.value) : BigInt(m.paidOut ?? m.amountOut);
   const took = m.completedAt ? duration(m.completedAt - m.createdAt) : null;
   const viewed = !!m.arrival;
 

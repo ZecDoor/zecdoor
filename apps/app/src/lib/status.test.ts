@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import status7FJu from '../../../../packages/solana/test/fixtures/quote_7FJu.json';
 import refundedMainnet from './fixtures/status-refunded-mainnet.json';
 import successB1 from './fixtures/status-success-b1.json';
+import successPhoneBuy from './fixtures/status-success-phone-buy.json';
 import { applyStatus, refundReason } from './status';
 import type { MoveRecord } from './store';
 import type { QuoteResponse, StatusResponse } from '@zecdoor/solana';
@@ -101,5 +102,14 @@ describe('real mainnet statuses (docs/testing)', () => {
       txid: '3kdVEQS27gJTnHXzFvRrNWJaWdAH2aCZg9qr3CdKFLSxXM5yT8Mt1uQoh4wXhiCN6ux5djwjrJLjbRFadt8mSXcP',
     });
     expect(refundReason('PARTIAL_DEPOSIT')).toBe('The deposit was smaller than the quote');
+  });
+});
+
+describe('the amount paid out', () => {
+  it("records NEAR Intents' own amountOut on SUCCESS, not the quote's estimate (USDC buy, 12 Oct 2026)", () => {
+    const m = applyStatus({ ...base, kind: 'buyUsdc', recipientIndex: null, amountOut: '129895' }, successPhoneBuy as unknown as StatusResponse, 1000);
+    expect(m.status).toBe('SUCCESS');
+    expect(m.paidOut).toBe('129969');
+    expect(m.zcashTxid).toBe('51958c7306d61dccc29afc6ba7090b8a43cdd194cd20a11539d59dc897f8a83d');
   });
 });

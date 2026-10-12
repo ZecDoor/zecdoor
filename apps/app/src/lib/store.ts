@@ -50,6 +50,8 @@ export interface MoveRecord {
   solanaSignature?: string;
   zcashTxid?: string;
   refund?: { reason?: string; amount?: string; fee?: string; txid?: string };
+  /** What NEAR Intents reports it paid out (its status's amountOut), once the move succeeded. */
+  paidOut?: string;
   arrival?: Arrival;
   /** Highest Zcash block already scanned for the arrival. */
   scannedTo?: number;
