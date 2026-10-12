@@ -3,7 +3,6 @@
 // links to them.
 
 import { DOCS_URL, PRIVACY_URL, SOURCE_URL, TERMS_URL } from '../config';
-import { BUILD_ID, DIAG } from '../lib/diag';
 
 /**
  * Desktop footer, slim, at the bottom of the window. It carries what left the app screen: how a move
@@ -13,7 +12,6 @@ export function Footer() {
   return (
     <footer className="foot">
       <span>ZecDoor · open source (MIT) · no token</span>
-      {DIAG ? <span className="mono">build {BUILD_ID} · diagnostics on</span> : null}
       <span className="grow" />
       <a href={`${DOCS_URL}how-it-works`}>How it works</a>
       <a href={`${DOCS_URL}what-is-public`}>What is public</a>

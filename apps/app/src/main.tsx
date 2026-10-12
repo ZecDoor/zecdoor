@@ -5,11 +5,9 @@ import { Buffer } from 'buffer';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './styles.css';
-import { startDiag } from './lib/diag';
 
 // @solana/web3.js and spl-token expect Node's Buffer.
 (globalThis as unknown as { Buffer: typeof Buffer }).Buffer ??= Buffer;
-startDiag(); // TEMPORARY, preview builds only
 
 // Both chunks in parallel: one round trip fewer before the first paint.
 const [{ AppProvider }, { App }] = await Promise.all([import('./ui/state'), import('./ui/App')]);

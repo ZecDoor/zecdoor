@@ -35,9 +35,7 @@
       "kv_namespaces": [{ "binding": "STATE", "id": "29c9ca02a56d4ea48e1e6726c5095762" }],
       "vars": {
         "FEE_TEST_RECIPIENT": "u1c5zssk2r6nasyar5amt5pw3szaes8h5wmer3qsaqkc2j6kjcae2lu95ycle3r8vvcdvpyfm7pdnx7624ckp7h5uwfa72l8y54cf4gu8m",
-        "FEE_TEST_REFUND": "3QFJWVEk6tpf52gtk3saAP1nkuci6GRMNHx72etsi67T",
-        // TEMPORARY: device diagnostics (src/diag.ts). Preview only; remove after the phone bug is fixed.
-        "DIAG": "1"
+        "FEE_TEST_REFUND": "3QFJWVEk6tpf52gtk3saAP1nkuci6GRMNHx72etsi67T"
       }
     }
   }

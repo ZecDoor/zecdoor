@@ -229,24 +229,3 @@ describe('routing', () => {
     expect((await handle(big, env())).status).toBe(413);
   });
 });
-
-describe('device diagnostics (temporary, preview only)', () => {
-  const post = (body: unknown) => new Request('https://x/api/diag', { method: 'POST', body: JSON.stringify(body) });
-  it('production (no DIAG) answers 404 and stores nothing', async () => {
-    const e = env();
-    expect((await handle(post({ e: 'load' }), e)).status).toBe(404);
-    expect((await handle(new Request('https://x/api/diag?key=k'), e)).status).toBe(404);
-    expect([...e.STATE.data.keys()].filter((k) => k.startsWith('diag:'))).toHaveLength(0);
-  });
-  it('keeps only whitelisted short fields, and reading needs the key', async () => {
-    const e = { ...env(), DIAG: '1', DIAG_KEY: 'k' };
-    const full = 'u1llnf7r9s9gex2sn7fpta02tqqcaqt7j20l3xggsl6eetvzkl323nrqyx4l2qq8hcldap7568en2msejuumkg0kph8w9zgafns5ymzqx2';
-    expect((await handle(post({ e: 'dest-continue', a: full, own: true, secret: 'nope' }), e)).status).toBe(200);
-    expect((await handle(new Request('https://x/api/diag?key=wrong'), e)).status).toBe(404);
-    const r = (await (await handle(new Request('https://x/api/diag?key=k'), e)).json()) as { events: Array<Record<string, unknown>> };
-    expect(r.events).toHaveLength(1);
-    expect(r.events[0]).toMatchObject({ e: 'dest-continue', own: true });
-    expect(r.events[0]).not.toHaveProperty('secret');
-    expect(r.events[0]!.a).toBe('u1llnf'); // addresses are cut to 6 characters by the server too
-  });
-});

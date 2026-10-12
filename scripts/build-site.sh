@@ -25,10 +25,6 @@ pnpm --dir "$ROOT/apps/app" exec tsc --noEmit
 # Moves and buys stay closed (no transaction can be signed) unless VITE_MOVES_OPEN=1 is set on
 # purpose, after the mainnet test runs (B1, B7) have passed. See apps/app/src/config.ts.
 if [[ "${VITE_MOVES_OPEN:-}" == "1" ]]; then echo ">>> Moves and buys: OPEN in this build"; else echo ">>> Moves and buys: closed (opening soon)"; fi
-# TEMPORARY device diagnostics (apps/app/src/lib/diag.ts): preview builds only; DIAG=0 turns them off on a preview too.
-if [[ "${PREVIEW:-}" == "1" && "${DIAG:-1}" == "1" ]]; then export VITE_DIAG=1; else unset VITE_DIAG; fi
-export VITE_BUILD_ID="$(git -C "$ROOT" rev-parse --short HEAD)$([[ -n "$(git -C "$ROOT" status --porcelain)" ]] && echo -dirty)"
-echo ">>> Diagnostics: $([[ "${VITE_DIAG:-}" == "1" ]] && echo ON || echo off) · build $VITE_BUILD_ID"
 pnpm --dir "$ROOT/apps/app" exec vite build
 pnpm --dir "$ROOT/apps/docs" build
 
@@ -79,9 +75,9 @@ fi
 # Which commit this site was built from, so anyone can check out the same code and compare.
 # Canonical links, share tags and images, the designed 404 page, sitemap.xml (not on preview builds).
 node "$ROOT/scripts/seo/finish-site.mjs" "$OUT" "$VITE_DOMAIN" $([[ "${PREVIEW:-}" == "1" ]] && echo --preview)
-printf '{"commit":"%s","dirty":%s,"builtAt":"%s","node":"%s","moves":"%s","preview":%s,"diag":%s}\n' "$(git -C "$ROOT" rev-parse HEAD)" \
+printf '{"commit":"%s","dirty":%s,"builtAt":"%s","node":"%s","moves":"%s","preview":%s}\n' "$(git -C "$ROOT" rev-parse HEAD)" \
   "$([[ -n "$(git -C "$ROOT" status --porcelain)" ]] && echo true || echo false)" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(node --version)" \
-  "$([[ "${VITE_MOVES_OPEN:-}" == "1" ]] && echo open || echo closed)" "$([[ "${PREVIEW:-}" == "1" ]] && echo true || echo false)" "$([[ "${VITE_DIAG:-}" == "1" ]] && echo true || echo false)" > "$OUT/build.json"
+  "$([[ "${VITE_MOVES_OPEN:-}" == "1" ]] && echo open || echo closed)" "$([[ "${PREVIEW:-}" == "1" ]] && echo true || echo false)" > "$OUT/build.json"
 echo "Source links: $([[ -n "$SOURCE_URL" ]] && echo "$SOURCE_URL" || echo 'pending (Code goes public under the MIT licence at launch)')"
 echo "Moves and buys: $([[ "${VITE_MOVES_OPEN:-}" == "1" ]] && echo OPEN || echo closed)"
 echo "Site in $OUT ($(du -sh "$OUT" | cut -f1), $(find "$OUT" -type f | wc -l | tr -d ' ') files)"

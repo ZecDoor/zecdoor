@@ -14,7 +14,6 @@ echo "Build: commit $COMMIT, dirty=$DIRTY, preview=$PREVIEW, moves=$MOVES"
 case "$TARGET" in
   production)
     [[ "$PREVIEW" == "false" ]] || { echo "Refusing: this is a preview build (noindex). Rebuild without PREVIEW." >&2; exit 1; }
-    [[ "$(field diag)" != "true" ]] || { echo "Refusing: this build has device diagnostics on (preview only)." >&2; exit 1; }
     [[ "$DIRTY" == "false" ]] || { echo "Refusing: built from uncommitted changes; build.json would not match a public commit." >&2; exit 1; }
     if [[ "$MOVES" == "open" && "${OPEN_MOVES:-}" != "yes" ]]; then echo "Refusing: moves are open in this build; set OPEN_MOVES=yes only after B1/B7 passed and it was agreed." >&2; exit 1; fi
     git -C "$ROOT" merge-base --is-ancestor "$COMMIT" origin/main 2>/dev/null || { echo "Refusing: commit $COMMIT is not on origin/main (push it first)." >&2; exit 1; }
