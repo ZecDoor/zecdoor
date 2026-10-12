@@ -32,16 +32,20 @@ test('production build under its CSP, real network', async ({ page }) => {
     };
   });
   await page.goto(URL!);
-  await expect(page.getByText('ZEC on Solana')).toBeVisible();
-  await expect(page.locator('.amount').first()).toHaveText(/\d.* ZEC/, { timeout: 20_000 }); // real balance via public RPC
-  // Moves and buys stay closed in production until the mainnet runs pass (PROD_MOVES=open after that).
-  if ((process.env.PROD_MOVES ?? 'closed') === 'closed') await expect(page.getByText('Opening soon').first()).toBeVisible();
-  await page.getByRole('button', { name: 'Change' }).click();
+  await expect(page.getByText('You move').filter({ visible: true }).first()).toBeVisible();
+  await expect(page.getByText(/^Balance \d.* ZEC$/).filter({ visible: true }).first()).toBeVisible({ timeout: 20_000 }); // real balance via public RPC
+  // Moves and buys opened on production on 12 Oct 2026 (PROD_MOVES=closed checks a closed build).
+  if (process.env.PROD_MOVES === 'closed') await expect(page.getByText('Opening soon').first()).toBeVisible();
+  else await expect(page.getByText('Opening soon')).toHaveCount(0);
+  await page.getByText('Change', { exact: true }).filter({ visible: true }).first().click();
   await page.getByRole('button', { name: /Use my Zcash wallet/ }).click();
   await page.getByLabel('Zcash address').fill('u1c5zssk2r6nasyar5amt5pw3szaes8h5wmer3qsaqkc2j6kjcae2lu95ycle3r8vvcdvpyfm7pdnx7624ckp7h5uwfa72l8y54cf4gu8m');
   await expect(page.getByText('Shielded address · can receive in Ironwood')).toBeVisible(); // WASM under CSP
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByText(/My wallet · u1c5…gu8m/).filter({ visible: true }).first()).toBeVisible(); // the chosen destination sticks
   await page.goto(URL! + '#/buy');
-  await expect(page.getByText(/^1 ZEC ≈/)).toBeVisible({ timeout: 20_000 }); // live signed dry quote, verified
+  await page.getByText('USDC', { exact: true }).filter({ visible: true }).first().click();
+  await expect(page.getByText(/1 ZEC ≈/).filter({ visible: true }).first()).toBeVisible({ timeout: 20_000 }); // live signed dry quote, verified
   expect(violations).toEqual([]);
   expect(errors).toEqual([]);
 });
