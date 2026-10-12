@@ -58,6 +58,10 @@ What the phone runs found:
   link, and a test reproduces the reload (`3cbfffa`). Nothing was signed while the bug was there.
 - **A fee row counted the swap.** The review's "Solana fees and deposit" row included the SOL being swapped in a top-up
   (about 0.0154 SOL instead of about 0.0030). Fixed before the runs (`8a5a869`), with a test.
+- **The arrival screen showed the quote's figure.** For an address pasted from another wallet, the app's "Arrived"
+  screen showed the quote's estimated output, labelled as what NEAR Intents paid: 0.00129895 ZEC on the USDC buy,
+  where NEAR Intents reports 0.00129969. It now shows NEAR Intents' own reported amount (`07f1092`), with a test on
+  this real status.
 - **More arrives than `amountOut` says,** as in B1: each note held 7,000 zat more, because the bridge charged 25,000 zat
   for the Zcash payout, not the 32,000 its quote shows.
 
